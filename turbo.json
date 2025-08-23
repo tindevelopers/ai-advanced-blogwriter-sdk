@@ -5,6 +5,7 @@
     "build": {
       "dependsOn": ["^build"],
       "env": [
+        "ABACUSAI_API_KEY",
         "AI_GATEWAY_API_KEY",
         "ANTHROPIC_API_KEY",
         "ASSISTANT_ID",
@@ -14,6 +15,9 @@
         "BASETEN_API_KEY",
         "CEREBRAS_API_KEY",
         "COHERE_API_KEY",
+        "DATAFORSEO_API_KEY",
+        "DATAFORSEO_PASSWORD",
+        "DATAFORSEO_USERNAME",
         "DEEPINFRA_API_KEY",
         "DEEPSEEK_API_KEY",
         "ELEVENLABS_API_KEY",
@@ -34,6 +38,7 @@
         "AI_VERBOSE",
         "LUMA_API_KEY",
         "MISTRAL_API_KEY",
+        "NEWS_API_KEY",
         "NEXT_RUNTIME",
         "NIM_API_KEY",
         "NODE_ENV",
@@ -44,6 +49,7 @@
         "SENTRY_AUTH_TOKEN",
         "SENTRY_ORG",
         "SENTRY_PROJECT",
+        "SERP_API_KEY",
         "TOGETHER_AI_API_KEY",
         "VERCEL_API_KEY",
         "VERCEL_DEPLOYMENT_ID",
