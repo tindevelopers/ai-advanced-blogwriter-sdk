@@ -1006,3 +1006,30 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
 ---
 
 Built with ❤️ by the AI SDK team
+
+
+## 🆕 NEW PLATFORM ADAPTERS
+
+### Shopify Adapter
+- **E-commerce Integration**: Publish blog content directly to Shopify store blogs
+- **Product Linking**: Embed product recommendations using `[product:handle]` syntax
+- **Store Branding**: Automatic theme and branding consistency
+- **SEO Optimization**: Built-in e-commerce SEO best practices
+- **Analytics Support**: Track blog performance with Shopify analytics
+
+### Webflow Adapter  
+- **Design-First CMS**: Rich text publishing with advanced design capabilities
+- **Custom Fields**: Support for complex CMS field types and structures
+- **Asset Management**: Automatic image optimization and CDN integration
+- **Visual Integration**: Seamless integration with Webflow Designer
+- **Collection Management**: Automated blog collection setup and management
+
+### Multi-Platform Publishing
+All platform adapters now work together through the unified `MultiPlatformPublisher`:
+- **Cross-Platform Publishing**: Publish to all 5 platforms simultaneously
+- **Content Adaptation**: Automatically optimize content for each platform
+- **Aggregated Analytics**: Combined performance metrics across all platforms
+- **Health Monitoring**: Real-time status tracking for all connected platforms
+
+See [PLATFORM-ADAPTERS.md](./PLATFORM-ADAPTERS.md) for detailed usage guides and examples.
+

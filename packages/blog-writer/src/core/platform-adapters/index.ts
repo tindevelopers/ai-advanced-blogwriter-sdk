@@ -11,6 +11,8 @@ export * from '../base-platform-adapter';
 export * from './wordpress-adapter';
 export * from './medium-adapter';
 export * from './linkedin-adapter';
+export * from './shopify-adapter';
+export * from './webflow-adapter';
 
 // Re-export registry for convenience
 export { platformRegistry } from '../base-platform-adapter';
@@ -25,7 +27,9 @@ export function createAdapter(platformName: string, config?: any) {
 export const AVAILABLE_ADAPTERS = [
   'wordpress',
   'medium',
-  'linkedin'
+  'linkedin',
+  'shopify',
+  'webflow'
 ] as const;
 
 export type AvailableAdapter = typeof AVAILABLE_ADAPTERS[number];
@@ -66,6 +70,32 @@ export const ADAPTER_METADATA = {
       categories: false,
       tags: false,
       media: true
+    }
+  },
+  shopify: {
+    name: 'Shopify',
+    description: 'Shopify store blog publishing',
+    authTypes: ['private_app', 'oauth2', 'api_key'],
+    capabilities: {
+      scheduling: true,
+      analytics: true,
+      categories: false,
+      tags: true,
+      media: true,
+      products: true
+    }
+  },
+  webflow: {
+    name: 'Webflow',
+    description: 'Webflow CMS publishing',
+    authTypes: ['api_token', 'oauth2'],
+    capabilities: {
+      scheduling: false,
+      analytics: false,
+      categories: true,
+      tags: true,
+      media: true,
+      richText: true
     }
   }
 } as const;

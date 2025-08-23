@@ -87,7 +87,6 @@ export {
   KeywordTrends,
   MonthlySearch,
   KeywordDifficulty,
-  SearchIntent,
   KeywordCluster,
   OnPageSEOAnalysis,
   TitleAnalysis,
@@ -141,7 +140,6 @@ export {
   ContentQualityScore,
   QualityFactor,
   QualityRecommendation,
-  CompetitorAnalysis,
   CompetitorPage,
   CompetitorMetrics,
   ContentGap,
@@ -362,3 +360,4 @@ export type {
 
 // Week 13-14 Platform Integration Framework
 export * from './platform-integration';
+export * from './platform-credentials';

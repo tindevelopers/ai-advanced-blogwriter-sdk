@@ -10,6 +10,10 @@
     "rootDir": ".",
     "outDir": "dist"
   },
+  "include": [
+    "src/**/*",
+    "examples/**/*"
+  ],
   "exclude": [
     "dist",
     "build",

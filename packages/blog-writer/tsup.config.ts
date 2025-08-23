@@ -6,7 +6,7 @@ export default defineConfig([
     entry: ['src/index.ts'],
     format: ['cjs', 'esm'],
     external: ['react', 'svelte', 'vue', 'ai'],
-    dts: true,
+    dts: false,
     sourcemap: true,
   },
 ]);
