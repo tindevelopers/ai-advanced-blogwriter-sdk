@@ -1,18 +1,75 @@
 
-import type { AIConfig } from 'ai';
-import type { LanguageModelV1 } from '@ai-sdk/provider';
+import type { AIConfig } from './base-config';
+
+// Define LanguageModelV1 interface locally to avoid dependency
+interface LanguageModelV1 {
+  modelId: string;
+  provider?: string;
+}
 
 /**
- * Blog-specific AI configuration extending the base AI SDK configuration
+ * Tone configuration settings for content generation
+ */
+export interface ToneConfiguration {
+  /** Primary tone of voice */
+  primary: 'professional' | 'casual' | 'authoritative' | 'friendly' | 'technical' | 'conversational';
+  /** Emotional undertone */
+  emotion?: 'neutral' | 'enthusiastic' | 'empathetic' | 'confident' | 'encouraging';
+  /** Formality level (1-5, with 5 being most formal) */
+  formalityLevel?: number;
+  /** Target audience awareness */
+  audience?: 'beginner' | 'intermediate' | 'expert' | 'general';
+  /** Writing style preferences */
+  style?: {
+    /** Use active voice preference */
+    activeVoice?: boolean;
+    /** Sentence length preference */
+    sentenceLength?: 'short' | 'medium' | 'long' | 'mixed';
+    /** Include humor or personality */
+    personality?: boolean;
+    /** Technical jargon level */
+    technicalLevel?: 'minimal' | 'moderate' | 'heavy';
+  };
+}
+
+/**
+ * Blog-specific AI configuration extending the base AI SDK configuration.
+ * This interface provides the exact properties as specified in the requirements.
  */
 export interface BlogAIConfig extends AIConfig {
   /**
-   * Default model for blog generation
+   * Content type for the blog post
    */
-  model: LanguageModelV1;
+  contentType: 'blog' | 'article' | 'tutorial';
   
   /**
-   * SEO optimization settings
+   * Target length for the generated content in words
+   */
+  targetLength: number;
+  
+  /**
+   * Enable or disable SEO optimization
+   */
+  seoOptimization: boolean;
+  
+  /**
+   * Tone and style settings for content generation
+   */
+  toneSettings: ToneConfiguration;
+}
+
+/**
+ * Extended blog AI configuration with additional settings for advanced use cases.
+ * This maintains backward compatibility with existing implementations.
+ */
+export interface ExtendedBlogAIConfig extends BlogAIConfig {
+  /**
+   * Default model for blog generation
+   */
+  model?: string;
+  
+  /**
+   * Advanced SEO optimization settings
    */
   seo?: {
     /** Target keyword density (0-1) */
@@ -35,8 +92,6 @@ export interface BlogAIConfig extends AIConfig {
   quality?: {
     /** Reading level (1-12, grade level) */
     readingLevel?: number;
-    /** Tone of voice */
-    tone?: 'professional' | 'casual' | 'authoritative' | 'friendly' | 'technical' | 'conversational';
     /** Content style */
     style?: 'blog' | 'tutorial' | 'news' | 'review' | 'comparison' | 'howto' | 'listicle';
     /** Include citations and sources */

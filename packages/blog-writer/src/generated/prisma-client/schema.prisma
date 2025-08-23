@@ -1,0 +1,2020 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BlogPostStatus {
+  DRAFT
+  PENDING_REVIEW
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  PUBLISHED
+  ARCHIVED
+  SCHEDULED
+  UNPUBLISHED
+}
+
+enum WorkflowAction {
+  CREATED
+  SUBMITTED_FOR_REVIEW
+  APPROVED
+  REJECTED
+  PUBLISHED
+  UNPUBLISHED
+  ARCHIVED
+  SCHEDULED
+  UPDATED
+}
+
+enum MetadataFieldType {
+  STRING
+  TEXT
+  NUMBER
+  BOOLEAN
+  DATE
+  JSON
+  URL
+  EMAIL
+}
+
+enum ContentType {
+  BLOG
+  ARTICLE
+  TUTORIAL
+  HOWTO
+  LISTICLE
+  COMPARISON
+  NEWS
+  REVIEW
+  GUIDE
+  CASE_STUDY
+  OPINION
+  INTERVIEW
+}
+
+enum ToneType {
+  PROFESSIONAL
+  CASUAL
+  AUTHORITATIVE
+  FRIENDLY
+  TECHNICAL
+  CONVERSATIONAL
+}
+
+enum ResearchDepth {
+  BASIC
+  DETAILED
+  COMPREHENSIVE
+}
+
+model BlogPost {
+  id              String         @id @default(cuid())
+  title           String
+  slug            String         @unique
+  metaDescription String?
+  excerpt         String?
+  content         String
+  status          BlogPostStatus @default(DRAFT)
+  contentType     ContentType    @default(BLOG)
+
+  // Publishing info
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+  scheduledAt DateTime?
+
+  // Content classification
+  category String?
+
+  // Author info
+  authorId    String?
+  authorName  String?
+  authorEmail String?
+  authorBio   String?
+
+  // SEO and optimization
+  focusKeyword     String?
+  keywords         String[]
+  keywordDensity   Float?
+  seoScore         Float?
+  readabilityScore Float?
+  wordCount        Int
+  readingTime      Int?
+
+  // Social media
+  ogTitle       String?
+  ogDescription String?
+  ogImage       String?
+  twitterCard   String?
+  twitterImage  String?
+
+  // Content settings
+  allowComments Boolean @default(true)
+  featured      Boolean @default(false)
+  language      String  @default("en")
+  template      String?
+
+  // Featured image
+  featuredImageUrl     String?
+  featuredImageAlt     String?
+  featuredImageCaption String?
+  featuredImageCredit  String?
+
+  // Analytics
+  views          Int    @default(0)
+  uniqueVisitors Int    @default(0)
+  shares         Int    @default(0)
+  comments       Int    @default(0)
+  avgTimeOnPage  Float?
+  bounceRate     Float?
+
+  // Relationships
+  versions       BlogPostVersion[]
+  media          BlogPostMedia[]
+  ctas           BlogPostCTA[]
+  searchRankings SearchRanking[]
+  suggestions    BlogPostSuggestion[]
+  tocEntries     TableOfContentsEntry[]
+  seoAnalyses    SEOAnalysis[]
+
+  // Week 3-4 Content Management Foundation relationships
+  categories         BlogPostCategory[]
+  tags               BlogPostTag[]
+  relatedFrom        ContentRelationship[] @relation("RelatedFrom")
+  relatedTo          ContentRelationship[] @relation("RelatedTo")
+  branches           VersionBranch[]
+  workflowHistory    WorkflowHistory[]
+  approvalWorkflows  ApprovalWorkflow[]
+  customMetadata     CustomMetadata[]
+  seoMetadata        SeoMetadata?
+  publishingSchedule PublishingSchedule[]
+  notifications      Notification[]
+  series             BlogPostSeries[]
+
+  // Week 5-6 Content Strategy Engine relationships
+  calendarEntries EditorialCalendarEntry[]
+  contentBriefs   ContentBrief[] // Briefs that resulted in this post
+
+  // Week 7-8 Advanced Writing Features relationships
+  contentSections         ContentSection[]
+  toneAnalyses            ToneAnalysis[]
+  styleChecks             StyleCheck[]
+  factChecks              FactCheck[]
+  sourceCitations         SourceCitation[]
+  optimizationSuggestions OptimizationSuggestion[]
+  contentMetrics          ContentMetrics[]
+
+  // Week 9-10 SEO Analysis Engine relationships
+  keywordAnalyses       KeywordAnalysis[]
+  onPageSEOAnalyses     OnPageSEOAnalysis[]
+  metaTagConfiguration  MetaTagConfiguration?
+  readabilityAnalyses   ReadabilityAnalysis[]
+  seoAnalysisResults    SEOAnalysisResult[]
+  seoRecommendations    SEORecommendation[]
+  seoCompetitorAnalyses SEOCompetitorAnalysis[]
+
+  @@map("blog_posts")
+}
+
+model BlogPostVersion {
+  id              String         @id @default(cuid())
+  version         String
+  blogPostId      String
+  title           String
+  content         String
+  metaDescription String?
+  excerpt         String?
+  status          BlogPostStatus
+  createdAt       DateTime       @default(now())
+  createdBy       String?
+  changeSummary   String?
+
+  // SEO snapshot
+  focusKeyword     String?
+  keywords         String[]
+  keywordDensity   Float?
+  seoScore         Float?
+  readabilityScore Float?
+  wordCount        Int
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  // Week 3-4 relationships
+  branchId          String?
+  branch            VersionBranch?      @relation("BranchVersions", fields: [branchId], references: [id])
+  fromComparisons   VersionComparison[] @relation("FromVersion")
+  toComparisons     VersionComparison[] @relation("ToVersion")
+  workflowHistory   WorkflowHistory[]
+  approvalWorkflows ApprovalWorkflow[]
+
+  @@map("blog_post_versions")
+}
+
+model BlogPostMedia {
+  id         String  @id @default(cuid())
+  blogPostId String
+  type       String // 'image', 'video', 'audio', 'embed'
+  url        String
+  alt        String?
+  caption    String?
+  position   String? // 'inline', 'sidebar', 'header', 'footer'
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@map("blog_post_media")
+}
+
+model BlogPostCTA {
+  id         String @id @default(cuid())
+  blogPostId String
+  text       String
+  url        String
+  type       String // 'primary', 'secondary'
+  position   String // 'inline', 'end', 'sidebar'
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@map("blog_post_ctas")
+}
+
+model TableOfContentsEntry {
+  id         String @id @default(cuid())
+  blogPostId String
+  title      String
+  anchor     String
+  level      Int
+  order      Int
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@map("table_of_contents")
+}
+
+model SearchRanking {
+  id           String   @id @default(cuid())
+  blogPostId   String
+  keyword      String
+  position     Int
+  searchEngine String   @default("google")
+  checkedAt    DateTime @default(now())
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@map("search_rankings")
+}
+
+model BlogPostSuggestion {
+  id         String   @id @default(cuid())
+  blogPostId String
+  type       String // 'seo', 'quality', 'readability', 'engagement'
+  message    String
+  priority   String   @default("medium") // 'low', 'medium', 'high'
+  resolved   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@map("blog_post_suggestions")
+}
+
+// Content type detection and routing models
+model ContentTypePattern {
+  id          String      @id @default(cuid())
+  contentType ContentType
+  keywords    String[]
+  patterns    String[] // Regex patterns or keyword combinations
+  priority    Int         @default(0)
+  enabled     Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("content_type_patterns")
+}
+
+// Blog AI Configuration storage
+model BlogAIConfiguration {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+
+  // Model settings
+  modelProvider String // 'openai', 'anthropic', 'google', etc.
+  modelId       String
+
+  // SEO settings
+  keywordDensity          Float?   @default(0.02)
+  minLength               Int?     @default(300)
+  maxLength               Int?     @default(3000)
+  optimizeMetaDescription Boolean  @default(true)
+  generateAltText         Boolean  @default(true)
+  focusKeywords           String[]
+
+  // Quality settings
+  readingLevel   Int?        @default(8)
+  tone           ToneType?   @default(PROFESSIONAL)
+  contentType    ContentType @default(BLOG)
+  includeSources Boolean     @default(true)
+  factCheck      Boolean     @default(false)
+
+  // Template settings
+  defaultTemplate   String?
+  templateVariables Json?
+
+  // Research settings
+  researchEnabled    Boolean       @default(true)
+  researchDepth      ResearchDepth @default(DETAILED)
+  includeTrends      Boolean       @default(true)
+  competitorAnalysis Boolean       @default(false)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("blog_ai_configurations")
+}
+
+// Template definitions
+model BlogTemplate {
+  id                String      @id @default(cuid())
+  name              String      @unique
+  type              ContentType
+  description       String?
+  promptTemplate    String
+  structureTemplate String?
+  variables         Json? // Template variable definitions
+  wordCountRange    Json? // {min: number, max: number}
+  sections          Json? // Predefined sections
+  enabled           Boolean     @default(true)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@map("blog_templates")
+}
+
+// Content research and insights
+model ContentResearch {
+  id            String        @id @default(cuid())
+  topic         String
+  keywords      Json // Primary and secondary keywords
+  trends        Json? // Trending topics and insights
+  competitors   Json? // Competitor analysis data
+  audience      Json? // Target audience insights
+  researchDepth ResearchDepth
+  metadata      Json? // Additional research metadata
+  createdAt     DateTime      @default(now())
+
+  // Optional link to blog post if research was used
+  blogPostId String?
+
+  @@map("content_research")
+}
+
+// SEO analysis results
+model SEOAnalysis {
+  id                  String   @id @default(cuid())
+  blogPostId          String
+  score               Float // Overall SEO score (0-100)
+  keywordOptimization Float?
+  contentStructure    Float?
+  metaOptimization    Float?
+  readability         Float?
+  recommendations     Json // Array of recommendation objects
+  analyzedAt          DateTime @default(now())
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@map("seo_analyses")
+}
+
+// ===== WEEK 3-4 CONTENT MANAGEMENT FOUNDATION =====
+
+// Hierarchical Categories System
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  color       String?
+  icon        String?
+  parentId    String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Self-referencing relationship for hierarchy
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+
+  // Blog posts in this category
+  blogPosts BlogPostCategory[]
+
+  @@map("categories")
+}
+
+// Many-to-many relationship between BlogPosts and Categories
+model BlogPostCategory {
+  id         String   @id @default(cuid())
+  blogPostId String
+  categoryId String
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([blogPostId, categoryId])
+  @@map("blog_post_categories")
+}
+
+// Enhanced Tags System
+model Tag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  color       String?
+  isSystem    Boolean  @default(false) // System-generated tags
+  usageCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Blog posts with this tag
+  blogPosts BlogPostTag[]
+
+  // Auto-suggestion relationships
+  suggestedBy TagSuggestion[] @relation("SuggestedTag")
+  suggestions TagSuggestion[] @relation("BaseTag")
+
+  @@map("tags")
+}
+
+// Many-to-many relationship between BlogPosts and Tags
+model BlogPostTag {
+  id         String   @id @default(cuid())
+  blogPostId String
+  tagId      String
+  createdAt  DateTime @default(now())
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([blogPostId, tagId])
+  @@map("blog_post_tags")
+}
+
+// Tag auto-suggestions system
+model TagSuggestion {
+  id             String   @id @default(cuid())
+  baseTagId      String
+  suggestedTagId String
+  confidence     Float    @default(0.5)
+  occurrences    Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  baseTag      Tag @relation("BaseTag", fields: [baseTagId], references: [id], onDelete: Cascade)
+  suggestedTag Tag @relation("SuggestedTag", fields: [suggestedTagId], references: [id], onDelete: Cascade)
+
+  @@unique([baseTagId, suggestedTagId])
+  @@map("tag_suggestions")
+}
+
+// Content Relationships System
+model ContentRelationship {
+  id               String   @id @default(cuid())
+  fromPostId       String
+  toPostId         String
+  relationshipType String // 'related', 'series', 'prerequisite', 'followup', 'similar'
+  strength         Float    @default(0.5) // Relationship strength (0-1)
+  isAuto           Boolean  @default(true) // Auto-generated vs manual
+  createdAt        DateTime @default(now())
+  createdBy        String?
+
+  fromPost BlogPost @relation("RelatedFrom", fields: [fromPostId], references: [id], onDelete: Cascade)
+  toPost   BlogPost @relation("RelatedTo", fields: [toPostId], references: [id], onDelete: Cascade)
+
+  @@unique([fromPostId, toPostId, relationshipType])
+  @@map("content_relationships")
+}
+
+// Enhanced Version System with Branching
+model VersionBranch {
+  id          String    @id @default(cuid())
+  blogPostId  String
+  name        String // 'main', 'feature/seo-update', 'hotfix/typos'
+  description String?
+  createdFrom String? // Version ID this branch was created from
+  isMain      Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  createdBy   String?
+  mergedAt    DateTime?
+  mergedBy    String?
+  mergedInto  String? // Branch ID merged into
+
+  blogPost BlogPost          @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  versions BlogPostVersion[] @relation("BranchVersions")
+
+  @@unique([blogPostId, name])
+  @@map("version_branches")
+}
+
+// Version Comparison Data
+model VersionComparison {
+  id              String   @id @default(cuid())
+  fromVersionId   String
+  toVersionId     String
+  diffSummary     Json // Structured diff data
+  changedFields   String[] // Fields that changed
+  addedWords      Int      @default(0)
+  removedWords    Int      @default(0)
+  modifiedWords   Int      @default(0)
+  similarityScore Float? // 0-1 similarity
+  comparedAt      DateTime @default(now())
+  comparedBy      String?
+
+  fromVersion BlogPostVersion @relation("FromVersion", fields: [fromVersionId], references: [id], onDelete: Cascade)
+  toVersion   BlogPostVersion @relation("ToVersion", fields: [toVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([fromVersionId, toVersionId])
+  @@map("version_comparisons")
+}
+
+// Workflow State Tracking
+model WorkflowHistory {
+  id          String          @id @default(cuid())
+  blogPostId  String
+  versionId   String?
+  fromStatus  BlogPostStatus?
+  toStatus    BlogPostStatus
+  action      WorkflowAction
+  comment     String?
+  metadata    Json? // Additional action metadata
+  performedAt DateTime        @default(now())
+  performedBy String?
+  assignedTo  String?
+  dueDate     DateTime?
+
+  blogPost BlogPost         @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  version  BlogPostVersion? @relation(fields: [versionId], references: [id], onDelete: SetNull)
+
+  @@map("workflow_history")
+}
+
+// Approval Process
+model ApprovalWorkflow {
+  id          String    @id @default(cuid())
+  blogPostId  String
+  versionId   String?
+  approverIds String[] // List of required approvers
+  currentStep Int       @default(1)
+  totalSteps  Int       @default(1)
+  isComplete  Boolean   @default(false)
+  isApproved  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+  dueDate     DateTime?
+
+  blogPost  BlogPost         @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  version   BlogPostVersion? @relation(fields: [versionId], references: [id], onDelete: SetNull)
+  approvals ApprovalStep[]
+
+  @@map("approval_workflows")
+}
+
+// Individual Approval Steps
+model ApprovalStep {
+  id            String    @id @default(cuid())
+  workflowId    String
+  stepNumber    Int
+  approverId    String
+  approverEmail String?
+  status        String    @default("pending") // pending, approved, rejected
+  comment       String?
+  submittedAt   DateTime?
+
+  workflow ApprovalWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowId, stepNumber])
+  @@map("approval_steps")
+}
+
+// Custom Metadata Fields System
+model MetadataField {
+  id           String            @id @default(cuid())
+  name         String            @unique
+  displayName  String
+  description  String?
+  fieldType    MetadataFieldType
+  isRequired   Boolean           @default(false)
+  isSystem     Boolean           @default(false)
+  defaultValue String?
+  validation   Json? // Validation rules (regex, min/max, options, etc.)
+  group        String? // Field grouping for UI
+  order        Int               @default(0)
+  isActive     Boolean           @default(true)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  // Values for this field
+  values CustomMetadata[]
+
+  @@map("metadata_fields")
+}
+
+// Custom Metadata Values
+model CustomMetadata {
+  id         String   @id @default(cuid())
+  blogPostId String
+  fieldId    String
+  value      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  blogPost BlogPost      @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  field    MetadataField @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([blogPostId, fieldId])
+  @@map("custom_metadata")
+}
+
+// Enhanced SEO Metadata
+model SeoMetadata {
+  id         String @id @default(cuid())
+  blogPostId String @unique
+
+  // Basic SEO
+  metaTitle       String?
+  metaDescription String?
+  canonicalUrl    String?
+  robotsDirective String?
+
+  // Open Graph
+  ogType        String?
+  ogTitle       String?
+  ogDescription String?
+  ogImage       String?
+  ogImageAlt    String?
+  ogUrl         String?
+  ogSiteName    String?
+  ogLocale      String?
+
+  // Twitter Cards
+  twitterCard        String?
+  twitterSite        String?
+  twitterCreator     String?
+  twitterTitle       String?
+  twitterDescription String?
+  twitterImage       String?
+  twitterImageAlt    String?
+
+  // Schema.org structured data
+  schemaType     String?
+  structuredData Json?
+
+  // Additional SEO fields
+  focusKeywords     String[]
+  secondaryKeywords String[]
+  keywordDensity    Float?
+  internalLinks     Int      @default(0)
+  externalLinks     Int      @default(0)
+  imageCount        Int      @default(0)
+  headingStructure  Json? // H1, H2, H3 analysis
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@map("seo_metadata")
+}
+
+// Enhanced Scheduling System
+model PublishingSchedule {
+  id                String    @id @default(cuid())
+  blogPostId        String
+  scheduledFor      DateTime
+  timezone          String    @default("UTC")
+  publishedAt       DateTime?
+  status            String    @default("scheduled") // scheduled, published, failed, cancelled
+  autoPromote       Boolean   @default(false) // Auto-promote on social media
+  promotionChannels String[] // Social channels to promote on
+  notifySubscribers Boolean   @default(true)
+  errorMessage      String?
+  retryCount        Int       @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@map("publishing_schedule")
+}
+
+// Notification System
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String // 'workflow', 'approval', 'comment', 'schedule', 'seo'
+  title     String
+  message   String
+  actionUrl String?
+  isRead    Boolean   @default(false)
+  priority  String    @default("medium") // low, medium, high, urgent
+  metadata  Json?
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+  expiresAt DateTime?
+
+  // Optional relationships
+  blogPostId String?
+  blogPost   BlogPost? @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// Content Series Management
+model ContentSeries {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  posts BlogPostSeries[]
+
+  @@map("content_series")
+}
+
+// Many-to-many for series
+model BlogPostSeries {
+  id         String   @id @default(cuid())
+  blogPostId String
+  seriesId   String
+  order      Int
+  createdAt  DateTime @default(now())
+
+  blogPost BlogPost      @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  series   ContentSeries @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  @@unique([blogPostId, seriesId])
+  @@unique([seriesId, order])
+  @@map("blog_post_series")
+}
+
+// ===== WEEK 5-6 CONTENT STRATEGY ENGINE =====
+
+// Topic Research & Trend Analysis
+model TopicCluster {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  parentId    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Hierarchy
+  parent   TopicCluster?  @relation("TopicHierarchy", fields: [parentId], references: [id])
+  children TopicCluster[] @relation("TopicHierarchy")
+
+  // Related entities
+  topics        TopicResearch[]
+  competitors   CompetitorTopic[]
+  contentBriefs ContentBrief[]
+
+  @@map("topic_clusters")
+}
+
+model TopicResearch {
+  id                String   @id @default(cuid())
+  title             String
+  slug              String   @unique
+  description       String?
+  primaryKeywords   String[]
+  secondaryKeywords String[]
+  longTailKeywords  String[]
+
+  // Search data
+  searchVolume      Int?
+  keywordDifficulty Float?
+  cpc               Float?
+  seasonalityData   Json?
+
+  // Trend analysis
+  trendScore Float    @default(0.5) // 0-1 trending score
+  trending   Boolean  @default(false)
+  trendData  Json? // Historical trend data
+  peakMonths String[] // Months when topic peaks
+
+  // Opportunity scoring
+  opportunityScore Float  @default(0.5) // 0-1 overall opportunity
+  competitionLevel String @default("medium") // low, medium, high
+  contentGapScore  Float  @default(0.5) // 0-1 gap opportunity
+
+  // Metadata
+  status          String   @default("researched") // researched, planned, in_progress, published
+  priority        String   @default("medium") // low, medium, high, urgent
+  estimatedEffort Int? // Hours to complete
+  tags            String[]
+
+  clusterId String?
+  cluster   TopicCluster? @relation(fields: [clusterId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Related entities
+  competitors     CompetitorTopic[]
+  contentBriefs   ContentBrief[]
+  calendarEntries EditorialCalendarEntry[]
+  relatedTopics   TopicRelationship[]      @relation("FromTopic")
+  relatedFrom     TopicRelationship[]      @relation("ToTopic")
+
+  @@map("topic_research")
+}
+
+model TopicRelationship {
+  id               String   @id @default(cuid())
+  fromTopicId      String
+  toTopicId        String
+  relationshipType String // 'related', 'prerequisite', 'followup', 'similar', 'alternative'
+  strength         Float    @default(0.5) // 0-1 relationship strength
+  createdAt        DateTime @default(now())
+
+  fromTopic TopicResearch @relation("FromTopic", fields: [fromTopicId], references: [id], onDelete: Cascade)
+  toTopic   TopicResearch @relation("ToTopic", fields: [toTopicId], references: [id], onDelete: Cascade)
+
+  @@unique([fromTopicId, toTopicId, relationshipType])
+  @@map("topic_relationships")
+}
+
+// Editorial Calendar System
+model EditorialCalendar {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isDefault   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  entries EditorialCalendarEntry[]
+
+  @@map("editorial_calendars")
+}
+
+model EditorialCalendarEntry {
+  id          String  @id @default(cuid())
+  calendarId  String
+  title       String
+  description String?
+
+  // Scheduling
+  plannedDate DateTime
+  publishDate DateTime?
+  dueDate     DateTime?
+
+  // Content details
+  contentType ContentType @default(BLOG)
+  status      String      @default("planned") // planned, research, writing, review, ready, published, cancelled
+  priority    String      @default("medium") // low, medium, high, urgent
+
+  // Assignment
+  assignedTo  String? // User ID or email
+  reviewerIds String[]
+
+  // Content planning
+  targetWordCount Int?
+  estimatedHours  Float?
+  tags            String[]
+  categories      String[]
+
+  // Connections
+  topicId String?
+  topic   TopicResearch? @relation(fields: [topicId], references: [id])
+
+  blogPostId String?
+  blogPost   BlogPost? @relation(fields: [blogPostId], references: [id])
+
+  contentBriefId String?
+  contentBrief   ContentBrief? @relation(fields: [contentBriefId], references: [id])
+
+  calendar EditorialCalendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+
+  // Milestones and tracking
+  milestones   CalendarMilestone[]
+  timeTracking TimeTrackingEntry[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("editorial_calendar_entries")
+}
+
+model CalendarMilestone {
+  id          String    @id @default(cuid())
+  entryId     String
+  name        String
+  description String?
+  dueDate     DateTime
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  completedBy String?
+
+  entry EditorialCalendarEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@map("calendar_milestones")
+}
+
+model TimeTrackingEntry {
+  id          String   @id @default(cuid())
+  entryId     String
+  userId      String?
+  activity    String // 'research', 'writing', 'editing', 'review'
+  duration    Float // Hours
+  description String?
+  trackedAt   DateTime @default(now())
+
+  calendarEntry EditorialCalendarEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@map("time_tracking")
+}
+
+// Competitor Analysis System
+model Competitor {
+  id          String  @id @default(cuid())
+  name        String
+  domain      String  @unique
+  description String?
+  type        String  @default("direct") // direct, indirect, aspirational
+
+  // Metrics
+  domainAuthority Int?
+  monthlyTraffic  Int?
+  backlinks       Int?
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Related data
+  content  CompetitorContent[]
+  topics   CompetitorTopic[]
+  keywords CompetitorKeyword[]
+  analysis CompetitorAnalysis[]
+
+  @@map("competitors")
+}
+
+model CompetitorContent {
+  id           String    @id @default(cuid())
+  competitorId String
+  title        String
+  url          String
+  publishDate  DateTime?
+
+  // Content analysis
+  wordCount        Int?
+  readabilityScore Float?
+  seoScore         Float?
+  socialShares     Int    @default(0)
+  backlinks        Int    @default(0)
+
+  // Keyword data  
+  primaryKeywords String[]
+  rankings        Json? // Keyword rankings data
+
+  // Gap analysis
+  gapOpportunity   Float   @default(0.5) // 0-1 opportunity score
+  canImprove       Boolean @default(false)
+  improvementNotes String?
+
+  competitor Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("competitor_content")
+}
+
+model CompetitorTopic {
+  id           String  @id @default(cuid())
+  competitorId String
+  topicId      String?
+  clusterId    String?
+
+  title        String
+  coverage     Float  @default(0.5) // 0-1 how well they cover this topic
+  ranking      Int? // Their average ranking for this topic
+  contentCount Int    @default(0) // Number of pieces they have on this topic
+
+  competitor Competitor     @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  topic      TopicResearch? @relation(fields: [topicId], references: [id])
+  cluster    TopicCluster?  @relation(fields: [clusterId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("competitor_topics")
+}
+
+model CompetitorKeyword {
+  id           String  @id @default(cuid())
+  competitorId String
+  keyword      String
+  position     Int
+  searchVolume Int?
+  difficulty   Float?
+  traffic      Int? // Estimated monthly traffic from this keyword
+  url          String?
+
+  // Gap analysis
+  ourPosition Int? // Our current position for this keyword
+  gapSize     Int? // Position difference
+  opportunity Float @default(0.5) // 0-1 opportunity score
+
+  competitor Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+
+  trackedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([competitorId, keyword])
+  @@map("competitor_keywords")
+}
+
+model CompetitorAnalysis {
+  id           String @id @default(cuid())
+  competitorId String
+
+  // Overall analysis
+  overallScore   Float // 0-1 competitor strength
+  contentQuality Float?
+  seoStrength    Float?
+  socialPresence Float?
+
+  // Content gaps we identified
+  contentGaps Json // Array of gap opportunities
+  keywordGaps Json // Keywords they rank for that we don't
+  topicGaps   Json // Topics they cover well that we don't
+
+  // Recommendations
+  recommendations Json // Strategic recommendations
+  opportunities   Json // Specific opportunities identified
+
+  analyzedAt DateTime   @default(now())
+  competitor Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+
+  @@map("competitor_analysis")
+}
+
+// Content Brief Generation System
+model ContentBrief {
+  id          String  @id @default(cuid())
+  title       String
+  slug        String  @unique
+  description String?
+
+  // Target content details
+  targetWordCount   Int?
+  targetContentType ContentType @default(BLOG)
+  targetAudience    String?
+
+  // SEO requirements
+  primaryKeyword    String?
+  secondaryKeywords String[]
+  searchIntent      String? // informational, commercial, navigational, transactional
+  targetKeywords    Json? // Structured keyword data
+
+  // Content structure
+  outline           Json? // Structured content outline
+  requiredSections  String[]
+  suggestedSections String[]
+
+  // Research data
+  researchSources     Json? // Compiled research sources
+  statisticsToInclude Json? // Key statistics to include
+  examplesNeeded      String[]
+
+  // Competition insights
+  competitorAnalysis Json? // Analysis of competitor content
+  contentGaps        Json? // Gaps to fill
+  differentiators    String[] // How to differentiate from competitors
+
+  // Requirements
+  callsToAction String[]
+  internalLinks String[]
+  externalLinks Json? // Suggested external links with authority scores
+  imagesNeeded  String[]
+
+  // Personas and targeting
+  primaryPersona    String?
+  secondaryPersonas String[]
+  userQuestions     String[]
+  painPoints        String[]
+
+  // Technical requirements
+  metaTitle           String?
+  metaDescription     String?
+  focusKeywordDensity Float?
+  readingLevel        Int?
+  tone                ToneType?
+
+  // Connections
+  topicId String?
+  topic   TopicResearch? @relation(fields: [topicId], references: [id])
+
+  clusterId String?
+  cluster   TopicCluster? @relation(fields: [clusterId], references: [id])
+
+  // Status and workflow
+  status  String @default("draft") // draft, ready, in_use, archived
+  version Int    @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+
+  // Relationships
+  blogPosts       BlogPost[] // Posts created from this brief
+  calendarEntries EditorialCalendarEntry[]
+
+  @@map("content_briefs")
+}
+
+// ===== WEEK 7-8 ADVANCED WRITING FEATURES =====
+
+// Multi-Section Content Generation
+model ContentSection {
+  id          String      @id @default(cuid())
+  blogPostId  String
+  title       String
+  content     String
+  sectionType SectionType @default(PARAGRAPH)
+  order       Int
+  level       Int         @default(1) // Heading level (1-6)
+  parentId    String?
+  wordCount   Int         @default(0)
+  keyPoints   String[] // Key points covered in section
+  contextTags String[] // Tags for context awareness
+
+  // AI Generation metadata
+  promptUsed        String?
+  modelUsed         String?
+  generationContext Json? // Context passed to AI
+  generatedAt       DateTime?
+
+  // Section quality metrics
+  readabilityScore Float?
+  coherenceScore   Float?
+  relevanceScore   Float?
+
+  // Relationships
+  blogPost BlogPost         @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  parent   ContentSection?  @relation("SectionHierarchy", fields: [parentId], references: [id])
+  children ContentSection[] @relation("SectionHierarchy")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("content_sections")
+}
+
+// Section types for structured content
+enum SectionType {
+  HEADING
+  SUBHEADING
+  PARAGRAPH
+  INTRODUCTION
+  CONCLUSION
+  LIST
+  QUOTE
+  CODE_BLOCK
+  IMAGE
+  VIDEO
+  CTA
+  SIDEBAR
+  CALLOUT
+  STEPS
+  FAQ
+  TABLE
+}
+
+// Tone Analysis and Consistency
+model ToneAnalysis {
+  id         String  @id @default(cuid())
+  blogPostId String
+  sectionId  String? // Analysis per section
+
+  // Detected tone characteristics
+  primaryTone    ToneCategory
+  secondaryTones ToneCategory[]
+  confidence     Float // 0-1
+
+  // Tone metrics
+  formalityScore    Float // 0-1 (informal to formal)
+  emotionalTone     EmotionalTone
+  emotionIntensity  Float // 0-1
+  authorityLevel    Float // 0-1
+  personalityTraits Json // Personality analysis
+
+  // Brand voice alignment
+  brandVoiceScore  Float? // 0-1
+  consistencyScore Float? // 0-1 across sections
+  deviations       Json? // Areas where tone deviates
+
+  // Analysis metadata
+  analyzedAt DateTime @default(now())
+  modelUsed  String?
+
+  // Relationships
+  blogPost    BlogPost     @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  styleChecks StyleCheck[]
+
+  @@map("tone_analyses")
+}
+
+enum ToneCategory {
+  PROFESSIONAL
+  CASUAL
+  AUTHORITATIVE
+  FRIENDLY
+  TECHNICAL
+  CONVERSATIONAL
+  ACADEMIC
+  PERSUASIVE
+  INFORMATIVE
+  ENTERTAINING
+  EMPATHETIC
+  URGENT
+  CONFIDENT
+  HUMBLE
+}
+
+enum EmotionalTone {
+  NEUTRAL
+  POSITIVE
+  NEGATIVE
+  EXCITED
+  CONCERNED
+  OPTIMISTIC
+  CAUTIOUS
+  PASSIONATE
+  ANALYTICAL
+  INSPIRING
+}
+
+// Style Consistency and Guidelines
+model StyleCheck {
+  id             String  @id @default(cuid())
+  blogPostId     String
+  toneAnalysisId String?
+
+  // Style guide compliance
+  styleGuideId    String?
+  complianceScore Float // 0-1
+  violations      Json // Array of style violations
+
+  // Writing style metrics
+  sentenceLength    Float // Average sentence length
+  paragraphLength   Float // Average paragraph length  
+  readingLevel      Float // Flesch-Kincaid grade level
+  passiveVoiceScore Float // Percentage of passive voice
+
+  // Vocabulary analysis  
+  vocabularyLevel String // basic, intermediate, advanced
+  jargonUsage     Float // 0-1
+  repetitiveness  Float // 0-1
+
+  // Brand voice consistency
+  brandVoiceMatch  Float? // 0-1
+  voicePersonality Json? // Detected personality traits
+
+  // Improvement suggestions
+  suggestions    Json // Array of improvement suggestions
+  criticalIssues String[] // High priority issues
+
+  checkedAt DateTime @default(now())
+
+  // Relationships
+  blogPost     BlogPost      @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  toneAnalysis ToneAnalysis? @relation(fields: [toneAnalysisId], references: [id], onDelete: SetNull)
+
+  @@map("style_checks")
+}
+
+// Fact Checking and Source Verification
+model FactCheck {
+  id         String @id @default(cuid())
+  blogPostId String
+
+  // Claim being fact-checked
+  claim         String
+  sectionId     String? // Section where claim appears
+  startPosition Int? // Character position in content
+  endPosition   Int?
+
+  // Verification results
+  verificationStatus VerificationStatus @default(PENDING)
+  confidenceScore    Float? // 0-1
+  evidenceQuality    Float? // 0-1
+
+  // Source verification
+  sourceUrls        String[]
+  sourcesVerified   Int      @default(0)
+  sourcesReliable   Int      @default(0)
+  sourceCredibility Float? // Average credibility of sources
+
+  // Verification details
+  verificationMethod String? // AI model, manual, automated
+  verificationNotes  String?
+  verifiedAt         DateTime?
+  verifiedBy         String?
+
+  // Flags and concerns
+  requiresAttention Boolean @default(false)
+  flagReason        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  blogPost  BlogPost         @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  citations SourceCitation[] @relation("FactCheckCitations")
+
+  @@map("fact_checks")
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  DISPUTED
+  FALSE
+  PARTIALLY_TRUE
+  UNVERIFIABLE
+  REQUIRES_UPDATE
+}
+
+// Source Citations and References
+model SourceCitation {
+  id          String  @id @default(cuid())
+  blogPostId  String
+  factCheckId String?
+
+  // Citation details
+  title         String
+  url           String
+  author        String?
+  publishedDate DateTime?
+  accessedDate  DateTime  @default(now())
+
+  // Source metadata
+  sourceType SourceType
+  domain     String?
+  language   String     @default("en")
+
+  // Credibility assessment
+  credibilityScore Float? // 0-1
+  authorityScore   Float? // 0-1
+  biasRating       BiasRating?
+  expertiseLevel   ExpertiseLevel?
+
+  // Citation context
+  citationContext String? // How this source is used
+  quote           String? // Exact quote if used
+  pageNumber      String? // For books/PDFs
+
+  // Quality indicators
+  isPeerReviewed Boolean @default(false)
+  isGovernment   Boolean @default(false)
+  isAcademic     Boolean @default(false)
+  isRecent       Boolean @default(true) // Published within last 2 years
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  blogPost  BlogPost   @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  factCheck FactCheck? @relation("FactCheckCitations", fields: [factCheckId], references: [id], onDelete: SetNull)
+
+  @@map("source_citations")
+}
+
+enum SourceType {
+  ACADEMIC_PAPER
+  NEWS_ARTICLE
+  GOVERNMENT_DOCUMENT
+  OFFICIAL_WEBSITE
+  BLOG_POST
+  BOOK
+  REPORT
+  STUDY
+  PRESS_RELEASE
+  SOCIAL_MEDIA
+  VIDEO
+  PODCAST
+  INTERVIEW
+  OTHER
+}
+
+enum BiasRating {
+  LEFT
+  LEAN_LEFT
+  CENTER
+  LEAN_RIGHT
+  RIGHT
+  MIXED
+  UNKNOWN
+}
+
+enum ExpertiseLevel {
+  EXPERT
+  PRACTITIONER
+  ACADEMIC
+  JOURNALIST
+  GENERAL_PUBLIC
+  UNKNOWN
+}
+
+// Content Optimization Suggestions
+model OptimizationSuggestion {
+  id         String @id @default(cuid())
+  blogPostId String
+
+  // Suggestion details
+  category    OptimizationCategory
+  title       String
+  description String
+  impact      ImpactLevel
+  effort      EffortLevel
+  priority    Int                  @default(50) // 1-100
+
+  // Specific improvements
+  currentValue   String? // Current state
+  suggestedValue String? // Recommended change
+  beforeText     String? // Text before change
+  afterText      String? // Text after change
+  position       Int? // Position in content
+
+  // SEO specific
+  seoImpact     Float? // Expected SEO score improvement
+  keywordTarget String? // Target keyword for this suggestion
+
+  // Readability specific
+  readabilityImpact Float? // Expected readability improvement
+
+  // Engagement specific  
+  engagementMetric String? // clicks, time-on-page, etc.
+  expectedLift     Float? // Expected improvement percentage
+
+  // Implementation
+  isImplemented Boolean   @default(false)
+  implementedAt DateTime?
+  implementedBy String?
+
+  // Validation
+  isValidated     Boolean @default(false)
+  validationScore Float? // 0-1
+  actualImpact    Float? // Measured improvement
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships  
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@map("optimization_suggestions")
+}
+
+enum OptimizationCategory {
+  SEO
+  READABILITY
+  ENGAGEMENT
+  STRUCTURE
+  TONE_STYLE
+  FACT_ACCURACY
+  SOURCE_QUALITY
+  CTA_OPTIMIZATION
+  HEADLINE
+  META_DESCRIPTION
+  KEYWORDS
+  INTERNAL_LINKING
+  CONTENT_LENGTH
+  FORMATTING
+}
+
+enum ImpactLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum EffortLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+// Content Performance Metrics
+model ContentMetrics {
+  id         String @id @default(cuid())
+  blogPostId String
+
+  // Generation metrics
+  sectionsGenerated   Int  @default(0)
+  totalGenerationTime Int? // milliseconds
+  averageSectionTime  Int? // milliseconds
+
+  // Quality metrics
+  overallQualityScore Float? // 0-1
+  coherenceScore      Float? // 0-1 across sections
+  consistencyScore    Float? // 0-1
+  originalityScore    Float? // 0-1
+
+  // Tone metrics
+  toneConsistencyScore Float? // 0-1
+  brandAlignmentScore  Float? // 0-1
+
+  // Fact-checking metrics  
+  totalClaims              Int    @default(0)
+  verifiedClaims           Int    @default(0)
+  disputedClaims           Int    @default(0)
+  sourcesUsed              Int    @default(0)
+  reliableSources          Int    @default(0)
+  averageSourceCredibility Float?
+
+  // Optimization metrics
+  seoScore               Float? // 0-100
+  readabilityScore       Float? // 0-100
+  engagementScore        Float? // 0-100
+  totalSuggestions       Int    @default(0)
+  implementedSuggestions Int    @default(0)
+
+  // Performance tracking
+  measuredAt DateTime @default(now())
+
+  // Relationships
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@map("content_metrics")
+}
+
+// ===== WEEK 9-10 SEO ANALYSIS ENGINE =====
+
+// DataForSEO API Configuration and Connection Status
+model DataForSEOConnection {
+  id       String @id @default(cuid())
+  username String
+  apiKey   String
+  baseUrl  String @default("https://api.dataforseo.com/v3")
+
+  // Connection status
+  connected       Boolean  @default(false)
+  lastChecked     DateTime @default(now())
+  connectionError String?
+
+  // API quota information
+  apiQuotaLimit     Int       @default(0)
+  apiQuotaRemaining Int       @default(0)
+  apiQuotaResetAt   DateTime?
+
+  // Configuration
+  rateLimit     Int     @default(100) // requests per minute
+  timeout       Int     @default(30000) // milliseconds
+  retryAttempts Int     @default(3)
+  cacheTTL      Int     @default(60) // minutes
+  fallbackMode  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("dataforseo_connections")
+}
+
+// Keyword Research and Analysis Results
+model KeywordAnalysis {
+  id         String  @id @default(cuid())
+  blogPostId String?
+
+  // Keyword data
+  keyword          String
+  searchVolume     Int    @default(0)
+  cpc              Float? // Cost per click
+  competition      Float? // Competition level (0-1)
+  competitionIndex Int? // Competition index (0-100)
+  seasonality      Json? // Monthly search data
+
+  // Difficulty analysis
+  difficulty      Int    @default(50) // 0-100
+  difficultyLevel String @default("possible") // very_easy, easy, possible, difficult, very_difficult
+
+  // Search intent analysis
+  searchIntent     String @default("informational") // informational, navigational, commercial, transactional
+  intentConfidence Float  @default(0.8) // 0-1
+  intentModifiers  Json? // Array of intent modifiers
+
+  // Related data
+  relatedKeywords    Json? // Array of related keywords
+  longTailVariations Json? // Array of long-tail variations
+  topCompetitors     Json? // Array of competitor pages
+
+  // Trends data
+  yearOverYear    Float   @default(0) // Percentage change
+  trending        String  @default("stable") // rising, falling, stable
+  seasonalPattern Boolean @default(false)
+  monthlyTrends   Json? // Array of monthly search data
+
+  // Metadata
+  dataSource String   @default("ai_analysis") // dataforseo, ai_analysis, hybrid
+  analyzedAt DateTime @default(now())
+
+  // Relationships
+  blogPost           BlogPost?                  @relation(fields: [blogPostId], references: [id], onDelete: SetNull)
+  clusters           KeywordClusterMembership[]
+  seoAnalysisResults SEOAnalysisResult[]
+
+  @@map("keyword_analyses")
+}
+
+// Keyword Clustering
+model KeywordCluster {
+  id                String @id @default(cuid())
+  name              String
+  theme             String
+  primaryKeyword    String
+  totalSearchVolume Int    @default(0)
+  averageDifficulty Float  @default(50)
+  searchIntent      String @default("informational")
+  priority          Int    @default(50) // 1-100
+
+  // Cluster metrics
+  keywordCount        Int   @default(0)
+  commercialPotential Float @default(50) // 0-100
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  keywords KeywordClusterMembership[]
+
+  @@map("keyword_clusters")
+}
+
+model KeywordClusterMembership {
+  id                String @id @default(cuid())
+  clusterId         String
+  keywordAnalysisId String
+
+  cluster         KeywordCluster  @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  keywordAnalysis KeywordAnalysis @relation(fields: [keywordAnalysisId], references: [id], onDelete: Cascade)
+
+  @@unique([clusterId, keywordAnalysisId])
+  @@map("keyword_cluster_memberships")
+}
+
+// On-Page SEO Analysis Results
+model OnPageSEOAnalysis {
+  id         String  @id @default(cuid())
+  blogPostId String
+  url        String?
+
+  // Overall scores
+  overallScore   Float @default(0) // 0-100
+  titleScore     Float @default(0)
+  metaScore      Float @default(0)
+  headingScore   Float @default(0)
+  contentScore   Float @default(0)
+  imageScore     Float @default(0)
+  linkScore      Float @default(0)
+  technicalScore Float @default(0)
+
+  // Title analysis
+  titleLength          Int     @default(0)
+  titleKeywordPresence Boolean @default(false)
+  titleKeywordPosition Int     @default(-1)
+  titleReadability     Float   @default(0)
+  titleClickworthiness Float   @default(0)
+
+  // Meta description analysis
+  metaLength          Int     @default(0)
+  metaKeywordPresence Boolean @default(false)
+  metaCallToAction    Boolean @default(false)
+  metaUniqueness      Float   @default(0)
+
+  // Content analysis
+  wordCount         Int   @default(0)
+  keywordDensity    Json? // Array of keyword density analysis
+  readabilityGrade  Float @default(8)
+  contentUniqueness Float @default(70)
+  topicCoverage     Float @default(50)
+
+  // Structure analysis
+  h1Count                    Int     @default(0)
+  h1Text                     String?
+  headingKeywordOptimization Float   @default(0)
+  headingHierarchy           Boolean @default(true)
+  paragraphCount             Int     @default(0)
+  averageParagraphLength     Float   @default(0)
+  listCount                  Int     @default(0)
+
+  // Image optimization
+  totalImages     Int @default(0)
+  optimizedImages Int @default(0)
+  missingAltText  Int @default(0)
+
+  // Link analysis
+  internalLinks       Int @default(0)
+  externalLinks       Int @default(0)
+  uniqueInternalLinks Int @default(0)
+  uniqueExternalLinks Int @default(0)
+  brokenLinks         Int @default(0)
+
+  // Technical SEO
+  mobileOptimized Boolean @default(true)
+  pageSpeedScore  Float   @default(0)
+  hasCanonical    Boolean @default(false)
+  isIndexable     Boolean @default(true)
+  hasSchema       Boolean @default(false)
+
+  analyzedAt DateTime @default(now())
+
+  // Relationships
+  blogPost        BlogPost            @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  recommendations SEORecommendation[]
+
+  @@map("onpage_seo_analyses")
+}
+
+// Meta Tags and Schema Markup Storage
+model MetaTagConfiguration {
+  id         String @id @default(cuid())
+  blogPostId String
+
+  // Basic meta tags
+  title       String
+  description String
+  keywords    String?
+  robots      String  @default("index, follow")
+  canonical   String?
+
+  // Open Graph tags
+  ogTitle       String
+  ogDescription String
+  ogImage       String
+  ogUrl         String
+  ogType        String  @default("article")
+  ogSiteName    String?
+  ogLocale      String  @default("en_US")
+
+  // Twitter Card tags
+  twitterCard        String  @default("summary_large_image")
+  twitterTitle       String
+  twitterDescription String
+  twitterImage       String
+  twitterSite        String?
+  twitterCreator     String?
+
+  // Additional meta tags
+  additionalTags Json? // Array of additional meta tags
+
+  // Schema markup
+  articleSchema      Json? // Article/BlogPosting schema
+  breadcrumbSchema   Json? // Breadcrumb schema
+  faqSchema          Json? // FAQ schema
+  howToSchema        Json? // HowTo schema
+  organizationSchema Json? // Organization schema
+  websiteSchema      Json? // Website schema
+  customSchema       Json? // Array of custom schemas
+
+  // Analysis
+  seoScore         Float   @default(0) // 0-100
+  schemaValidation Boolean @default(true)
+  validationErrors Json? // Array of validation errors
+
+  generatedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@unique([blogPostId])
+  @@map("meta_tag_configurations")
+}
+
+// Readability and Content Quality Metrics
+model ReadabilityAnalysis {
+  id         String @id @default(cuid())
+  blogPostId String
+
+  // Readability metrics
+  fleschKincaidGrade        Float @default(8)
+  fleschReadingEase         Float @default(70)
+  gunningFog                Float @default(8)
+  colemanLiau               Float @default(8)
+  automatedReadabilityIndex Float @default(8)
+  averageScore              Float @default(8)
+
+  // Reading level
+  targetGrade             Int    @default(8)
+  readingLevelDescription String @default("Standard reading level")
+  targetAudience          String @default("General public")
+
+  // Content structure analysis
+  sentences             Int   @default(0)
+  averageSentenceLength Float @default(15)
+  complexWords          Int   @default(0)
+  passiveVoice          Float @default(0) // Percentage
+
+  // Engagement factors
+  questions        Int @default(0)
+  exclamations     Int @default(0)
+  personalPronouns Int @default(0)
+  transitionWords  Int @default(0)
+
+  // Content quality scores
+  overallQualityScore    Float @default(70) // 0-100
+  expertiseScore         Float @default(70)
+  authoritativenessScore Float @default(70)
+  trustworthinessScore   Float @default(70)
+  originalityScore       Float @default(70)
+  depthScore             Float @default(70)
+  usefulnessScore        Float @default(70)
+
+  // Structure scores
+  readabilityScore   Float @default(70)
+  structureScore     Float @default(70)
+  engagementScore    Float @default(70)
+  seoComplianceScore Float @default(70)
+
+  analyzedAt DateTime @default(now())
+
+  // Relationships
+  blogPost    BlogPost                @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  suggestions ReadabilitySuggestion[]
+
+  @@map("readability_analyses")
+}
+
+model ReadabilitySuggestion {
+  id                    String @id @default(cuid())
+  readabilityAnalysisId String
+
+  type                String // sentence_length, word_complexity, paragraph_length, passive_voice, structure, engagement
+  priority            String @default("medium") // low, medium, high
+  title               String
+  description         String
+  examples            Json? // Array of examples
+  expectedImprovement Float  @default(0) // 0-100
+
+  implemented   Boolean   @default(false)
+  implementedAt DateTime?
+
+  // Relationships
+  readabilityAnalysis ReadabilityAnalysis @relation(fields: [readabilityAnalysisId], references: [id], onDelete: Cascade)
+
+  @@map("readability_suggestions")
+}
+
+// Comprehensive SEO Analysis Results
+model SEOAnalysisResult {
+  id         String  @id @default(cuid())
+  blogPostId String
+  url        String?
+
+  // Overall scores
+  overallScore   Float @default(0) // 0-100
+  onPageScore    Float @default(0)
+  technicalScore Float @default(0)
+  contentScore   Float @default(0)
+  keywordScore   Float @default(0)
+  mobileScore    Float @default(0)
+
+  // Analysis metadata
+  dataSource     String  @default("ai_analysis") // dataforseo, ai_analysis, hybrid
+  processingTime Int     @default(0) // milliseconds
+  modelUsed      String?
+
+  // Analysis components included
+  keywordAnalysisIncluded     Boolean @default(false)
+  competitorAnalysisIncluded  Boolean @default(false)
+  schemaAnalysisIncluded      Boolean @default(false)
+  readabilityAnalysisIncluded Boolean @default(false)
+
+  // Quality gates
+  qualityGatesPassed Boolean @default(true)
+  failedGates        Json? // Array of failed quality gates
+
+  analyzedAt DateTime @default(now())
+
+  // Relationships
+  blogPost              BlogPost                @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  recommendations       SEORecommendation[]
+  keywordAnalyses       KeywordAnalysis[]
+  seoCompetitorAnalyses SEOCompetitorAnalysis[]
+
+  @@map("seo_analysis_results")
+}
+
+// SEO Recommendations and Action Items
+model SEORecommendation {
+  id               String  @id @default(cuid())
+  blogPostId       String?
+  seoAnalysisId    String?
+  onPageAnalysisId String?
+
+  // Recommendation details
+  type     String // title_optimization, meta_description, content_length, etc.
+  priority String @default("medium") // critical, high, medium, low
+  category String // keywords, content, technical, meta, images, links
+
+  title          String
+  description    String
+  currentValue   String?
+  suggestedValue String?
+
+  // Impact and effort
+  impact    Int    @default(50) // Expected improvement 0-100
+  effort    String @default("moderate") // easy, moderate, difficult
+  timeframe String @default("1-2 hours")
+
+  // Implementation
+  implementation String // How to implement the recommendation
+  resources      Json? // Array of helpful resources
+
+  // Status tracking
+  status        String    @default("pending") // pending, in_progress, completed, skipped
+  implementedAt DateTime?
+  implementedBy String?
+  notes         String?
+
+  // Quick win identification
+  isQuickWin Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  blogPost       BlogPost?          @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  seoAnalysis    SEOAnalysisResult? @relation(fields: [seoAnalysisId], references: [id], onDelete: Cascade)
+  onPageAnalysis OnPageSEOAnalysis? @relation(fields: [onPageAnalysisId], references: [id], onDelete: SetNull)
+
+  @@map("seo_recommendations")
+}
+
+// SEO Competitor Analysis Results
+model SEOCompetitorAnalysis {
+  id            String  @id @default(cuid())
+  blogPostId    String?
+  seoAnalysisId String?
+  keyword       String
+
+  // Competitor data
+  competitors    Json // Array of competitor page data
+  averageMetrics Json // Average metrics across competitors
+
+  // Gap analysis
+  contentGaps Json? // Array of content gaps
+  keywordGaps Json? // Array of keyword opportunities
+
+  // Opportunities
+  opportunities Json? // Array of SEO opportunities
+
+  analyzedAt DateTime @default(now())
+
+  // Relationships
+  blogPost    BlogPost?          @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  seoAnalysis SEOAnalysisResult? @relation(fields: [seoAnalysisId], references: [id], onDelete: SetNull)
+
+  @@map("seo_competitor_analyses")
+}
+
+// SEO Analysis Cache for Performance
+model SEOAnalysisCache {
+  id        String @id @default(cuid())
+  cacheKey  String @unique
+  operation String // keyword_research, competitor_analysis, etc.
+
+  requestHash  String // Hash of request parameters
+  responseData Json // Cached response data
+
+  // Cache metadata
+  hitCount  Int      @default(0)
+  lastHit   DateTime @default(now())
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+
+  @@map("seo_analysis_cache")
+}

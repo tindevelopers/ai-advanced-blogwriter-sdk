@@ -1,8 +1,9 @@
 
 /**
- * SEO analysis result
+ * Basic SEO analysis result (legacy interface)
+ * @deprecated Use the comprehensive SEOAnalysis interface from seo-engine.ts instead
  */
-export interface SEOAnalysis {
+export interface BasicSEOAnalysis {
   /** Overall SEO score (0-100) */
   score: number;
   

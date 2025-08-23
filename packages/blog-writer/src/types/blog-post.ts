@@ -1,16 +1,88 @@
 
 /**
- * Blog post status
+ * Blog post status - core statuses as specified in requirements
  */
 export type BlogPostStatus = 
   | 'draft'
-  | 'review'
   | 'published'
-  | 'archived'
+  | 'archived';
+
+/**
+ * Extended blog post status with additional workflow states
+ */
+export type ExtendedBlogPostStatus = BlogPostStatus
+  | 'review'
   | 'scheduled';
 
 /**
- * Blog post metadata
+ * Post metadata as specified in the requirements
+ */
+export interface PostMetadata {
+  /** SEO title */
+  title?: string;
+  /** Meta description */
+  description?: string;
+  /** Keywords for SEO */
+  keywords?: string[];
+  /** Author information */
+  author?: string;
+  /** Category */
+  category?: string;
+  /** Tags */
+  tags?: string[];
+  /** Featured image URL */
+  featuredImage?: string;
+  /** Publishing date */
+  publishDate?: Date;
+  /** Additional custom metadata */
+  [key: string]: any;
+}
+
+/**
+ * Content version for version history as specified in the requirements
+ */
+export interface ContentVersion {
+  /** Version identifier */
+  id: string;
+  /** Version number or label */
+  version: string;
+  /** Content at this version */
+  content: string;
+  /** Metadata at this version */
+  metadata: PostMetadata;
+  /** Creation timestamp */
+  createdAt: Date;
+  /** Author of this version */
+  createdBy?: string;
+  /** Change description */
+  changeNote?: string;
+}
+
+/**
+ * Blog post interface as specified in the requirements
+ * This interface provides the exact structure requested in the specifications.
+ */
+export interface RequiredBlogPost {
+  /** Unique identifier */
+  id: string;
+  /** Blog post title */
+  title: string;
+  /** Blog post content */
+  content: string;
+  /** Post metadata */
+  metadata: PostMetadata;
+  /** Current status */
+  status: BlogPostStatus;
+  /** Version history */
+  versions: ContentVersion[];
+  /** Creation timestamp */
+  createdAt: Date;
+  /** Last update timestamp */
+  updatedAt: Date;
+}
+
+/**
+ * Extended blog post metadata for advanced use cases
  */
 export interface BlogPostMetadata {
   /** Unique identifier */
