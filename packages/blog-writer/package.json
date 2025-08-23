@@ -1,0 +1,78 @@
+{
+  "name": "@ai-sdk/blog-writer",
+  "version": "0.1.0",
+  "description": "AI SDK Blog Writer - Intelligent blog content generation and optimization",
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "pnpm clean && tsup --tsconfig tsconfig.build.json",
+    "build:watch": "pnpm clean && tsup --watch --tsconfig tsconfig.build.json",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "lint": "eslint \"./**/*.ts*\"",
+    "type-check": "tsc --build",
+    "prettier-check": "prettier --check \"./**/*.ts*\"",
+    "test": "vitest --config vitest.config.js --run",
+    "test:watch": "vitest --config vitest.config.js",
+    "test:update": "vitest --config vitest.config.js -u"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@ai-sdk/provider": "workspace:*",
+    "@ai-sdk/provider-utils": "workspace:*",
+    "ai": "workspace:*",
+    "@opentelemetry/api": "1.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.17.24",
+    "@vercel/ai-tsconfig": "workspace:*",
+    "eslint": "8.57.1",
+    "eslint-config-vercel-ai": "workspace:*",
+    "tsup": "^7.2.0",
+    "typescript": "5.8.3",
+    "vitest": "2.1.4",
+    "zod": "3.25.76"
+  },
+  "peerDependencies": {
+    "zod": "^3.25.76 || ^4"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://ai-sdk.dev/docs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tindevelopers/ai-blog-writer-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tindevelopers/ai-blog-writer-sdk/issues"
+  },
+  "keywords": [
+    "ai",
+    "blog",
+    "content",
+    "seo",
+    "writing",
+    "generation",
+    "optimization",
+    "sdk",
+    "typescript",
+    "vercel"
+  ]
+}
