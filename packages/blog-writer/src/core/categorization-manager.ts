@@ -162,14 +162,26 @@ export class CategorizationManager {
       where: { parentId }
     });
 
-    const allCategories = [...categories];
+    const allCategories: Category[] = categories.map((cat: any) => ({
+      id: cat.id,
+      name: cat.name,
+      slug: cat.slug,
+      description: cat.description || undefined, // Convert null to undefined
+      parentId: cat.parentId || undefined, // Convert null to undefined
+      order: cat.order,
+      color: cat.color || undefined, // Convert null to undefined
+      icon: cat.icon || undefined, // Convert null to undefined
+      isActive: cat.isActive,
+      createdAt: cat.createdAt,
+      updatedAt: cat.updatedAt,
+    }));
 
     for (const category of categories) {
       const subcategories = await this.getSubcategories(category.id);
       allCategories.push(...subcategories);
     }
 
-    return allCategories as Category[];
+    return allCategories;
   }
 
   /**
@@ -716,7 +728,7 @@ export class CategorizationManager {
       mostUsedCategories: mostUsedCategories as Category[],
       unusedCategories: unusedCategories as Category[],
       totalTags,
-      averageTagsPerPost,
+      averageTagsPerPost: avgTagsPerPost,
       mostUsedTags: mostUsedTags as Tag[],
       systemTagsCount
     };

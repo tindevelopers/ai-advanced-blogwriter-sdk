@@ -1,6 +1,7 @@
 
 import { generateText, generateObject, type GenerateTextResult, type GenerateObjectResult } from 'ai';
-import type { LanguageModelV1 } from '@ai-sdk/provider';
+import { z } from 'zod';
+import type { LanguageModelV2 } from '@ai-sdk/provider';
 import type { BlogAIConfig, BlogPost, BlogTemplate, BlogTemplateConfig, BlogTemplateContext } from '../types';
 import { BLOG_TEMPLATES } from '../types/templates';
 import { createBlogPrompt } from './prompts';
@@ -11,7 +12,7 @@ import { validateBlogPost } from './validation';
  */
 export interface GenerateBlogOptions {
   /** Model to use for generation */
-  model: LanguageModelV1;
+  model: LanguageModelV2;
   
   /** Blog topic */
   topic: string;
@@ -106,7 +107,7 @@ export async function generateBlog(options: GenerateBlogOptions): Promise<Genera
     variables: options.templateVariables || {},
     keywords: options.keywords,
     constraints: {
-      wordCount: options.wordCount,
+      wordCount: options.wordCount ? { min: options.wordCount.min || 0, max: options.wordCount.max || 5000 } : undefined,
       tone: options.tone,
     },
     research: options.research ? { topic: options.research } : undefined,
@@ -163,7 +164,7 @@ export async function generateBlog(options: GenerateBlogOptions): Promise<Genera
   
   // Validate the blog post
   const validation = validateBlogPost(blogPost);
-  const warnings = validation.warnings || [];
+  const warnings = (validation.warnings || []).map(w => w.message);
   
   // Calculate generation time
   const generationTime = Date.now() - startTime;
@@ -185,7 +186,7 @@ export async function generateBlog(options: GenerateBlogOptions): Promise<Genera
  * Generate blog content using structured approach
  */
 async function generateBlogContent(options: {
-  model: LanguageModelV1;
+  model: LanguageModelV2;
   topic: string;
   templateContext: BlogTemplateContext;
   audience?: string;
@@ -213,37 +214,16 @@ async function generateBlogContent(options: {
   const result = await generateObject({
     model: options.model,
     prompt,
-    schema: {
-      type: 'object',
-      properties: {
-        title: {
-          type: 'string',
-          description: 'Engaging blog post title',
-        },
-        excerpt: {
-          type: 'string',
-          description: 'Brief excerpt or summary of the post',
-        },
-        content: {
-          type: 'string',
-          description: 'Full blog post content in markdown format',
-        },
-        tableOfContents: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              title: { type: 'string' },
-              anchor: { type: 'string' },
-              level: { type: 'number' },
-            },
-            required: ['title', 'anchor', 'level'],
-          },
-          description: 'Table of contents entries',
-        },
-      },
-      required: ['title', 'excerpt', 'content'],
-    },
+    schema: z.object({
+      title: z.string().describe('Engaging blog post title'),
+      excerpt: z.string().describe('Brief excerpt or summary of the post'),
+      content: z.string().describe('Full blog post content in markdown format'),
+      tableOfContents: z.array(z.object({
+        title: z.string(),
+        anchor: z.string(),
+        level: z.number(),
+      })).optional().describe('Table of contents entries'),
+    }),
   });
   
   const contentData = result.object;
@@ -262,7 +242,7 @@ async function generateBlogContent(options: {
  * Generate blog metadata
  */
 async function generateBlogMetadata(options: {
-  model: LanguageModelV1;
+  model: LanguageModelV2;
   title: string;
   content: string;
   keywords?: string[];
@@ -290,25 +270,11 @@ Ensure the metadata is optimized for search engines while being user-friendly.`;
   const result = await generateObject({
     model: options.model,
     prompt,
-    schema: {
-      type: 'object',
-      properties: {
-        metaDescription: {
-          type: 'string',
-          description: 'SEO-optimized meta description',
-        },
-        tags: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Relevant tags for the post',
-        },
-        category: {
-          type: 'string',
-          description: 'Primary category for the post',
-        },
-      },
-      required: ['metaDescription', 'tags', 'category'],
-    },
+    schema: z.object({
+      metaDescription: z.string().describe('SEO-optimized meta description'),
+      tags: z.array(z.string()).describe('Relevant tags for the post'),
+      category: z.string().describe('Primary category for the post'),
+    }),
   });
   
   return result.object;

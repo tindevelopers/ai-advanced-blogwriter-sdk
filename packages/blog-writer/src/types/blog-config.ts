@@ -1,3 +1,4 @@
+
 import type { AIConfig } from './base-config';
 
 // Define LanguageModelV1 interface locally to avoid dependency
@@ -43,6 +44,69 @@ export interface ToneConfiguration {
 }
 
 /**
+ * Quality settings for content generation
+ */
+export interface QualitySettings {
+  /** Reading level (1-12, grade level) */
+  readingLevel?: number;
+  /** Content style */
+  style?:
+    | 'blog'
+    | 'tutorial'
+    | 'news'
+    | 'review'
+    | 'comparison'
+    | 'howto'
+    | 'listicle';
+  /** Include citations and sources */
+  includeSources?: boolean;
+  /** Fact-checking requirements */
+  factCheck?: boolean;
+}
+
+/**
+ * SEO settings for content generation
+ */
+export interface SEOSettings {
+  /** Target keyword density (0-1) */
+  keywordDensity?: number;
+  /** Minimum content length in words */
+  minLength?: number;
+  /** Maximum content length in words */
+  maxLength?: number;
+  /** Focus keywords to optimize for */
+  focusKeywords?: string[];
+  /** Meta description optimization */
+  optimizeMetaDescription?: boolean;
+  /** Generate alt text for images */
+  generateAltText?: boolean;
+}
+
+/**
+ * Template settings for content generation
+ */
+export interface TemplateSettings {
+  /** Default template type */
+  type?: BlogTemplate;
+  /** Custom template variables */
+  variables?: Record<string, any>;
+}
+
+/**
+ * Research settings for content generation
+ */
+export interface ResearchSettings {
+  /** Enable automatic research */
+  enabled?: boolean;
+  /** Research depth level */
+  depth?: 'basic' | 'detailed' | 'comprehensive';
+  /** Include trending topics */
+  includeTrends?: boolean;
+  /** Competitor analysis */
+  competitorAnalysis?: boolean;
+}
+
+/**
  * Blog-specific AI configuration extending the base AI SDK configuration.
  * This interface provides the exact properties as specified in the requirements.
  */
@@ -66,6 +130,26 @@ export interface BlogAIConfig extends AIConfig {
    * Tone and style settings for content generation
    */
   toneSettings: ToneConfiguration;
+
+  /**
+   * Content quality settings
+   */
+  quality?: QualitySettings;
+
+  /**
+   * Advanced SEO optimization settings
+   */
+  seo?: SEOSettings;
+
+  /**
+   * Template-specific settings
+   */
+  template?: TemplateSettings;
+
+  /**
+   * Research and content enrichment
+   */
+  research?: ResearchSettings;
 }
 
 /**
@@ -77,69 +161,6 @@ export interface ExtendedBlogAIConfig extends BlogAIConfig {
    * Default model for blog generation
    */
   model?: string;
-
-  /**
-   * Advanced SEO optimization settings
-   */
-  seo?: {
-    /** Target keyword density (0-1) */
-    keywordDensity?: number;
-    /** Minimum content length in words */
-    minLength?: number;
-    /** Maximum content length in words */
-    maxLength?: number;
-    /** Focus keywords to optimize for */
-    focusKeywords?: string[];
-    /** Meta description optimization */
-    optimizeMetaDescription?: boolean;
-    /** Generate alt text for images */
-    generateAltText?: boolean;
-  };
-
-  /**
-   * Content quality settings
-   */
-  quality?: {
-    /** Reading level (1-12, grade level) */
-    readingLevel?: number;
-    /** Content style */
-    style?:
-      | 'blog'
-      | 'tutorial'
-      | 'news'
-      | 'review'
-      | 'comparison'
-      | 'howto'
-      | 'listicle';
-    /** Include citations and sources */
-    includeSources?: boolean;
-    /** Fact-checking requirements */
-    factCheck?: boolean;
-  };
-
-  /**
-   * Template-specific settings
-   */
-  template?: {
-    /** Default template type */
-    type?: BlogTemplate;
-    /** Custom template variables */
-    variables?: Record<string, any>;
-  };
-
-  /**
-   * Research and content enrichment
-   */
-  research?: {
-    /** Enable automatic research */
-    enabled?: boolean;
-    /** Research depth level */
-    depth?: 'basic' | 'detailed' | 'comprehensive';
-    /** Include trending topics */
-    includeTrends?: boolean;
-    /** Competitor analysis */
-    competitorAnalysis?: boolean;
-  };
 }
 
 /**

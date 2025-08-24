@@ -21,11 +21,11 @@ import {
   ReportSummary
 } from '../types/strategy-engine';
 
-import { LanguageModel } from 'ai';
+import type { LanguageModelV2 } from '@ai-sdk/provider';
 import { PrismaClient } from '../generated/prisma-client';
 
 export interface CompetitorAnalysisConfig {
-  model: LanguageModel;
+  model: LanguageModelV2;
   prisma?: PrismaClient;
   cacheResults?: boolean;
   cacheTTL?: number; // hours
@@ -54,7 +54,7 @@ export interface DomainMetrics {
 }
 
 export class CompetitorAnalysisService {
-  private model: LanguageModel;
+  private model: LanguageModelV2;
   private prisma?: PrismaClient;
   private cacheResults: boolean;
   private cacheTTL: number;
