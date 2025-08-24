@@ -6,405 +6,266 @@ export type { BlogPostValidation as BlogValidationResult } from './core/validati
 export type { BlogPost } from './types/blog-post';
 export type { BlogTemplate } from './types/blog-config';
 
-// Platform Adapters (Individual exports)
-export { ShopifyAdapter } from './core/platform-adapters/shopify-adapter';
-export { WebflowAdapter } from './core/platform-adapters/webflow-adapter';
-
-// Platform credential types and utilities
+// Architecture exports - use explicit exports to avoid conflicts
 export type {
-  ShopifyCredentials,
-  ShopifyConfig,
-  WebflowCredentials,
-  WebflowConfig,
-} from './types/platform-credentials';
+  BaseService,
+  BaseServiceClass,
+} from './core/interfaces/base-service';
 
-export { createPlatformCredentials } from './types/platform-credentials';
+export type {
+  ServiceConfig as BaseServiceConfig,
+  AIModelProvider,
+  DatabaseProvider,
+  CacheProvider,
+  LoggerProvider,
+  EventBusProvider,
+  ConfigurationProvider,
+  ServiceContainer,
+} from './core/interfaces/base-service';
 
-// Version
-export const VERSION = '0.1.0';
+export {
+  ConfigurationManager,
+  DatabaseConfigSchema,
+  AIModelConfigSchema,
+  CacheConfigSchema,
+  LoggingConfigSchema,
+  ServiceConfigSchema,
+  BlogWriterConfigSchema,
+} from './core/config/configuration-manager';
 
-// Blog Templates
+export type {
+  DatabaseConfig,
+  AIModelConfig,
+  CacheConfig,
+  LoggingConfig,
+  ServiceConfig,
+} from './core/config/configuration-manager';
+
+export {
+  ServiceContainerImpl,
+  ServiceContainerBuilder,
+} from './core/container/service-container';
+
+export type {
+  ServiceRegistration,
+  LifecycleHook,
+  ValidationResult as ContainerValidationResult,
+} from './core/container/service-container';
+
+export {
+  BlogGeneratorService,
+} from './core/services/blog-generator-service';
+
+export type {
+  BlogGenerationOptions,
+  BlogGenerationResult,
+} from './core/services/blog-generator-service';
+
+export {
+  BlogWriterFactory,
+  BlogWriter,
+} from './core/factories/blog-writer-factory';
+
+export type {
+  BlogWriterOptions,
+  BlogWriterConfig,
+} from './core/factories/blog-writer-factory';
+
+// Core Services (existing)
+export { generateBlog } from './core/blog-generator';
+export { AdvancedWritingService } from './core/advanced-writing-service';
+export { ContentStrategyService } from './core/content-strategy-service';
+export { TopicResearchService } from './core/topic-research-service';
+export { EditorialCalendarService } from './core/editorial-calendar-service';
+export { CompetitorAnalysisService } from './core/competitor-analysis-service';
+export { ContentBriefService } from './core/content-brief-service';
+export { MultiSectionGenerationService } from './core/multi-section-generation-service';
+export { ToneStyleConsistencyService } from './core/tone-style-consistency-service';
+export { FactCheckingService } from './core/fact-checking-service';
+export { ContentOptimizationService } from './core/content-optimization-service';
+export { ContentManagementService } from './core/content-management-service';
+export { ContentFormattingService } from './core/content-formatting-service';
+export { VersionManager } from './core/version-manager';
+export { WorkflowManager } from './core/workflow-manager';
+export { MetadataManager } from './core/metadata-manager';
+export { NotificationManager } from './core/notification-manager';
+export { PerformanceTrackingService } from './core/performance-tracking-service';
+export { OptimizationRecommendationEngine } from './core/optimization-recommendation-engine';
+export { PlatformSchedulingService } from './core/platform-scheduling-service';
+
+// Type exports from existing types
+export type { AIConfig as BlogAIConfig } from './types/base-config';
+export type { ContentStrategy } from './types/strategy-engine';
+export type { ComprehensiveWritingRequest, BrandVoiceProfile, ToneCategory, ContentOutline } from './types/advanced-writing';
+export type { Priority } from './types/strategy-engine';
+
+// Blog Templates and Configuration
 export const BLOG_TEMPLATES = {
   howto: {
-    type: 'howto',
-    name: 'How-to Guide',
-    description:
-      'Step-by-step instructional content to help readers accomplish specific tasks',
+    name: 'How-To Guide',
     structure: [
-      {
-        id: 'introduction',
-        title: 'Introduction',
-        order: 1,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'prerequisites',
-        title: 'Prerequisites',
-        order: 2,
-        required: false,
-        contentType: 'list',
-      },
-      {
-        id: 'steps',
-        title: 'Step-by-step Instructions',
-        order: 3,
-        required: true,
-        contentType: 'steps',
-      },
-      {
-        id: 'conclusion',
-        title: 'Conclusion',
-        order: 4,
-        required: true,
-        contentType: 'text',
-      },
+      { id: 'intro', title: 'Introduction', required: true },
+      { id: 'prerequisites', title: 'Prerequisites', required: false },
+      { id: 'steps', title: 'Step-by-Step Instructions', required: true },
+      { id: 'tips', title: 'Tips and Best Practices', required: false },
+      { id: 'conclusion', title: 'Conclusion', required: true },
     ],
   },
   listicle: {
-    type: 'listicle',
-    name: 'List Article',
-    description: 'Numbered or bulleted list format for easy consumption',
+    name: 'Listicle',
     structure: [
-      {
-        id: 'introduction',
-        title: 'Introduction',
-        order: 1,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'items',
-        title: 'List Items',
-        order: 2,
-        required: true,
-        contentType: 'list',
-      },
-      {
-        id: 'conclusion',
-        title: 'Conclusion',
-        order: 3,
-        required: true,
-        contentType: 'text',
-      },
+      { id: 'intro', title: 'Introduction', required: true },
+      { id: 'list', title: 'The List', required: true },
+      { id: 'conclusion', title: 'Conclusion', required: true },
     ],
   },
   comparison: {
-    type: 'comparison',
-    name: 'Comparison Article',
-    description: 'Side-by-side analysis of products, services, or concepts',
+    name: 'Comparison',
     structure: [
-      {
-        id: 'introduction',
-        title: 'Introduction',
-        order: 1,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'criteria',
-        title: 'Comparison Criteria',
-        order: 2,
-        required: true,
-        contentType: 'table',
-      },
-      {
-        id: 'comparison',
-        title: 'Detailed Comparison',
-        order: 3,
-        required: true,
-        contentType: 'comparison',
-      },
-      {
-        id: 'verdict',
-        title: 'Final Verdict',
-        order: 4,
-        required: true,
-        contentType: 'text',
-      },
+      { id: 'intro', title: 'Introduction', required: true },
+      { id: 'criteria', title: 'Comparison Criteria', required: true },
+      { id: 'comparison', title: 'Detailed Comparison', required: true },
+      { id: 'recommendation', title: 'Recommendation', required: true },
     ],
   },
   tutorial: {
-    type: 'tutorial',
     name: 'Tutorial',
-    description: 'Comprehensive learning guide with examples and exercises',
     structure: [
-      {
-        id: 'overview',
-        title: 'Overview',
-        order: 1,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'prerequisites',
-        title: 'Prerequisites',
-        order: 2,
-        required: false,
-        contentType: 'list',
-      },
-      {
-        id: 'lessons',
-        title: 'Lessons',
-        order: 3,
-        required: true,
-        contentType: 'steps',
-      },
-      {
-        id: 'practice',
-        title: 'Practice Exercises',
-        order: 4,
-        required: false,
-        contentType: 'exercises',
-      },
+      { id: 'intro', title: 'Introduction', required: true },
+      { id: 'setup', title: 'Setup and Prerequisites', required: true },
+      { id: 'tutorial', title: 'Tutorial Steps', required: true },
+      { id: 'examples', title: 'Examples', required: false },
+      { id: 'conclusion', title: 'Conclusion', required: true },
     ],
   },
   news: {
-    type: 'news',
     name: 'News Article',
-    description: 'Timely reporting on current events and developments',
     structure: [
-      {
-        id: 'headline',
-        title: 'Headline',
-        order: 1,
-        required: true,
-        contentType: 'headline',
-      },
-      {
-        id: 'lead',
-        title: 'Lead Paragraph',
-        order: 2,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'body',
-        title: 'Article Body',
-        order: 3,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'conclusion',
-        title: 'Conclusion',
-        order: 4,
-        required: false,
-        contentType: 'text',
-      },
+      { id: 'headline', title: 'Headline', required: true },
+      { id: 'lead', title: 'Lead Paragraph', required: true },
+      { id: 'context', title: 'Context and Background', required: true },
+      { id: 'details', title: 'Details and Analysis', required: true },
+      { id: 'impact', title: 'Impact and Implications', required: false },
     ],
   },
   review: {
-    type: 'review',
-    name: 'Product Review',
-    description:
-      'Comprehensive evaluation and analysis of products or services',
+    name: 'Review',
     structure: [
-      {
-        id: 'overview',
-        title: 'Product Overview',
-        order: 1,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'testing',
-        title: 'Testing Methodology',
-        order: 2,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'analysis',
-        title: 'Performance Analysis',
-        order: 3,
-        required: true,
-        contentType: 'pros-cons',
-      },
-      {
-        id: 'verdict',
-        title: 'Final Verdict',
-        order: 4,
-        required: true,
-        contentType: 'rating',
-      },
+      { id: 'intro', title: 'Introduction', required: true },
+      { id: 'overview', title: 'Product/Service Overview', required: true },
+      { id: 'pros-cons', title: 'Pros and Cons', required: true },
+      { id: 'detailed-review', title: 'Detailed Review', required: true },
+      { id: 'verdict', title: 'Verdict and Recommendation', required: true },
     ],
   },
   guide: {
-    type: 'guide',
     name: 'Comprehensive Guide',
-    description: 'In-depth guide covering all aspects of a topic',
     structure: [
-      {
-        id: 'introduction',
-        title: 'Guide Introduction',
-        order: 1,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'fundamentals',
-        title: 'Fundamentals',
-        order: 2,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'advanced',
-        title: 'Advanced Topics',
-        order: 3,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'resources',
-        title: 'Additional Resources',
-        order: 4,
-        required: false,
-        contentType: 'resources',
-      },
+      { id: 'intro', title: 'Introduction', required: true },
+      { id: 'basics', title: 'Basics and Fundamentals', required: true },
+      { id: 'advanced', title: 'Advanced Concepts', required: false },
+      { id: 'examples', title: 'Real-World Examples', required: true },
+      { id: 'best-practices', title: 'Best Practices', required: true },
+      { id: 'conclusion', title: 'Conclusion', required: true },
     ],
   },
   'case-study': {
-    type: 'case-study',
     name: 'Case Study',
-    description: 'Real-world analysis and examination of specific examples',
     structure: [
-      {
-        id: 'background',
-        title: 'Background',
-        order: 1,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'approach',
-        title: 'Approach & Methodology',
-        order: 2,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'implementation',
-        title: 'Implementation Details',
-        order: 3,
-        required: true,
-        contentType: 'steps',
-      },
-      {
-        id: 'results',
-        title: 'Results & Learnings',
-        order: 4,
-        required: true,
-        contentType: 'metrics',
-      },
+      { id: 'intro', title: 'Introduction', required: true },
+      { id: 'background', title: 'Background and Context', required: true },
+      { id: 'challenge', title: 'The Challenge', required: true },
+      { id: 'solution', title: 'Solution and Implementation', required: true },
+      { id: 'results', title: 'Results and Outcomes', required: true },
+      { id: 'lessons', title: 'Lessons Learned', required: true },
     ],
   },
   opinion: {
-    type: 'opinion',
     name: 'Opinion Piece',
-    description: 'Personal viewpoint and analysis on current topics',
     structure: [
-      {
-        id: 'stance',
-        title: 'Position Statement',
-        order: 1,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'arguments',
-        title: 'Supporting Arguments',
-        order: 2,
-        required: true,
-        contentType: 'arguments',
-      },
-      {
-        id: 'counterpoints',
-        title: 'Counter-arguments',
-        order: 3,
-        required: false,
-        contentType: 'text',
-      },
-      {
-        id: 'conclusion',
-        title: 'Final Thoughts',
-        order: 4,
-        required: true,
-        contentType: 'text',
-      },
+      { id: 'hook', title: 'Hook and Introduction', required: true },
+      { id: 'argument', title: 'Main Argument', required: true },
+      { id: 'evidence', title: 'Supporting Evidence', required: true },
+      { id: 'counter-arguments', title: 'Counter-Arguments', required: false },
+      { id: 'conclusion', title: 'Conclusion', required: true },
     ],
   },
   interview: {
-    type: 'interview',
     name: 'Interview',
-    description: 'Q&A format conversation with subject matter experts',
     structure: [
-      {
-        id: 'introduction',
-        title: 'Subject Introduction',
-        order: 1,
-        required: true,
-        contentType: 'text',
-      },
-      {
-        id: 'questions',
-        title: 'Interview Questions',
-        order: 2,
-        required: true,
-        contentType: 'qa',
-      },
-      {
-        id: 'highlights',
-        title: 'Key Takeaways',
-        order: 3,
-        required: true,
-        contentType: 'highlights',
-      },
-      {
-        id: 'conclusion',
-        title: 'Wrap-up',
-        order: 4,
-        required: false,
-        contentType: 'text',
-      },
+      { id: 'intro', title: 'Introduction', required: true },
+      { id: 'background', title: 'Interviewee Background', required: true },
+      { id: 'questions', title: 'Interview Questions and Answers', required: true },
+      { id: 'insights', title: 'Key Insights', required: true },
+      { id: 'conclusion', title: 'Conclusion', required: true },
     ],
   },
 };
 
-// Default configuration with enhanced features
 export const DEFAULT_BLOG_CONFIG = {
   seo: {
     keywordDensity: 0.02,
     minLength: 300,
     maxLength: 3000,
-    optimizeMetaDescription: true,
-    generateAltText: true,
+    titleLength: { min: 30, max: 60 },
+    metaDescriptionLength: { min: 120, max: 160 },
   },
   quality: {
-    readingLevel: 8,
-    tone: 'professional' as const,
-    style: 'blog' as const,
-    includeSources: true,
-    factCheck: false,
+    minWordCount: 300,
+    targetReadabilityScore: 70,
+    minSeoScore: 80,
+    plagiarismThreshold: 0.1,
   },
   research: {
-    enabled: true,
-    depth: 'detailed' as const,
-    includeTrends: true,
-    competitorAnalysis: false,
-  },
-  database: {
-    persistence: true,
-    versioning: true,
-    analytics: true,
-  },
-  contentType: {
-    autoDetection: true,
-    aiPowered: true,
-    routingEnabled: true,
+    maxSources: 10,
+    minSourceQuality: 0.7,
+    factCheckEnabled: true,
+    competitorAnalysisEnabled: true,
   },
 };
 
-// Enhanced blog generation function with new features
-// export { generateEnhancedBlog } from './core/enhanced-blog-generator';
+// Default configuration for the new architecture
+export const DEFAULT_CONFIG = {
+  service: {
+    name: 'BlogWriter',
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development',
+    debug: process.env.NODE_ENV === 'development',
+    timeout: 30000,
+    retryAttempts: 3,
+    retryDelay: 1000,
+  },
+  aiModel: {
+    provider: 'openai',
+    model: 'gpt-4',
+    apiKey: process.env.OPENAI_API_KEY || '',
+    maxTokens: 4000,
+    temperature: 0.7,
+    timeout: 30000,
+    retryAttempts: 3,
+  },
+  logging: {
+    level: process.env.LOG_LEVEL || 'info',
+    format: 'json',
+    destination: 'console',
+  },
+  features: {
+    seoAnalysis: true,
+    factChecking: true,
+    plagiarismDetection: true,
+    contentOptimization: true,
+    multiPlatformPublishing: true,
+  },
+  limits: {
+    maxWordCount: 10000,
+    maxConcurrentRequests: 10,
+    maxRetryAttempts: 3,
+    rateLimitPerMinute: 60,
+  },
+};
+
+// Convenience function for creating a blog writer instance
+export async function createBlogWriter(options?: any) {
+  // This would be implemented when the factory is properly set up
+  throw new Error('BlogWriterFactory not yet implemented');
+}
