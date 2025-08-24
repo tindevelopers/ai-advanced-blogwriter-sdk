@@ -37,7 +37,14 @@ export class BlogPostRepository {
       // Content classification
       category: data.metadata.category,
       tags: {
-        create: (data.metadata.tags || []).map(tag => ({ name: tag })),
+        create: (data.metadata.tags || []).map(tag => ({
+          tag: {
+            connectOrCreate: {
+              where: { name: tag },
+              create: { name: tag, slug: tag.toLowerCase().replace(/\s+/g, '-') }
+            }
+          }
+        })),
       },
 
       // SEO data
@@ -171,7 +178,14 @@ export class BlogPostRepository {
           where: { blogPostId: id },
         });
         updateData.tags = {
-          create: data.metadata.tags.map(tag => ({ name: tag })),
+          create: data.metadata.tags.map(tag => ({
+            tag: {
+              connectOrCreate: {
+                where: { name: tag },
+                create: { name: tag, slug: tag.toLowerCase().replace(/\s+/g, '-') }
+              }
+            }
+          })),
         };
       }
 
@@ -280,7 +294,13 @@ export class BlogPostRepository {
     }
 
     if (options.tags?.length) {
-      where.tags = { hasSome: options.tags };
+      where.tags = {
+        some: {
+          tag: {
+            name: { in: options.tags }
+          }
+        }
+      };
     }
 
     if (options.search) {
@@ -512,7 +532,7 @@ export class BlogPostRepository {
   private mapStatusToPrisma(status: string): BlogPostStatus {
     const statusMap: Record<string, BlogPostStatus> = {
       draft: 'DRAFT',
-      review: 'REVIEW',
+      review: 'PENDING_REVIEW',
       published: 'PUBLISHED',
       archived: 'ARCHIVED',
       scheduled: 'SCHEDULED',

@@ -17,7 +17,7 @@ import {
   TopicStatus,
 } from '../types/strategy-engine';
 
-import { LanguageModel } from 'ai';
+import type { LanguageModelV2 } from '@ai-sdk/provider';
 import { PrismaClient } from '../generated/prisma-client';
 import {
   TopicResearchSchema,
@@ -26,7 +26,7 @@ import {
 } from '../schemas/ai-schemas';
 
 export interface TopicResearchConfig {
-  model: LanguageModel;
+  model: LanguageModelV2;
   prisma?: PrismaClient;
   cacheResults?: boolean;
   cacheTTL?: number; // hours
@@ -35,7 +35,7 @@ export interface TopicResearchConfig {
 }
 
 export class TopicResearchService {
-  private model: LanguageModel;
+  private model: LanguageModelV2;
   private prisma?: PrismaClient;
   private cacheResults: boolean;
   private cacheTTL: number;
@@ -187,7 +187,7 @@ export class TopicResearchService {
       });
 
       const topics = await Promise.all(
-        result.object.topics.map(topicData =>
+        result.object.topics.map((topicData: any) =>
           this.createTopicFromAIResult(topicData),
         ),
       );
@@ -349,7 +349,7 @@ export class TopicResearchService {
       });
 
       const relatedTopics = await Promise.all(
-        result.object.relatedTopics.map(async topicData => {
+        result.object.relatedTopics.map(async (topicData: any) => {
           const topic = await this.createTopicFromAIResult(topicData);
           await this.saveTopic(topic);
 

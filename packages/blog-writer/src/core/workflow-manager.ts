@@ -103,9 +103,11 @@ export class WorkflowManager {
       isApproved: workflow.isApproved,
       dueDate: workflow.dueDate,
       createdAt: workflow.createdAt,
-      updatedAt: workflow.updatedAt,
-      completedAt: workflow.completedAt,
+      updatedAt: workflow.updatedAt || undefined,
+      completedAt: workflow.completedAt || undefined,
       steps: workflow.approvals.map(approval => ({
+        id: approval.id,
+        workflowId: approval.workflowId,
         stepNumber: approval.stepNumber,
         approverId: approval.approverId,
         status: approval.status,
@@ -223,7 +225,7 @@ export class WorkflowManager {
       workflowAction,
       decision.comment,
       approverId,
-      decision.assignBackTo,
+      decision.assignBackTo || undefined,
     );
 
     // Send notifications
@@ -244,9 +246,11 @@ export class WorkflowManager {
       isApproved: updatedWorkflow!.isApproved,
       dueDate: updatedWorkflow!.dueDate,
       createdAt: updatedWorkflow!.createdAt,
-      updatedAt: updatedWorkflow!.updatedAt,
-      completedAt: updatedWorkflow!.completedAt,
+      updatedAt: updatedWorkflow!.updatedAt || undefined,
+      completedAt: updatedWorkflow!.completedAt || undefined,
       steps: updatedWorkflow!.approvals.map(approval => ({
+        id: approval.id,
+        workflowId: approval.workflowId,
         stepNumber: approval.stepNumber,
         approverId: approval.approverId,
         status: approval.status,
@@ -428,7 +432,7 @@ export class WorkflowManager {
    * Get pending approvals for a user
    */
   async getPendingApprovals(userId: string): Promise<ApprovalWorkflow[]> {
-    return (await this.prisma.approvalWorkflow.findMany({
+    const workflows = await this.prisma.approvalWorkflow.findMany({
       where: {
         isComplete: false,
         approvals: {
@@ -442,7 +446,31 @@ export class WorkflowManager {
         approvals: true,
         blogPost: true,
       },
-    })) as ApprovalWorkflow[];
+    });
+
+    return workflows.map(workflow => ({
+      id: workflow.id,
+      blogPostId: workflow.blogPostId,
+      versionId: workflow.versionId || undefined,
+      approverIds: workflow.approverIds,
+      totalSteps: workflow.totalSteps,
+      currentStep: workflow.currentStep,
+      isComplete: workflow.isComplete,
+      isApproved: workflow.isApproved,
+      dueDate: workflow.dueDate,
+      createdAt: workflow.createdAt,
+      updatedAt: workflow.updatedAt || undefined,
+      completedAt: workflow.completedAt || undefined,
+      steps: workflow.approvals.map(approval => ({
+        id: approval.id,
+        workflowId: approval.workflowId,
+        stepNumber: approval.stepNumber,
+        approverId: approval.approverId,
+        status: approval.status,
+        comment: approval.comment,
+        submittedAt: approval.submittedAt,
+      })),
+    }));
   }
 
   /**

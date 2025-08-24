@@ -527,8 +527,8 @@ export class ContentRouter {
     let score = 0;
 
     // Base priority
-    const priorityScores = { high: 100, medium: 50, low: 25 };
-    score += priorityScores[topicConfig.priority];
+    const priorityScores: Record<string, number> = { high: 100, medium: 50, low: 25 };
+    score += priorityScores[topicConfig.priority as string] || 0;
 
     // Content type bonus
     if (

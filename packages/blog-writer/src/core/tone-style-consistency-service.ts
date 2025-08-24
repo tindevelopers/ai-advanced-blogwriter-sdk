@@ -1070,7 +1070,7 @@ Focus on objective metrics and specific issues.`;
           secondaryTones: analysis.secondaryTones,
           confidence: analysis.confidence,
           formalityScore: analysis.formalityScore,
-          emotionalTone: analysis.emotionalTone,
+          emotionalTone: this.mapCustomEmotionalToneToPrisma(analysis.emotionalTone),
           emotionIntensity: analysis.emotionIntensity,
           authorityLevel: analysis.authorityLevel,
           personalityTraits: analysis.personalityTraits as any,
@@ -1151,12 +1151,32 @@ Focus on objective metrics and specific issues.`;
       POSITIVE: EmotionalTone.POSITIVE,
       NEGATIVE: EmotionalTone.NEGATIVE,
       EXCITED: EmotionalTone.EXCITED,
-      CALM: EmotionalTone.CALM,
-      ANXIOUS: EmotionalTone.ANXIOUS,
-      CONFIDENT: EmotionalTone.CONFIDENT,
-      UNCERTAIN: EmotionalTone.UNCERTAIN,
+      CONCERNED: EmotionalTone.ANXIOUS, // Map to ANXIOUS
+      OPTIMISTIC: EmotionalTone.POSITIVE, // Map to POSITIVE
+      CAUTIOUS: EmotionalTone.ANXIOUS, // Map to ANXIOUS
+      PASSIONATE: EmotionalTone.EXCITED, // Map to EXCITED
+      ANALYTICAL: EmotionalTone.NEUTRAL, // Map to NEUTRAL
+      INSPIRING: EmotionalTone.POSITIVE, // Map to POSITIVE
     };
 
     return toneMap[prismaTone] || EmotionalTone.NEUTRAL;
+  }
+
+  /**
+   * Map custom EmotionalTone to Prisma EmotionalTone
+   */
+  private mapCustomEmotionalToneToPrisma(customTone: EmotionalTone): any {
+    const toneMap: Record<EmotionalTone, string> = {
+      [EmotionalTone.NEUTRAL]: 'NEUTRAL',
+      [EmotionalTone.POSITIVE]: 'POSITIVE',
+      [EmotionalTone.NEGATIVE]: 'NEGATIVE',
+      [EmotionalTone.EXCITED]: 'EXCITED',
+      [EmotionalTone.CALM]: 'NEUTRAL', // Map to NEUTRAL
+      [EmotionalTone.ANXIOUS]: 'CONCERNED', // Map to CONCERNED
+      [EmotionalTone.CONFIDENT]: 'OPTIMISTIC', // Map to OPTIMISTIC
+      [EmotionalTone.UNCERTAIN]: 'CAUTIOUS', // Map to CAUTIOUS
+    };
+
+    return toneMap[customTone] || 'NEUTRAL';
   }
 }

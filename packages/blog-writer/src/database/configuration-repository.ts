@@ -157,7 +157,7 @@ export class ConfigurationRepository {
       },
       quality: {
         readingLevel: dbConfig.readingLevel ?? 8,
-        tone: this.mapToneFromPrisma(dbConfig.tone),
+        tone: this.mapToneFromPrisma(dbConfig.tone || undefined),
         style: this.mapContentTypeFromPrisma(dbConfig.contentType),
         includeSources: dbConfig.includeSources,
         factCheck: dbConfig.factCheck,
