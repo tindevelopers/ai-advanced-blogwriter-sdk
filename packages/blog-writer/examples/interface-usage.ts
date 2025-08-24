@@ -1,19 +1,18 @@
-
 /**
  * Example usage of the core interfaces as specified in requirements
- * 
+ *
  * This file demonstrates how to use:
  * 1. BlogAIConfig interface - extends AIConfig with contentType, targetLength, seoOptimization, toneSettings
  * 2. RequiredBlogPost interface - includes id, title, content, metadata, status, versions, createdAt, updatedAt
  */
 
-import { 
-  BlogAIConfig, 
-  RequiredBlogPost, 
-  PostMetadata, 
-  ContentVersion, 
+import {
+  BlogAIConfig,
+  RequiredBlogPost,
+  PostMetadata,
+  ContentVersion,
   ToneConfiguration,
-  BlogPostStatus 
+  BlogPostStatus,
 } from '../src/types';
 
 /**
@@ -30,8 +29,8 @@ function createBlogConfig(): BlogAIConfig {
       activeVoice: true,
       sentenceLength: 'mixed',
       personality: true,
-      technicalLevel: 'moderate'
-    }
+      technicalLevel: 'moderate',
+    },
   };
 
   // Create the blog AI configuration
@@ -40,12 +39,12 @@ function createBlogConfig(): BlogAIConfig {
     targetLength: 1200,
     seoOptimization: true,
     toneSettings: toneSettings,
-    
+
     // Base AIConfig properties
     model: 'gpt-4',
     apiKey: 'your-api-key',
     temperature: 0.7,
-    maxTokens: 2000
+    maxTokens: 2000,
   };
 
   return config;
@@ -58,36 +57,40 @@ function createBlogPost(): RequiredBlogPost {
   // Create post metadata
   const metadata: PostMetadata = {
     title: 'Advanced TypeScript Interfaces',
-    description: 'Learn how to create powerful TypeScript interfaces for better code organization',
+    description:
+      'Learn how to create powerful TypeScript interfaces for better code organization',
     keywords: ['typescript', 'interfaces', 'programming'],
     author: 'Jane Developer',
     category: 'Technology',
     tags: ['typescript', 'development', 'tutorial'],
-    featuredImage: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Typescript_logo_2020.svg/800px-Typescript_logo_2020.svg.png',
-    publishDate: new Date('2024-01-15')
+    featuredImage:
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Typescript_logo_2020.svg/800px-Typescript_logo_2020.svg.png',
+    publishDate: new Date('2024-01-15'),
   };
 
   // Create a content version
   const initialVersion: ContentVersion = {
     id: 'v1',
     version: '1.0.0',
-    content: 'TypeScript interfaces are powerful tools for defining the structure of objects...',
+    content:
+      'TypeScript interfaces are powerful tools for defining the structure of objects...',
     metadata: metadata,
     createdAt: new Date('2024-01-10T10:00:00Z'),
     createdBy: 'jane@example.com',
-    changeNote: 'Initial version'
+    changeNote: 'Initial version',
   };
 
   // Create the blog post
   const blogPost: RequiredBlogPost = {
     id: 'post-123',
     title: 'Advanced TypeScript Interfaces',
-    content: 'TypeScript interfaces are powerful tools for defining the structure of objects in your applications. They provide type safety and improve developer experience by catching errors at compile time...',
+    content:
+      'TypeScript interfaces are powerful tools for defining the structure of objects in your applications. They provide type safety and improve developer experience by catching errors at compile time...',
     metadata: metadata,
     status: 'published' as BlogPostStatus,
     versions: [initialVersion],
     createdAt: new Date('2024-01-10T10:00:00Z'),
-    updatedAt: new Date('2024-01-15T14:30:00Z')
+    updatedAt: new Date('2024-01-15T14:30:00Z'),
   };
 
   return blogPost;
@@ -96,7 +99,11 @@ function createBlogPost(): RequiredBlogPost {
 /**
  * Example 3: Updating a blog post and adding a new version
  */
-function updateBlogPost(originalPost: RequiredBlogPost, newContent: string, changeNote: string): RequiredBlogPost {
+function updateBlogPost(
+  originalPost: RequiredBlogPost,
+  newContent: string,
+  changeNote: string,
+): RequiredBlogPost {
   // Create updated metadata
   const updatedMetadata: PostMetadata = {
     ...originalPost.metadata,
@@ -112,7 +119,7 @@ function updateBlogPost(originalPost: RequiredBlogPost, newContent: string, chan
     metadata: updatedMetadata,
     createdAt: new Date(),
     createdBy: 'editor@example.com',
-    changeNote: changeNote
+    changeNote: changeNote,
   };
 
   // Return updated blog post
@@ -122,7 +129,7 @@ function updateBlogPost(originalPost: RequiredBlogPost, newContent: string, chan
     content: newContent,
     metadata: updatedMetadata,
     versions: [...originalPost.versions, newVersion],
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 }
 
@@ -139,17 +146,17 @@ function createTutorialConfig(): BlogAIConfig {
       activeVoice: true,
       sentenceLength: 'short',
       personality: true,
-      technicalLevel: 'minimal'
-    }
+      technicalLevel: 'minimal',
+    },
   };
 
   return {
     contentType: 'tutorial', // Different content type
-    targetLength: 2000,      // Longer content for tutorials
+    targetLength: 2000, // Longer content for tutorials
     seoOptimization: true,
     toneSettings: toneSettings,
     model: 'gpt-4',
-    temperature: 0.5         // Less creative for tutorials
+    temperature: 0.5, // Less creative for tutorials
   };
 }
 
@@ -160,11 +167,15 @@ class BlogPostManager {
   /**
    * Create a new blog post from a configuration
    */
-  static createFromConfig(config: BlogAIConfig, title: string, content: string): RequiredBlogPost {
+  static createFromConfig(
+    config: BlogAIConfig,
+    title: string,
+    content: string,
+  ): RequiredBlogPost {
     const metadata: PostMetadata = {
       title: title,
       category: config.contentType,
-      publishDate: new Date()
+      publishDate: new Date(),
     };
 
     const initialVersion: ContentVersion = {
@@ -173,7 +184,7 @@ class BlogPostManager {
       content: content,
       metadata: metadata,
       createdAt: new Date(),
-      changeNote: 'Initial creation'
+      changeNote: 'Initial creation',
     };
 
     return {
@@ -184,7 +195,7 @@ class BlogPostManager {
       status: 'draft',
       versions: [initialVersion],
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
   }
 
@@ -199,7 +210,7 @@ class BlogPostManager {
     return {
       ...post,
       status: 'published',
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
   }
 
@@ -214,7 +225,7 @@ class BlogPostManager {
     return {
       ...post,
       status: 'archived',
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
   }
 }
@@ -225,7 +236,7 @@ export {
   createBlogPost,
   updateBlogPost,
   createTutorialConfig,
-  BlogPostManager
+  BlogPostManager,
 };
 
 // Example usage
@@ -237,7 +248,7 @@ console.log('1. BlogAIConfig created:', {
   contentType: config.contentType,
   targetLength: config.targetLength,
   seoOptimization: config.seoOptimization,
-  tonePrimary: config.toneSettings.primary
+  tonePrimary: config.toneSettings.primary,
 });
 
 // Create blog post
@@ -247,20 +258,28 @@ console.log('2. BlogPost created:', {
   title: post.title,
   status: post.status,
   versionsCount: post.versions.length,
-  contentPreview: post.content.substring(0, 50) + '...'
+  contentPreview: post.content.substring(0, 50) + '...',
 });
 
 // Update blog post
-const updatedPost = updateBlogPost(post, 'Updated content with more details...', 'Added more examples');
+const updatedPost = updateBlogPost(
+  post,
+  'Updated content with more details...',
+  'Added more examples',
+);
 console.log('3. BlogPost updated:', {
   versionsCount: updatedPost.versions.length,
-  latestVersion: updatedPost.versions[updatedPost.versions.length - 1].version
+  latestVersion: updatedPost.versions[updatedPost.versions.length - 1].version,
 });
 
 // Use manager
-const managedPost = BlogPostManager.createFromConfig(config, 'New Tutorial', 'This is a new tutorial...');
+const managedPost = BlogPostManager.createFromConfig(
+  config,
+  'New Tutorial',
+  'This is a new tutorial...',
+);
 const publishedPost = BlogPostManager.publish(managedPost);
 console.log('4. BlogPost managed:', {
   original: managedPost.status,
-  published: publishedPost.status
+  published: publishedPost.status,
 });

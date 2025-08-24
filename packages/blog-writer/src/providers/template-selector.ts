@@ -1,4 +1,3 @@
-
 import type { LanguageModelV1 } from '@ai-sdk/provider';
 import { generateText } from 'ai';
 import { configurationRepository } from '../database/configuration-repository';
@@ -11,7 +10,12 @@ export interface TemplateSelectionCriteria {
   topic: string;
   contentType?: string;
   audience?: 'beginners' | 'intermediate' | 'experts' | 'general';
-  purpose?: 'education' | 'entertainment' | 'marketing' | 'information' | 'persuasion';
+  purpose?:
+    | 'education'
+    | 'entertainment'
+    | 'marketing'
+    | 'information'
+    | 'persuasion';
   tone?: 'professional' | 'casual' | 'friendly' | 'authoritative' | 'technical';
   wordCountRange?: { min: number; max: number };
   requiredSections?: string[];
@@ -65,10 +69,13 @@ export class TemplateSelector {
   /**
    * Select optimal template based on criteria
    */
-  async selectTemplate(criteria: TemplateSelectionCriteria): Promise<TemplateSelectionResult> {
+  async selectTemplate(
+    criteria: TemplateSelectionCriteria,
+  ): Promise<TemplateSelectionResult> {
     // Get available templates
-    const availableTemplates = await configurationRepository.getTemplatesByType();
-    
+    const availableTemplates =
+      await configurationRepository.getTemplatesByType();
+
     if (availableTemplates.length === 0) {
       // Seed default templates if none exist
       await configurationRepository.seedDefaultTemplates();
@@ -76,11 +83,14 @@ export class TemplateSelector {
     }
 
     // Score each template
-    const scoredTemplates = await this.scoreTemplates(availableTemplates, criteria);
-    
+    const scoredTemplates = await this.scoreTemplates(
+      availableTemplates,
+      criteria,
+    );
+
     // Select best template
     const bestTemplate = scoredTemplates[0];
-    
+
     // Generate alternatives
     const alternatives = scoredTemplates.slice(1, 4).map(scored => ({
       name: scored.template.name,
@@ -90,7 +100,10 @@ export class TemplateSelector {
     }));
 
     // Generate customizations
-    const customizations = await this.generateCustomizations(bestTemplate.template, criteria);
+    const customizations = await this.generateCustomizations(
+      bestTemplate.template,
+      criteria,
+    );
 
     return {
       selectedTemplate: {
@@ -114,11 +127,16 @@ export class TemplateSelector {
    */
   async getAIRecommendation(
     model: LanguageModelV1,
-    criteria: TemplateSelectionCriteria
+    criteria: TemplateSelectionCriteria,
   ): Promise<AITemplateRecommendation> {
-    const availableTemplates = await configurationRepository.getTemplatesByType();
-    
-    const templateList = availableTemplates.map(t => `- ${t.name} (${t.type}): ${t.description || 'Standard template'}`).join('\n');
+    const availableTemplates =
+      await configurationRepository.getTemplatesByType();
+
+    const templateList = availableTemplates
+      .map(
+        t => `- ${t.name} (${t.type}): ${t.description || 'Standard template'}`,
+      )
+      .join('\n');
 
     const prompt = `
 As a content strategy expert, recommend the best blog template for the following requirements:
@@ -164,7 +182,7 @@ Consider factors like:
       });
 
       const parsed = JSON.parse(result.text);
-      
+
       return {
         recommendedTemplate: parsed.recommendedTemplate,
         confidence: Math.max(0.1, Math.min(1.0, parsed.confidence)),
@@ -174,14 +192,15 @@ Consider factors like:
       };
     } catch (error) {
       console.error('AI template recommendation failed:', error);
-      
+
       // Fall back to rule-based selection
       const fallbackResult = await this.selectTemplate(criteria);
       return {
         recommendedTemplate: fallbackResult.selectedTemplate.name,
         confidence: fallbackResult.confidence,
         reasoning: fallbackResult.reasoning,
-        structuralRecommendations: fallbackResult.customizations.structuralChanges,
+        structuralRecommendations:
+          fallbackResult.customizations.structuralChanges,
       };
     }
   }
@@ -192,7 +211,7 @@ Consider factors like:
   async createCustomTemplate(
     name: string,
     criteria: TemplateSelectionCriteria,
-    model?: LanguageModelV1
+    model?: LanguageModelV1,
   ): Promise<{
     template: PrismaTemplate;
     customPrompt: string;
@@ -237,7 +256,13 @@ Consider factors like:
   async optimizeTemplate(
     templateName: string,
     criteria: TemplateSelectionCriteria,
-    optimizationGoals: ('seo' | 'engagement' | 'conversion' | 'readability' | 'authority')[]
+    optimizationGoals: (
+      | 'seo'
+      | 'engagement'
+      | 'conversion'
+      | 'readability'
+      | 'authority'
+    )[],
   ): Promise<{
     optimizedPrompt: string;
     structuralChanges: string[];
@@ -263,13 +288,13 @@ Consider factors like:
         'Add meta description with target keywords',
         'Structure content with H2 and H3 headings',
         'Include internal and external links',
-        'Optimize for featured snippets'
+        'Optimize for featured snippets',
       );
-      
+
       optimizations.structuralChanges.push(
         'Add SEO-optimized meta description section',
         'Include keyword density monitoring',
-        'Add related keywords section'
+        'Add related keywords section',
       );
     }
 
@@ -279,9 +304,9 @@ Consider factors like:
         'Add compelling hook in introduction',
         'Include interactive elements (polls, questions)',
         'Add visual content suggestions',
-        'Include social sharing prompts'
+        'Include social sharing prompts',
       );
-      
+
       optimizations.variableAdjustments.engagementLevel = 'high';
     }
 
@@ -291,7 +316,7 @@ Consider factors like:
         'Strategic CTA placement throughout content',
         'Add benefit-focused sections',
         'Include social proof elements',
-        'Add urgency and scarcity elements'
+        'Add urgency and scarcity elements',
       );
     }
 
@@ -301,10 +326,11 @@ Consider factors like:
         'Use shorter sentences and paragraphs',
         'Add bullet points and numbered lists',
         'Include subheadings every 200-300 words',
-        'Add summary sections'
+        'Add summary sections',
       );
-      
-      optimizations.variableAdjustments.readingLevel = criteria.audience === 'beginners' ? 6 : 8;
+
+      optimizations.variableAdjustments.readingLevel =
+        criteria.audience === 'beginners' ? 6 : 8;
     }
 
     // Apply authority optimizations
@@ -313,7 +339,7 @@ Consider factors like:
         'Include expert quotes and citations',
         'Add research-backed statistics',
         'Reference authoritative sources',
-        'Include author expertise indicators'
+        'Include author expertise indicators',
       );
     }
 
@@ -321,7 +347,7 @@ Consider factors like:
     optimizations.optimizedPrompt = this.applyPromptOptimizations(
       template.promptTemplate,
       optimizationGoals,
-      criteria
+      criteria,
     );
 
     return optimizations;
@@ -330,8 +356,10 @@ Consider factors like:
   // Private helper methods
   private async scoreTemplates(
     templates: PrismaTemplate[],
-    criteria: TemplateSelectionCriteria
-  ): Promise<Array<{ template: PrismaTemplate; score: number; reasoning: string }>> {
+    criteria: TemplateSelectionCriteria,
+  ): Promise<
+    Array<{ template: PrismaTemplate; score: number; reasoning: string }>
+  > {
     const scored = [];
 
     for (const template of templates) {
@@ -339,7 +367,10 @@ Consider factors like:
       const reasons = [];
 
       // Content type match
-      if (criteria.contentType && template.type.toLowerCase().includes(criteria.contentType.toLowerCase())) {
+      if (
+        criteria.contentType &&
+        template.type.toLowerCase().includes(criteria.contentType.toLowerCase())
+      ) {
         score += 40;
         reasons.push(`Perfect content type match (${template.type})`);
       } else if (criteria.contentType) {
@@ -350,7 +381,10 @@ Consider factors like:
       // Word count compatibility
       if (criteria.wordCountRange && template.wordCountRange) {
         const templateRange = template.wordCountRange as any;
-        const overlap = this.calculateRangeOverlap(criteria.wordCountRange, templateRange);
+        const overlap = this.calculateRangeOverlap(
+          criteria.wordCountRange,
+          templateRange,
+        );
         score += overlap * 20;
         if (overlap > 0.5) {
           reasons.push(`Good word count alignment`);
@@ -359,7 +393,10 @@ Consider factors like:
 
       // Audience match
       if (criteria.audience) {
-        const audienceScore = this.getAudienceCompatibility(template, criteria.audience);
+        const audienceScore = this.getAudienceCompatibility(
+          template,
+          criteria.audience,
+        );
         score += audienceScore;
         if (audienceScore > 15) {
           reasons.push(`Well-suited for ${criteria.audience} audience`);
@@ -368,7 +405,10 @@ Consider factors like:
 
       // Purpose alignment
       if (criteria.purpose) {
-        const purposeScore = this.getPurposeCompatibility(template, criteria.purpose);
+        const purposeScore = this.getPurposeCompatibility(
+          template,
+          criteria.purpose,
+        );
         score += purposeScore;
         if (purposeScore > 10) {
           reasons.push(`Aligns with ${criteria.purpose} purpose`);
@@ -387,7 +427,7 @@ Consider factors like:
 
   private async generateCustomizations(
     template: PrismaTemplate,
-    criteria: TemplateSelectionCriteria
+    criteria: TemplateSelectionCriteria,
   ): Promise<{
     promptAdjustments: string[];
     structuralChanges: string[];
@@ -401,11 +441,15 @@ Consider factors like:
 
     // Audience-based adjustments
     if (criteria.audience === 'beginners') {
-      customizations.promptAdjustments.push('Use simpler language and define technical terms');
+      customizations.promptAdjustments.push(
+        'Use simpler language and define technical terms',
+      );
       customizations.structuralChanges.push('Add glossary section');
       customizations.variableOverrides.explanationLevel = 'detailed';
     } else if (criteria.audience === 'experts') {
-      customizations.promptAdjustments.push('Include advanced concepts and technical details');
+      customizations.promptAdjustments.push(
+        'Include advanced concepts and technical details',
+      );
       customizations.structuralChanges.push('Add technical appendix');
       customizations.variableOverrides.technicalDepth = 'advanced';
     }
@@ -417,13 +461,19 @@ Consider factors like:
     }
 
     if (criteria.businessGoals?.includes('seo')) {
-      customizations.promptAdjustments.push('Optimize for search engines with keyword integration');
-      customizations.structuralChanges.push('Include meta description and keyword sections');
+      customizations.promptAdjustments.push(
+        'Optimize for search engines with keyword integration',
+      );
+      customizations.structuralChanges.push(
+        'Include meta description and keyword sections',
+      );
     }
 
     // Industry-specific adjustments
     if (criteria.industry) {
-      customizations.promptAdjustments.push(`Adapt language and examples for ${criteria.industry} industry`);
+      customizations.promptAdjustments.push(
+        `Adapt language and examples for ${criteria.industry} industry`,
+      );
       customizations.variableOverrides.industry = criteria.industry;
     }
 
@@ -432,7 +482,7 @@ Consider factors like:
 
   private async generateCustomTemplateWithAI(
     model: LanguageModelV1,
-    criteria: TemplateSelectionCriteria
+    criteria: TemplateSelectionCriteria,
   ): Promise<{ promptTemplate: string; structure: any }> {
     const prompt = `
 Create a custom blog template for:
@@ -510,7 +560,13 @@ Make it engaging, informative, and optimized for both readers and search engines
 
     // Customize based on content type
     if (criteria.contentType?.toLowerCase().includes('tutorial')) {
-      structure.sections = ['Prerequisites', 'Step-by-step Guide', 'Examples', 'Troubleshooting', 'Conclusion'];
+      structure.sections = [
+        'Prerequisites',
+        'Step-by-step Guide',
+        'Examples',
+        'Troubleshooting',
+        'Conclusion',
+      ];
       structure.required.push('steps', 'examples');
     } else if (criteria.contentType?.toLowerCase().includes('listicle')) {
       structure.sections = ['Introduction', 'List Items', 'Summary'];
@@ -540,39 +596,49 @@ Make it engaging, informative, and optimized for both readers and search engines
   private applyPromptOptimizations(
     originalPrompt: string,
     goals: string[],
-    criteria: TemplateSelectionCriteria
+    criteria: TemplateSelectionCriteria,
   ): string {
     let optimizedPrompt = originalPrompt;
 
     if (goals.includes('seo')) {
-      optimizedPrompt += '\n\nSEO Requirements:\n- Include target keywords naturally\n- Optimize for search intent\n- Structure with clear headings';
+      optimizedPrompt +=
+        '\n\nSEO Requirements:\n- Include target keywords naturally\n- Optimize for search intent\n- Structure with clear headings';
     }
 
     if (goals.includes('engagement')) {
-      optimizedPrompt += '\n\nEngagement Requirements:\n- Use compelling hooks\n- Include interactive elements\n- Add visual content suggestions';
+      optimizedPrompt +=
+        '\n\nEngagement Requirements:\n- Use compelling hooks\n- Include interactive elements\n- Add visual content suggestions';
     }
 
     if (goals.includes('conversion')) {
-      optimizedPrompt += '\n\nConversion Requirements:\n- Include strategic CTAs\n- Focus on benefits\n- Add social proof elements';
+      optimizedPrompt +=
+        '\n\nConversion Requirements:\n- Include strategic CTAs\n- Focus on benefits\n- Add social proof elements';
     }
 
     return optimizedPrompt;
   }
 
   // Helper methods for scoring
-  private calculateRangeOverlap(range1: { min: number; max: number }, range2: { min: number; max: number }): number {
+  private calculateRangeOverlap(
+    range1: { min: number; max: number },
+    range2: { min: number; max: number },
+  ): number {
     const overlapStart = Math.max(range1.min, range2.min);
     const overlapEnd = Math.min(range1.max, range2.max);
-    
+
     if (overlapStart >= overlapEnd) return 0;
-    
+
     const overlapSize = overlapEnd - overlapStart;
-    const totalRange = Math.max(range1.max, range2.max) - Math.min(range1.min, range2.min);
-    
+    const totalRange =
+      Math.max(range1.max, range2.max) - Math.min(range1.min, range2.min);
+
     return overlapSize / totalRange;
   }
 
-  private getAudienceCompatibility(template: PrismaTemplate, audience: string): number {
+  private getAudienceCompatibility(
+    template: PrismaTemplate,
+    audience: string,
+  ): number {
     // Simple heuristic based on template type and audience
     const compatibilityMap: Record<string, Record<string, number>> = {
       TUTORIAL: { beginners: 20, intermediate: 15, experts: 10 },
@@ -584,7 +650,10 @@ Make it engaging, informative, and optimized for both readers and search engines
     return compatibilityMap[template.type]?.[audience] || 10;
   }
 
-  private getPurposeCompatibility(template: PrismaTemplate, purpose: string): number {
+  private getPurposeCompatibility(
+    template: PrismaTemplate,
+    purpose: string,
+  ): number {
     const compatibilityMap: Record<string, Record<string, number>> = {
       TUTORIAL: { education: 20, information: 15 },
       HOWTO: { education: 15, information: 20 },

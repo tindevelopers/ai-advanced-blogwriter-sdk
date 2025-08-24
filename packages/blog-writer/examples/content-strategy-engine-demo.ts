@@ -1,4 +1,3 @@
-
 /**
  * Content Strategy Engine Demo
  * Comprehensive example demonstrating all Week 5-6 features
@@ -11,7 +10,7 @@ import {
   TopicResearchService,
   EditorialCalendarService,
   CompetitorAnalysisService,
-  ContentBriefService
+  ContentBriefService,
 } from '../src/index';
 
 // Mock Prisma client for demo (in real usage, this would be your actual Prisma instance)
@@ -28,13 +27,13 @@ async function demonstrateContentStrategyEngine() {
     model,
     prisma,
     cacheResults: true,
-    cacheTTL: 24
+    cacheTTL: 24,
   });
 
   try {
     // ===== COMPREHENSIVE STRATEGY GENERATION =====
     console.log('📊 Generating Comprehensive Content Strategy...');
-    
+
     const strategyRequest = {
       niche: 'AI and Machine Learning for Business',
       targetKeywords: [
@@ -42,45 +41,66 @@ async function demonstrateContentStrategyEngine() {
         'machine learning ROI',
         'AI implementation strategy',
         'business intelligence AI',
-        'AI transformation'
+        'AI transformation',
       ],
       competitors: [
         'towardsdatascience.com',
         'kdnuggets.com',
-        'analyticsvidhya.com'
+        'analyticsvidhya.com',
       ],
       timeframe: {
         start: new Date(),
-        end: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days
+        end: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days
       },
       goals: {
         contentVolume: 12, // 12 posts per month
-        targetAudience: ['Business Leaders', 'Data Scientists', 'Technology Managers'],
+        targetAudience: [
+          'Business Leaders',
+          'Data Scientists',
+          'Technology Managers',
+        ],
         businessObjectives: [
           'Establish thought leadership in AI',
           'Generate qualified leads',
           'Build brand authority',
-          'Drive organic traffic growth'
-        ]
+          'Drive organic traffic growth',
+        ],
       },
       constraints: {
         budget: 50000,
         teamSize: 3,
-        expertiseAreas: ['AI/ML', 'Business Strategy', 'Technical Writing']
-      }
+        expertiseAreas: ['AI/ML', 'Business Strategy', 'Technical Writing'],
+      },
     };
 
-    const comprehensiveStrategy = await strategyService.generateStrategy(strategyRequest);
+    const comprehensiveStrategy =
+      await strategyService.generateStrategy(strategyRequest);
 
     console.log('\n✅ Strategy Overview:');
-    console.log(`- Topics Identified: ${comprehensiveStrategy.overview.totalTopicsIdentified}`);
-    console.log(`- High Priority Topics: ${comprehensiveStrategy.overview.highPriorityTopics}`);
-    console.log(`- Calendar Entries: ${comprehensiveStrategy.overview.calendarEntries}`);
-    console.log(`- Competitors Analyzed: ${comprehensiveStrategy.overview.competitorsAnalyzed}`);
-    console.log(`- Content Gaps Found: ${comprehensiveStrategy.overview.contentGapsFound}`);
-    console.log(`- Overall Opportunity Score: ${(comprehensiveStrategy.overview.overallOpportunityScore * 100).toFixed(1)}%`);
-    console.log(`- Implementation Timeline: ${comprehensiveStrategy.overview.estimatedTimeToImplement} weeks`);
-    console.log(`- Confidence Score: ${(comprehensiveStrategy.overview.confidenceScore * 100).toFixed(1)}%`);
+    console.log(
+      `- Topics Identified: ${comprehensiveStrategy.overview.totalTopicsIdentified}`,
+    );
+    console.log(
+      `- High Priority Topics: ${comprehensiveStrategy.overview.highPriorityTopics}`,
+    );
+    console.log(
+      `- Calendar Entries: ${comprehensiveStrategy.overview.calendarEntries}`,
+    );
+    console.log(
+      `- Competitors Analyzed: ${comprehensiveStrategy.overview.competitorsAnalyzed}`,
+    );
+    console.log(
+      `- Content Gaps Found: ${comprehensiveStrategy.overview.contentGapsFound}`,
+    );
+    console.log(
+      `- Overall Opportunity Score: ${(comprehensiveStrategy.overview.overallOpportunityScore * 100).toFixed(1)}%`,
+    );
+    console.log(
+      `- Implementation Timeline: ${comprehensiveStrategy.overview.estimatedTimeToImplement} weeks`,
+    );
+    console.log(
+      `- Confidence Score: ${(comprehensiveStrategy.overview.confidenceScore * 100).toFixed(1)}%`,
+    );
 
     // ===== INDIVIDUAL SERVICE DEMONSTRATIONS =====
     console.log('\n🔬 Demonstrating Individual Services...\n');
@@ -88,15 +108,22 @@ async function demonstrateContentStrategyEngine() {
     // 1. TOPIC RESEARCH SERVICE
     console.log('1️⃣ Topic Research & Trend Analysis');
     const { topicResearch } = strategyService.getServices();
-    
-    const trendingTopics = await topicResearch.discoverTrendingTopics('AI automation', 5);
+
+    const trendingTopics = await topicResearch.discoverTrendingTopics(
+      'AI automation',
+      5,
+    );
     console.log(`Found ${trendingTopics.length} trending topics:`);
     trendingTopics.slice(0, 3).forEach((topic, i) => {
       console.log(`  ${i + 1}. ${topic.title}`);
-      console.log(`     - Opportunity Score: ${(topic.opportunityScore * 100).toFixed(1)}%`);
+      console.log(
+        `     - Opportunity Score: ${(topic.opportunityScore * 100).toFixed(1)}%`,
+      );
       console.log(`     - Competition: ${topic.competitionLevel}`);
       console.log(`     - Trending: ${topic.trending ? '📈' : '📊'}`);
-      console.log(`     - Keywords: ${topic.primaryKeywords.slice(0, 3).join(', ')}`);
+      console.log(
+        `     - Keywords: ${topic.primaryKeywords.slice(0, 3).join(', ')}`,
+      );
     });
 
     // Research a specific topic
@@ -105,14 +132,24 @@ async function demonstrateContentStrategyEngine() {
       includeKeywords: true,
       includeTrends: true,
       includeCompetitors: true,
-      depth: 'detailed'
+      depth: 'detailed',
     });
 
-    console.log(`\n🎯 Detailed Topic Research: ${specificTopicResearch.topic.title}`);
-    console.log(`- Opportunity Score: ${(specificTopicResearch.topic.opportunityScore * 100).toFixed(1)}%`);
-    console.log(`- Search Volume: ${specificTopicResearch.keywords[0]?.searchVolume || 'N/A'}`);
-    console.log(`- Keyword Difficulty: ${(specificTopicResearch.keywords[0]?.difficulty || 0) * 100}%`);
-    console.log(`- Opportunities Found: ${specificTopicResearch.opportunities.length}`);
+    console.log(
+      `\n🎯 Detailed Topic Research: ${specificTopicResearch.topic.title}`,
+    );
+    console.log(
+      `- Opportunity Score: ${(specificTopicResearch.topic.opportunityScore * 100).toFixed(1)}%`,
+    );
+    console.log(
+      `- Search Volume: ${specificTopicResearch.keywords[0]?.searchVolume || 'N/A'}`,
+    );
+    console.log(
+      `- Keyword Difficulty: ${(specificTopicResearch.keywords[0]?.difficulty || 0) * 100}%`,
+    );
+    console.log(
+      `- Opportunities Found: ${specificTopicResearch.opportunities.length}`,
+    );
 
     // 2. EDITORIAL CALENDAR SERVICE
     console.log('\n2️⃣ Editorial Calendar & Content Planning');
@@ -123,13 +160,17 @@ async function demonstrateContentStrategyEngine() {
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
       topics: trendingTopics.slice(0, 4).map(t => t.title),
       contentTypes: ['BLOG', 'GUIDE'],
-      priority: 'medium'
+      priority: 'medium',
     });
 
-    console.log(`📅 Generated Calendar with ${editorialCalendar.entries.length} entries:`);
+    console.log(
+      `📅 Generated Calendar with ${editorialCalendar.entries.length} entries:`,
+    );
     editorialCalendar.entries.slice(0, 3).forEach((entry, i) => {
       console.log(`  ${i + 1}. ${entry.title}`);
-      console.log(`     - Planned Date: ${entry.plannedDate.toLocaleDateString()}`);
+      console.log(
+        `     - Planned Date: ${entry.plannedDate.toLocaleDateString()}`,
+      );
       console.log(`     - Priority: ${entry.priority}`);
       console.log(`     - Estimated Hours: ${entry.estimatedHours || 'TBD'}`);
       console.log(`     - Target Words: ${entry.targetWordCount || 'TBD'}`);
@@ -142,9 +183,11 @@ async function demonstrateContentStrategyEngine() {
         'user123',
         'research',
         2.5,
-        'Initial topic research and source gathering'
+        'Initial topic research and source gathering',
       );
-      console.log(`\n⏱️ Time Tracked: ${timeEntry.duration} hours for ${timeEntry.activity}`);
+      console.log(
+        `\n⏱️ Time Tracked: ${timeEntry.duration} hours for ${timeEntry.activity}`,
+      );
     }
 
     // 3. COMPETITOR ANALYSIS SERVICE
@@ -154,14 +197,16 @@ async function demonstrateContentStrategyEngine() {
     const competitorsFound = await competitorAnalysis.identifySERPCompetitors([
       'AI automation',
       'machine learning business',
-      'AI implementation'
+      'AI implementation',
     ]);
 
     console.log(`🏢 Identified ${competitorsFound.length} key competitors:`);
     competitorsFound.slice(0, 3).forEach((competitor, i) => {
       console.log(`  ${i + 1}. ${competitor.name} (${competitor.domain})`);
       console.log(`     - Type: ${competitor.type}`);
-      console.log(`     - Domain Authority: ${competitor.domainAuthority || 'N/A'}`);
+      console.log(
+        `     - Domain Authority: ${competitor.domainAuthority || 'N/A'}`,
+      );
     });
 
     // Analyze specific competitors
@@ -171,20 +216,34 @@ async function demonstrateContentStrategyEngine() {
         keywords: ['AI automation', 'machine learning ROI'],
         includeContent: true,
         includeKeywords: true,
-        depth: 'detailed'
+        depth: 'detailed',
       });
 
       console.log(`\n🔍 Detailed Competitor Analysis:`);
-      console.log(`- Competitors Analyzed: ${detailedAnalysis.analysis.length}`);
+      console.log(
+        `- Competitors Analyzed: ${detailedAnalysis.analysis.length}`,
+      );
       console.log(`- Content Gaps Found: ${detailedAnalysis.gaps.length}`);
-      console.log(`- Opportunities Identified: ${detailedAnalysis.opportunities.length}`);
-      console.log(`- Strategic Recommendations: ${detailedAnalysis.recommendations.length}`);
+      console.log(
+        `- Opportunities Identified: ${detailedAnalysis.opportunities.length}`,
+      );
+      console.log(
+        `- Strategic Recommendations: ${detailedAnalysis.recommendations.length}`,
+      );
 
       if (detailedAnalysis.opportunities.length > 0) {
-        console.log(`\n🎯 Top Opportunity: ${detailedAnalysis.opportunities[0].title}`);
-        console.log(`   - Potential: ${(detailedAnalysis.opportunities[0].potential * 100).toFixed(1)}%`);
-        console.log(`   - Difficulty: ${(detailedAnalysis.opportunities[0].difficulty * 100).toFixed(1)}%`);
-        console.log(`   - Timeline: ${detailedAnalysis.opportunities[0].timeline}`);
+        console.log(
+          `\n🎯 Top Opportunity: ${detailedAnalysis.opportunities[0].title}`,
+        );
+        console.log(
+          `   - Potential: ${(detailedAnalysis.opportunities[0].potential * 100).toFixed(1)}%`,
+        );
+        console.log(
+          `   - Difficulty: ${(detailedAnalysis.opportunities[0].difficulty * 100).toFixed(1)}%`,
+        );
+        console.log(
+          `   - Timeline: ${detailedAnalysis.opportunities[0].timeline}`,
+        );
       }
     }
 
@@ -195,12 +254,16 @@ async function demonstrateContentStrategyEngine() {
     const briefRequest = {
       title: 'The Complete Guide to AI-Powered Customer Service Automation',
       primaryKeyword: 'AI customer service automation',
-      secondaryKeywords: ['chatbot automation', 'AI support tickets', 'customer service AI'],
+      secondaryKeywords: [
+        'chatbot automation',
+        'AI support tickets',
+        'customer service AI',
+      ],
       targetAudience: 'Business leaders and customer service managers',
       contentType: 'GUIDE',
       includeCompetitorAnalysis: true,
       includeResearch: true,
-      includeOutline: true
+      includeOutline: true,
     };
 
     const generatedBrief = await contentBrief.generateBrief(briefRequest);
@@ -208,21 +271,35 @@ async function demonstrateContentStrategyEngine() {
     console.log(`📋 Content Brief Generated: ${generatedBrief.brief.title}`);
     console.log(`- Target Word Count: ${generatedBrief.brief.targetWordCount}`);
     console.log(`- Search Intent: ${generatedBrief.brief.searchIntent}`);
-    console.log(`- Required Sections: ${generatedBrief.brief.requiredSections.length}`);
-    console.log(`- User Questions: ${generatedBrief.brief.userQuestions.length}`);
+    console.log(
+      `- Required Sections: ${generatedBrief.brief.requiredSections.length}`,
+    );
+    console.log(
+      `- User Questions: ${generatedBrief.brief.userQuestions.length}`,
+    );
     console.log(`- Pain Points: ${generatedBrief.brief.painPoints.length}`);
-    console.log(`- Research Sources: ${generatedBrief.brief.researchSources?.length || 0}`);
-    console.log(`- Generation Confidence: ${(generatedBrief.confidence * 100).toFixed(1)}%`);
+    console.log(
+      `- Research Sources: ${generatedBrief.brief.researchSources?.length || 0}`,
+    );
+    console.log(
+      `- Generation Confidence: ${(generatedBrief.confidence * 100).toFixed(1)}%`,
+    );
     console.log(`- Research Time: ${generatedBrief.researchTime.toFixed(2)}s`);
 
     // Display brief outline
     if (generatedBrief.brief.outline) {
-      console.log(`\n📝 Content Outline (${generatedBrief.brief.outline.sections.length} sections):`);
-      generatedBrief.brief.outline.sections.slice(0, 4).forEach((section, i) => {
-        console.log(`  ${i + 1}. ${section.title} (${section.estimatedWords} words)`);
-        console.log(`     - Type: ${section.type}`);
-        console.log(`     - Required: ${section.required ? '✅' : '❌'}`);
-      });
+      console.log(
+        `\n📝 Content Outline (${generatedBrief.brief.outline.sections.length} sections):`,
+      );
+      generatedBrief.brief.outline.sections
+        .slice(0, 4)
+        .forEach((section, i) => {
+          console.log(
+            `  ${i + 1}. ${section.title} (${section.estimatedWords} words)`,
+          );
+          console.log(`     - Type: ${section.type}`);
+          console.log(`     - Required: ${section.required ? '✅' : '❌'}`);
+        });
     }
 
     // Create brief from topic research
@@ -230,11 +307,13 @@ async function demonstrateContentStrategyEngine() {
       console.log(`\n📋 Creating Brief from Topic Research...`);
       const topicBrief = await contentBrief.createBriefFromTopic(
         trendingTopics[0].id,
-        { targetAudience: 'Technical Decision Makers' }
+        { targetAudience: 'Technical Decision Makers' },
       );
       console.log(`Created brief: ${topicBrief.title}`);
       console.log(`- Linked to topic: ${topicBrief.topicId ? '✅' : '❌'}`);
-      console.log(`- Target keywords: ${topicBrief.targetKeywords?.primary?.keyword || 'N/A'}`);
+      console.log(
+        `- Target keywords: ${topicBrief.targetKeywords?.primary?.keyword || 'N/A'}`,
+      );
     }
 
     // ===== ADVANCED FEATURES =====
@@ -245,42 +324,64 @@ async function demonstrateContentStrategyEngine() {
     const performanceAnalysis = await strategyService.analyzeContentPerformance(
       {
         start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-        end: new Date()
+        end: new Date(),
       },
       {
         traffic: true,
         rankings: true,
-        engagement: true
-      }
+        engagement: true,
+      },
     );
 
-    console.log(`- Top Performers: ${performanceAnalysis.performance.topPerformers.length}`);
-    console.log(`- Optimization Opportunities: ${performanceAnalysis.optimizations.length}`);
+    console.log(
+      `- Top Performers: ${performanceAnalysis.performance.topPerformers.length}`,
+    );
+    console.log(
+      `- Optimization Opportunities: ${performanceAnalysis.optimizations.length}`,
+    );
     console.log(`- Next Actions: ${performanceAnalysis.nextActions.length}`);
 
     if (performanceAnalysis.optimizations.length > 0) {
       const topOptimization = performanceAnalysis.optimizations[0];
       console.log(`\n🎯 Top Optimization: ${topOptimization.title}`);
       console.log(`   - Priority: ${topOptimization.priority}`);
-      console.log(`   - Estimated Impact: ${topOptimization.estimatedImpact}/10`);
+      console.log(
+        `   - Estimated Impact: ${topOptimization.estimatedImpact}/10`,
+      );
       console.log(`   - Effort Required: ${topOptimization.effort}/10`);
     }
 
     // Strategy Report Generation
     console.log('\n📊 Strategy Report Generation');
-    console.log(`Generated comprehensive strategy report: ${comprehensiveStrategy.report.title}`);
+    console.log(
+      `Generated comprehensive strategy report: ${comprehensiveStrategy.report.title}`,
+    );
     console.log(`- Report Type: ${comprehensiveStrategy.report.type}`);
-    console.log(`- Key Findings: ${comprehensiveStrategy.report.summary.keyFindings.length}`);
-    console.log(`- Recommendations: ${comprehensiveStrategy.report.recommendations.length}`);
-    console.log(`- Next Steps: ${comprehensiveStrategy.report.nextSteps.length}`);
+    console.log(
+      `- Key Findings: ${comprehensiveStrategy.report.summary.keyFindings.length}`,
+    );
+    console.log(
+      `- Recommendations: ${comprehensiveStrategy.report.recommendations.length}`,
+    );
+    console.log(
+      `- Next Steps: ${comprehensiveStrategy.report.nextSteps.length}`,
+    );
 
     // Implementation Plan
     console.log('\n🗓️ Implementation Plan');
-    console.log(`- Phases: ${comprehensiveStrategy.implementation.phases.length}`);
+    console.log(
+      `- Phases: ${comprehensiveStrategy.implementation.phases.length}`,
+    );
     console.log(`- Timeline: ${comprehensiveStrategy.implementation.timeline}`);
-    console.log(`- Resources Required: ${comprehensiveStrategy.implementation.resources.length}`);
-    console.log(`- Milestones: ${comprehensiveStrategy.implementation.milestones.length}`);
-    console.log(`- Risks Identified: ${comprehensiveStrategy.implementation.riskAssessment.length}`);
+    console.log(
+      `- Resources Required: ${comprehensiveStrategy.implementation.resources.length}`,
+    );
+    console.log(
+      `- Milestones: ${comprehensiveStrategy.implementation.milestones.length}`,
+    );
+    console.log(
+      `- Risks Identified: ${comprehensiveStrategy.implementation.riskAssessment.length}`,
+    );
 
     if (comprehensiveStrategy.implementation.phases.length > 0) {
       const firstPhase = comprehensiveStrategy.implementation.phases[0];
@@ -292,13 +393,14 @@ async function demonstrateContentStrategyEngine() {
 
     // Calendar Integration
     console.log('\n📅 Creating Integrated Content Calendar');
-    const integratedCalendar = await strategyService.createContentCalendarFromStrategy(
-      comprehensiveStrategy,
-      {
-        postsPerWeek: 3,
-        preferredDays: ['Tuesday', 'Thursday', 'Friday']
-      }
-    );
+    const integratedCalendar =
+      await strategyService.createContentCalendarFromStrategy(
+        comprehensiveStrategy,
+        {
+          postsPerWeek: 3,
+          preferredDays: ['Tuesday', 'Thursday', 'Friday'],
+        },
+      );
 
     console.log(`✅ Integrated calendar created with strategic alignment`);
 
@@ -316,13 +418,17 @@ async function demonstrateContentStrategyEngine() {
 
     console.log('\n🚀 The Content Strategy Engine provides enterprise-grade');
     console.log('   strategic content planning capabilities that integrate');
-    console.log('   seamlessly with the existing blog writer SDK architecture.');
+    console.log(
+      '   seamlessly with the existing blog writer SDK architecture.',
+    );
 
     // Cache Statistics
     console.log('\n📊 Performance Metrics:');
     const topicCacheStats = topicResearch.getCacheStats();
     console.log(`- Topic Research Cache: ${topicCacheStats.size} entries`);
-    console.log(`- Total Strategy Generation Time: ~${(Date.now() - Date.now()) / 1000}s`);
+    console.log(
+      `- Total Strategy Generation Time: ~${(Date.now() - Date.now()) / 1000}s`,
+    );
 
     // Clean up caches
     strategyService.clearAllCaches();
@@ -333,9 +439,8 @@ async function demonstrateContentStrategyEngine() {
       topics: trendingTopics,
       calendar: editorialCalendar,
       brief: generatedBrief,
-      performance: performanceAnalysis
+      performance: performanceAnalysis,
     };
-
   } catch (error) {
     console.error('❌ Demo Error:', error);
     throw error;
@@ -353,7 +458,7 @@ async function advancedUsageExamples() {
     model,
     cacheResults: true,
     cacheTTL: 12, // 12 hours
-    maxConcurrentAnalysis: 3
+    maxConcurrentAnalysis: 3,
   });
 
   const calendarService = new EditorialCalendarService({
@@ -361,9 +466,9 @@ async function advancedUsageExamples() {
     autoAssignment: true,
     reminderSettings: {
       deadlineWarning: 5, // 5 days
-      milestoneReminder: 2, // 2 days  
-      overdueCheck: 12 // 12 hours
-    }
+      milestoneReminder: 2, // 2 days
+      overdueCheck: 12, // 12 hours
+    },
   });
 
   // Custom content brief with persona
@@ -371,7 +476,7 @@ async function advancedUsageExamples() {
     model,
     includeResearchByDefault: true,
     includeCompetitorAnalysisByDefault: true,
-    defaultWordCount: 2000
+    defaultWordCount: 2000,
   });
 
   // Example: Persona-targeted content brief
@@ -380,19 +485,39 @@ async function advancedUsageExamples() {
     demographics: {
       age: '35-50',
       education: 'MBA or equivalent',
-      income: '$100K+'
+      income: '$100K+',
     },
     psychographics: {
-      interests: ['Digital transformation', 'ROI optimization', 'Team leadership'],
-      painPoints: ['Technical complexity', 'Implementation challenges', 'Budget constraints'],
+      interests: [
+        'Digital transformation',
+        'ROI optimization',
+        'Team leadership',
+      ],
+      painPoints: [
+        'Technical complexity',
+        'Implementation challenges',
+        'Budget constraints',
+      ],
       goals: ['Improve efficiency', 'Stay competitive', 'Drive innovation'],
-      challenges: ['Keeping up with technology', 'Managing change', 'Measuring success']
+      challenges: [
+        'Keeping up with technology',
+        'Managing change',
+        'Measuring success',
+      ],
     },
     behaviors: {
-      contentConsumption: ['Industry reports', 'Case studies', 'Executive briefings'],
-      searchBehavior: ['Solution-focused queries', 'Vendor comparisons', 'ROI calculations'],
-      decisionMaking: ['Data-driven', 'Collaborative', 'Risk-conscious']
-    }
+      contentConsumption: [
+        'Industry reports',
+        'Case studies',
+        'Executive briefings',
+      ],
+      searchBehavior: [
+        'Solution-focused queries',
+        'Vendor comparisons',
+        'ROI calculations',
+      ],
+      decisionMaking: ['Data-driven', 'Collaborative', 'Risk-conscious'],
+    },
   };
 
   const personaBrief = await briefService.generatePersonaBrief(
@@ -400,9 +525,9 @@ async function advancedUsageExamples() {
       title: 'AI Implementation Roadmap for Mid-Size Businesses',
       primaryKeyword: 'AI implementation strategy',
       secondaryKeywords: ['business AI adoption', 'AI ROI planning'],
-      contentType: 'GUIDE'
+      contentType: 'GUIDE',
     },
-    persona
+    persona,
   );
 
   console.log('🎯 Persona-Targeted Brief Generated:');
@@ -412,35 +537,43 @@ async function advancedUsageExamples() {
 
   // Advanced calendar analytics
   if (calendarService && calendarService.getCalendarAnalytics) {
-    const analytics = await calendarService.getCalendarAnalytics('calendar-id', {
-      start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      end: new Date()
-    });
+    const analytics = await calendarService.getCalendarAnalytics(
+      'calendar-id',
+      {
+        start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        end: new Date(),
+      },
+    );
 
     console.log('\n📊 Calendar Analytics:');
-    console.log(`- Completion Rate: ${(analytics.productivity.completionRate * 100).toFixed(1)}%`);
-    console.log(`- On-Time Delivery: ${(analytics.productivity.onTimeDelivery * 100).toFixed(1)}%`);
-    console.log(`- Average Completion Time: ${analytics.productivity.averageTimeToComplete.toFixed(1)} days`);
+    console.log(
+      `- Completion Rate: ${(analytics.productivity.completionRate * 100).toFixed(1)}%`,
+    );
+    console.log(
+      `- On-Time Delivery: ${(analytics.productivity.onTimeDelivery * 100).toFixed(1)}%`,
+    );
+    console.log(
+      `- Average Completion Time: ${analytics.productivity.averageTimeToComplete.toFixed(1)} days`,
+    );
   }
 
   console.log('\n✅ Advanced examples completed successfully!');
 }
 
 // Export for use in other files
-export {
-  demonstrateContentStrategyEngine,
-  advancedUsageExamples
-};
+export { demonstrateContentStrategyEngine, advancedUsageExamples };
 
 // Run demo if called directly
 if (require.main === module) {
   demonstrateContentStrategyEngine()
     .then(() => advancedUsageExamples())
     .then(() => {
-      console.log('\n🎉 All Content Strategy Engine demos completed successfully!');
+      console.log(
+        '\n🎉 All Content Strategy Engine demos completed successfully!',
+      );
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('❌ Demo failed:', error);
       process.exit(1);
     });

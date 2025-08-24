@@ -1,5 +1,3 @@
-
-
 /**
  * Database Layer Exports
  * Provides access to all database repositories and utilities
@@ -13,4 +11,3 @@ export * from './configuration-repository';
 
 // Re-export Prisma client type for convenience
 export type { PrismaClient } from '../generated/prisma-client';
-

@@ -1,5 +1,3 @@
-
-
 /**
  * Advanced Content Management Example
  * Demonstrates the comprehensive Week 3-4 Content Management Foundation features
@@ -12,12 +10,12 @@ import {
   WorkflowManager,
   MetadataManager,
   CategorizationManager,
-  NotificationManager
+  NotificationManager,
 } from '@ai-sdk/blog-writer';
 
 async function advancedContentManagementExample() {
   const prisma = new PrismaClient();
-  
+
   // Initialize the comprehensive content management service
   const contentManager = new ContentManagementService(prisma, {
     requireApproval: true,
@@ -26,13 +24,13 @@ async function advancedContentManagementExample() {
       onApproval: true,
       onRejection: true,
       onPublish: true,
-      reminderDays: [1, 3, 7]
+      reminderDays: [1, 3, 7],
     },
     deadlines: {
       reviewDays: 3,
       approvalDays: 2,
-      escalationDays: 7
-    }
+      escalationDays: 7,
+    },
   });
 
   // ===== 1. COMPREHENSIVE BLOG POST CREATION =====
@@ -43,7 +41,7 @@ async function advancedContentManagementExample() {
     name: 'Technology',
     description: 'Technology-related content',
     color: '#3B82F6',
-    icon: 'laptop'
+    icon: 'laptop',
   });
 
   const aiCategory = await contentManager.createCategory({
@@ -51,20 +49,20 @@ async function advancedContentManagementExample() {
     description: 'AI and machine learning content',
     color: '#8B5CF6',
     icon: 'brain',
-    parentId: techCategory.id
+    parentId: techCategory.id,
   });
 
   // Create tags
   const aiTag = await contentManager.createTag({
     name: 'artificial-intelligence',
     description: 'Posts about AI technology',
-    color: '#8B5CF6'
+    color: '#8B5CF6',
   });
 
   const mlTag = await contentManager.createTag({
     name: 'machine-learning',
     description: 'Posts about machine learning',
-    color: '#06B6D4'
+    color: '#06B6D4',
   });
 
   // Create custom metadata fields
@@ -73,9 +71,9 @@ async function advancedContentManagementExample() {
     displayName: 'Difficulty Level',
     fieldType: 'STRING',
     validation: {
-      options: ['Beginner', 'Intermediate', 'Advanced', 'Expert']
+      options: ['Beginner', 'Intermediate', 'Advanced', 'Expert'],
     },
-    isRequired: true
+    isRequired: true,
   });
 
   const estimatedReadTimeField = await contentManager.createMetadataField({
@@ -84,8 +82,8 @@ async function advancedContentManagementExample() {
     fieldType: 'NUMBER',
     validation: {
       min: 1,
-      max: 60
-    }
+      max: 60,
+    },
   });
 
   // Create comprehensive blog post
@@ -113,29 +111,45 @@ async function advancedContentManagementExample() {
 
       The integration of AI into our daily lives is not just a technological shift—it's a fundamental transformation of how we approach problems and solutions.
     `,
-    excerpt: 'Explore how artificial intelligence and machine learning are transforming industries and shaping the future of technology.',
+    excerpt:
+      'Explore how artificial intelligence and machine learning are transforming industries and shaping the future of technology.',
     categories: [aiCategory.id],
     tags: [aiTag.id, mlTag.id],
     primaryCategory: aiCategory.id,
     seoMetadata: {
-      metaTitle: 'The Future of AI: How Machine Learning is Transforming Industries',
-      metaDescription: 'Discover how AI and machine learning are revolutionizing healthcare, finance, transportation, and more. Explore the future of artificial intelligence.',
-      focusKeywords: ['artificial intelligence', 'machine learning', 'AI transformation'],
-      secondaryKeywords: ['AI applications', 'future technology', 'industry transformation'],
+      metaTitle:
+        'The Future of AI: How Machine Learning is Transforming Industries',
+      metaDescription:
+        'Discover how AI and machine learning are revolutionizing healthcare, finance, transportation, and more. Explore the future of artificial intelligence.',
+      focusKeywords: [
+        'artificial intelligence',
+        'machine learning',
+        'AI transformation',
+      ],
+      secondaryKeywords: [
+        'AI applications',
+        'future technology',
+        'industry transformation',
+      ],
       ogTitle: 'The Future of AI: Transforming Industries',
-      ogDescription: 'Explore how AI and machine learning are reshaping industries worldwide.',
-      twitterCard: 'summary_large_image'
+      ogDescription:
+        'Explore how AI and machine learning are reshaping industries worldwide.',
+      twitterCard: 'summary_large_image',
     },
     customMetadata: {
       difficulty_level: 'Intermediate',
-      estimated_read_time: '8'
+      estimated_read_time: '8',
     },
-    authorId: 'author-123'
+    authorId: 'author-123',
   });
 
   console.log('Created blog post:', result.blogPost.title);
   console.log('SEO Score:', result.seoAnalysis.overallScore);
-  console.log('Auto-classified suggestions:', result.classification.suggestedTags.length, 'tags');
+  console.log(
+    'Auto-classified suggestions:',
+    result.classification.suggestedTags.length,
+    'tags',
+  );
 
   // ===== 2. VERSION MANAGEMENT =====
   console.log('\n=== Version Management Demo ===');
@@ -144,31 +158,38 @@ async function advancedContentManagementExample() {
   const branch = await contentManager.createBranch(
     result.blogPost.id,
     'feature/seo-improvements',
-    result.version.id
+    result.version.id,
   );
 
   // Update content in the branch
   const updatedVersion = await contentManager.updateBlogPost(
     result.blogPost.id,
     {
-      title: 'The Future of AI: How Machine Learning is Transforming Industries Worldwide',
-      content: result.blogPost.content + '\n\n## Conclusion\n\nThe future of AI is bright, and those who embrace it early will have a competitive advantage in the digital economy.',
+      title:
+        'The Future of AI: How Machine Learning is Transforming Industries Worldwide',
+      content:
+        result.blogPost.content +
+        '\n\n## Conclusion\n\nThe future of AI is bright, and those who embrace it early will have a competitive advantage in the digital economy.',
       seoMetadata: {
-        metaTitle: 'Future of AI: Machine Learning Transforming Industries Worldwide | TechBlog',
-        keywordDensity: 0.015
+        metaTitle:
+          'Future of AI: Machine Learning Transforming Industries Worldwide | TechBlog',
+        keywordDensity: 0.015,
       },
-      changeSummary: 'Improved title and added conclusion for better SEO'
+      changeSummary: 'Improved title and added conclusion for better SEO',
     },
-    'author-123'
+    'author-123',
   );
 
   console.log('Created new version:', updatedVersion.version.version);
-  console.log('New SEO Score:', updatedVersion.seoAnalysis?.overallScore || 'N/A');
+  console.log(
+    'New SEO Score:',
+    updatedVersion.seoAnalysis?.overallScore || 'N/A',
+  );
 
   // Compare versions
   const comparison = await contentManager.compareVersions(
     result.version.id,
-    updatedVersion.version.id
+    updatedVersion.version.id,
   );
 
   console.log('Version comparison:');
@@ -187,12 +208,18 @@ async function advancedContentManagementExample() {
       reviewers: ['reviewer-456', 'editor-789'],
       dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days
       priority: 'medium',
-      message: 'Please review this AI article for technical accuracy and SEO optimization.'
-    }
+      message:
+        'Please review this AI article for technical accuracy and SEO optimization.',
+    },
   );
 
   console.log('Submitted for review. Workflow ID:', reviewResult.workflow.id);
-  console.log('Current step:', reviewResult.workflow.currentStep, 'of', reviewResult.workflow.totalSteps);
+  console.log(
+    'Current step:',
+    reviewResult.workflow.currentStep,
+    'of',
+    reviewResult.workflow.totalSteps,
+  );
 
   // Simulate approval process
   const approvalResult = await contentManager.processApproval(
@@ -201,11 +228,15 @@ async function advancedContentManagementExample() {
     'reviewer-456',
     {
       action: 'approve',
-      comment: 'Great technical content! SEO looks good. Approved for next step.'
-    }
+      comment:
+        'Great technical content! SEO looks good. Approved for next step.',
+    },
   );
 
-  console.log('First approval completed. Moving to step:', approvalResult.currentStep);
+  console.log(
+    'First approval completed. Moving to step:',
+    approvalResult.currentStep,
+  );
 
   // Second approval
   await contentManager.processApproval(
@@ -214,8 +245,8 @@ async function advancedContentManagementExample() {
     'editor-789',
     {
       action: 'approve',
-      comment: 'Excellent writing quality. Ready for publication.'
-    }
+      comment: 'Excellent writing quality. Ready for publication.',
+    },
   );
 
   console.log('All approvals completed!');
@@ -230,31 +261,46 @@ async function advancedContentManagementExample() {
       estimated_read_time: '12',
       author_expertise: 'AI Researcher',
       last_fact_check: new Date().toISOString(),
-      sponsored_content: 'false'
+      sponsored_content: 'false',
     },
     seoMetadata: {
       canonicalUrl: `https://techblog.com/ai-future-machine-learning`,
       structuredData: {
         '@context': 'https://schema.org',
         '@type': 'Article',
-        'headline': 'The Future of AI: Transforming Industries Through Machine Learning',
-        'author': {
+        headline:
+          'The Future of AI: Transforming Industries Through Machine Learning',
+        author: {
           '@type': 'Person',
-          'name': 'AI Expert'
+          name: 'AI Expert',
         },
-        'datePublished': new Date().toISOString()
-      }
-    }
+        datePublished: new Date().toISOString(),
+      },
+    },
   });
 
   // Perform comprehensive SEO analysis
-  const comprehensiveSeoAnalysis = await contentManager.analyzeSeo(result.blogPost.id);
-  
+  const comprehensiveSeoAnalysis = await contentManager.analyzeSeo(
+    result.blogPost.id,
+  );
+
   console.log('Comprehensive SEO Analysis:');
-  console.log('- Overall Score:', comprehensiveSeoAnalysis.overallScore.toFixed(1));
-  console.log('- Keyword Optimization:', comprehensiveSeoAnalysis.keywordOptimization.toFixed(1));
-  console.log('- Content Structure:', comprehensiveSeoAnalysis.contentStructure.toFixed(1));
-  console.log('- Meta Optimization:', comprehensiveSeoAnalysis.metaOptimization.toFixed(1));
+  console.log(
+    '- Overall Score:',
+    comprehensiveSeoAnalysis.overallScore.toFixed(1),
+  );
+  console.log(
+    '- Keyword Optimization:',
+    comprehensiveSeoAnalysis.keywordOptimization.toFixed(1),
+  );
+  console.log(
+    '- Content Structure:',
+    comprehensiveSeoAnalysis.contentStructure.toFixed(1),
+  );
+  console.log(
+    '- Meta Optimization:',
+    comprehensiveSeoAnalysis.metaOptimization.toFixed(1),
+  );
   console.log('- Suggestions:', comprehensiveSeoAnalysis.suggestions.length);
 
   // ===== 5. CONTENT RELATIONSHIPS =====
@@ -266,24 +312,41 @@ async function advancedContentManagementExample() {
     content: 'Deep dive into various machine learning algorithms...',
     categories: [aiCategory.id],
     tags: [mlTag.id],
-    authorId: 'author-123'
+    authorId: 'author-123',
   });
 
   // Analyze and create relationships
-  const relationshipAnalysis = await contentManager.categorizationManager.analyzeRelationships(result.blogPost.id);
-  
+  const relationshipAnalysis =
+    await contentManager.categorizationManager.analyzeRelationships(
+      result.blogPost.id,
+    );
+
   console.log('Relationship Analysis:');
-  console.log('- Existing relationships:', relationshipAnalysis.relatedPosts.length);
-  console.log('- Suggested relationships:', relationshipAnalysis.suggestedRelationships.length);
+  console.log(
+    '- Existing relationships:',
+    relationshipAnalysis.relatedPosts.length,
+  );
+  console.log(
+    '- Suggested relationships:',
+    relationshipAnalysis.suggestedRelationships.length,
+  );
 
   // Create a content series
   const aiSeries = await contentManager.categorizationManager.createSeries(
     'AI Fundamentals Series',
-    'A comprehensive series covering AI and machine learning fundamentals'
+    'A comprehensive series covering AI and machine learning fundamentals',
   );
 
-  await contentManager.categorizationManager.addToSeries(result.blogPost.id, aiSeries.id, 1);
-  await contentManager.categorizationManager.addToSeries(relatedPost.blogPost.id, aiSeries.id, 2);
+  await contentManager.categorizationManager.addToSeries(
+    result.blogPost.id,
+    aiSeries.id,
+    1,
+  );
+  await contentManager.categorizationManager.addToSeries(
+    relatedPost.blogPost.id,
+    aiSeries.id,
+    2,
+  );
 
   console.log('Created content series with 2 posts');
 
@@ -291,23 +354,21 @@ async function advancedContentManagementExample() {
   console.log('\n=== Publishing Management Demo ===');
 
   // Schedule publication
-  await contentManager.publishBlogPost(
-    result.blogPost.id,
-    'author-123',
-    {
-      scheduleOptions: {
-        scheduledFor: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
-        timezone: 'America/New_York',
-        autoPromote: true,
-        promotionChannels: ['twitter', 'linkedin', 'facebook'],
-        notifySubscribers: true
-      },
-      createRelationships: true,
-      notifySubscribers: true
-    }
-  );
+  await contentManager.publishBlogPost(result.blogPost.id, 'author-123', {
+    scheduleOptions: {
+      scheduledFor: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
+      timezone: 'America/New_York',
+      autoPromote: true,
+      promotionChannels: ['twitter', 'linkedin', 'facebook'],
+      notifySubscribers: true,
+    },
+    createRelationships: true,
+    notifySubscribers: true,
+  });
 
-  console.log('Blog post scheduled for publication tomorrow with social media promotion');
+  console.log(
+    'Blog post scheduled for publication tomorrow with social media promotion',
+  );
 
   // ===== 7. ADVANCED SEARCH =====
   console.log('\n=== Advanced Search Demo ===');
@@ -318,7 +379,7 @@ async function advancedContentManagementExample() {
     tags: [mlTag.id],
     status: ['PUBLISHED', 'SCHEDULED'],
     sortBy: 'relevance',
-    limit: 10
+    limit: 10,
   });
 
   console.log('Search Results:');
@@ -328,7 +389,7 @@ async function advancedContentManagementExample() {
   console.log('\n=== Analytics Dashboard ===');
 
   const analytics = await contentManager.getContentAnalytics();
-  
+
   console.log('Content Analytics:');
   console.log('- Total Posts:', analytics.overview.totalPosts);
   console.log('- Published:', analytics.overview.publishedPosts);
@@ -342,21 +403,26 @@ async function advancedContentManagementExample() {
   console.log('\n=== Notification System Demo ===');
 
   // Get notifications for the author
-  const notifications = await contentManager.getUserNotifications('author-123', {
-    unreadOnly: true,
-    limit: 10
-  });
+  const notifications = await contentManager.getUserNotifications(
+    'author-123',
+    {
+      unreadOnly: true,
+      limit: 10,
+    },
+  );
 
   console.log('Recent Notifications:');
   notifications.forEach((notification, index) => {
     console.log(`${index + 1}. [${notification.type}] ${notification.title}`);
     console.log(`   ${notification.message}`);
-    console.log(`   Priority: ${notification.priority}, Created: ${notification.createdAt.toISOString()}`);
+    console.log(
+      `   Priority: ${notification.priority}, Created: ${notification.createdAt.toISOString()}`,
+    );
   });
 
   // ===== 10. CLEANUP =====
   await prisma.$disconnect();
-  
+
   console.log('\n=== Content Management Demo Completed ===');
 }
 
@@ -364,14 +430,18 @@ async function advancedContentManagementExample() {
 if (require.main === module) {
   advancedContentManagementExample()
     .then(() => {
-      console.log('Advanced content management example completed successfully!');
+      console.log(
+        'Advanced content management example completed successfully!',
+      );
       process.exit(0);
     })
-    .catch((error) => {
-      console.error('Error running advanced content management example:', error);
+    .catch(error => {
+      console.error(
+        'Error running advanced content management example:',
+        error,
+      );
       process.exit(1);
     });
 }
 
 export { advancedContentManagementExample };
-

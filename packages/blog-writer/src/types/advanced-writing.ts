@@ -1,5 +1,3 @@
-
-
 /**
  * Week 7-8 Advanced Writing Features Types
  * Comprehensive types for multi-section generation, tone consistency, fact-checking, and optimization
@@ -41,29 +39,29 @@ export interface ContentSection {
   wordCount: number;
   keyPoints: string[];
   contextTags: string[];
-  
+
   // AI Generation metadata
   promptUsed?: string;
   modelUsed?: string;
   generationContext?: Record<string, any>;
   generatedAt?: Date;
-  
+
   // Quality metrics
   readabilityScore?: number;
   coherenceScore?: number;
   relevanceScore?: number;
-  
+
   // Relationships
   parent?: ContentSection;
   children: ContentSection[];
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
 
 export enum SectionType {
   HEADING = 'HEADING',
-  SUBHEADING = 'SUBHEADING', 
+  SUBHEADING = 'SUBHEADING',
   PARAGRAPH = 'PARAGRAPH',
   INTRODUCTION = 'INTRODUCTION',
   CONCLUSION = 'CONCLUSION',
@@ -77,7 +75,7 @@ export enum SectionType {
   CALLOUT = 'CALLOUT',
   STEPS = 'STEPS',
   FAQ = 'FAQ',
-  TABLE = 'TABLE'
+  TABLE = 'TABLE',
 }
 
 export interface SectionGenerationContext {
@@ -114,7 +112,7 @@ export enum ConnectionType {
   EXAMPLE = 'EXAMPLE',
   SUMMARY = 'SUMMARY',
   ELABORATION = 'ELABORATION',
-  CONTRAST = 'CONTRAST'
+  CONTRAST = 'CONTRAST',
 }
 
 // ===== TONE & STYLE CONSISTENCY =====
@@ -123,31 +121,31 @@ export interface ToneAnalysis {
   id: string;
   blogPostId: string;
   sectionId?: string;
-  
+
   // Detected characteristics
   primaryTone: ToneCategory;
   secondaryTones: ToneCategory[];
   confidence: number;
-  
+
   // Metrics
   formalityScore: number; // 0-1
   emotionalTone: EmotionalTone;
   emotionIntensity: number; // 0-1
   authorityLevel: number; // 0-1
   personalityTraits: Record<string, number>;
-  
+
   // Brand alignment
   brandVoiceScore?: number;
   consistencyScore?: number;
   deviations?: ToneDeviation[];
-  
+
   analyzedAt: Date;
   modelUsed?: string;
 }
 
 export enum ToneCategory {
   PROFESSIONAL = 'PROFESSIONAL',
-  CASUAL = 'CASUAL', 
+  CASUAL = 'CASUAL',
   AUTHORITATIVE = 'AUTHORITATIVE',
   FRIENDLY = 'FRIENDLY',
   TECHNICAL = 'TECHNICAL',
@@ -159,20 +157,20 @@ export enum ToneCategory {
   EMPATHETIC = 'EMPATHETIC',
   URGENT = 'URGENT',
   CONFIDENT = 'CONFIDENT',
-  HUMBLE = 'HUMBLE'
+  HUMBLE = 'HUMBLE',
 }
 
 export enum EmotionalTone {
   NEUTRAL = 'NEUTRAL',
   POSITIVE = 'POSITIVE',
-  NEGATIVE = 'NEGATIVE', 
+  NEGATIVE = 'NEGATIVE',
   EXCITED = 'EXCITED',
   CONCERNED = 'CONCERNED',
   OPTIMISTIC = 'OPTIMISTIC',
   CAUTIOUS = 'CAUTIOUS',
   PASSIONATE = 'PASSIONATE',
   ANALYTICAL = 'ANALYTICAL',
-  INSPIRING = 'INSPIRING'
+  INSPIRING = 'INSPIRING',
 }
 
 export interface ToneDeviation {
@@ -202,31 +200,31 @@ export interface StyleCheck {
   id: string;
   blogPostId: string;
   toneAnalysisId?: string;
-  
+
   // Style guide compliance
   styleGuideId?: string;
   complianceScore: number; // 0-1
   violations: StyleViolation[];
-  
+
   // Writing metrics
   sentenceLength: number;
   paragraphLength: number;
   readingLevel: number;
   passiveVoiceScore: number;
-  
+
   // Vocabulary analysis
   vocabularyLevel: string;
   jargonUsage: number;
   repetitiveness: number;
-  
+
   // Brand voice
   brandVoiceMatch?: number;
   voicePersonality?: Record<string, number>;
-  
+
   // Suggestions
   suggestions: StyleSuggestion[];
   criticalIssues: string[];
-  
+
   checkedAt: Date;
 }
 
@@ -252,37 +250,37 @@ export interface StyleSuggestion {
 export interface FactCheck {
   id: string;
   blogPostId: string;
-  
+
   // Claim details
   claim: string;
   sectionId?: string;
   startPosition?: number;
   endPosition?: number;
-  
+
   // Verification results
   verificationStatus: VerificationStatus;
   confidenceScore?: number;
   evidenceQuality?: number;
-  
+
   // Source information
   sourceUrls: string[];
   sourcesVerified: number;
   sourcesReliable: number;
   sourceCredibility?: number;
-  
+
   // Verification metadata
   verificationMethod?: string;
   verificationNotes?: string;
   verifiedAt?: Date;
   verifiedBy?: string;
-  
+
   // Flags
   requiresAttention: boolean;
   flagReason?: string;
-  
+
   createdAt: Date;
   updatedAt: Date;
-  
+
   citations: SourceCitation[];
 }
 
@@ -293,43 +291,43 @@ export enum VerificationStatus {
   FALSE = 'FALSE',
   PARTIALLY_TRUE = 'PARTIALLY_TRUE',
   UNVERIFIABLE = 'UNVERIFIABLE',
-  REQUIRES_UPDATE = 'REQUIRES_UPDATE'
+  REQUIRES_UPDATE = 'REQUIRES_UPDATE',
 }
 
 export interface SourceCitation {
   id: string;
   blogPostId: string;
   factCheckId?: string;
-  
+
   // Citation details
   title: string;
   url: string;
   author?: string;
   publishedDate?: Date;
   accessedDate: Date;
-  
+
   // Source metadata
   sourceType: SourceType;
   domain?: string;
   language: string;
-  
+
   // Credibility assessment
   credibilityScore?: number; // 0-1
   authorityScore?: number; // 0-1
   biasRating?: BiasRating;
   expertiseLevel?: ExpertiseLevel;
-  
+
   // Citation context
   citationContext?: string;
   quote?: string;
   pageNumber?: string;
-  
+
   // Quality flags
   isPeerReviewed: boolean;
   isGovernment: boolean;
   isAcademic: boolean;
   isRecent: boolean;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -348,7 +346,7 @@ export enum SourceType {
   VIDEO = 'VIDEO',
   PODCAST = 'PODCAST',
   INTERVIEW = 'INTERVIEW',
-  OTHER = 'OTHER'
+  OTHER = 'OTHER',
 }
 
 export enum BiasRating {
@@ -358,7 +356,7 @@ export enum BiasRating {
   LEAN_RIGHT = 'LEAN_RIGHT',
   RIGHT = 'RIGHT',
   MIXED = 'MIXED',
-  UNKNOWN = 'UNKNOWN'
+  UNKNOWN = 'UNKNOWN',
 }
 
 export enum ExpertiseLevel {
@@ -367,7 +365,7 @@ export enum ExpertiseLevel {
   ACADEMIC = 'ACADEMIC',
   JOURNALIST = 'JOURNALIST',
   GENERAL_PUBLIC = 'GENERAL_PUBLIC',
-  UNKNOWN = 'UNKNOWN'
+  UNKNOWN = 'UNKNOWN',
 }
 
 // ===== CONTENT OPTIMIZATION SUGGESTIONS =====
@@ -375,7 +373,7 @@ export enum ExpertiseLevel {
 export interface OptimizationSuggestion {
   id: string;
   blogPostId: string;
-  
+
   // Suggestion details
   category: OptimizationCategory;
   title: string;
@@ -383,31 +381,31 @@ export interface OptimizationSuggestion {
   impact: ImpactLevel;
   effort: EffortLevel;
   priority: number; // 1-100
-  
+
   // Specific improvements
   currentValue?: string;
   suggestedValue?: string;
   beforeText?: string;
   afterText?: string;
   position?: number;
-  
+
   // Impact projections
   seoImpact?: number;
   keywordTarget?: string;
   readabilityImpact?: number;
   engagementMetric?: string;
   expectedLift?: number;
-  
+
   // Implementation tracking
   isImplemented: boolean;
   implementedAt?: Date;
   implementedBy?: string;
-  
+
   // Validation
   isValidated: boolean;
   validationScore?: number;
   actualImpact?: number;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -426,20 +424,20 @@ export enum OptimizationCategory {
   KEYWORDS = 'KEYWORDS',
   INTERNAL_LINKING = 'INTERNAL_LINKING',
   CONTENT_LENGTH = 'CONTENT_LENGTH',
-  FORMATTING = 'FORMATTING'
+  FORMATTING = 'FORMATTING',
 }
 
 export enum ImpactLevel {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
   HIGH = 'HIGH',
-  CRITICAL = 'CRITICAL'
+  CRITICAL = 'CRITICAL',
 }
 
 export enum EffortLevel {
   LOW = 'LOW',
   MEDIUM = 'MEDIUM',
-  HIGH = 'HIGH'
+  HIGH = 'HIGH',
 }
 
 // ===== COMPREHENSIVE CONTENT METRICS =====
@@ -447,22 +445,22 @@ export enum EffortLevel {
 export interface ContentMetrics {
   id: string;
   blogPostId: string;
-  
+
   // Generation metrics
   sectionsGenerated: number;
   totalGenerationTime?: number; // milliseconds
   averageSectionTime?: number; // milliseconds
-  
+
   // Quality metrics
   overallQualityScore?: number; // 0-1
   coherenceScore?: number; // 0-1
   consistencyScore?: number; // 0-1
   originalityScore?: number; // 0-1
-  
+
   // Tone metrics
   toneConsistencyScore?: number; // 0-1
   brandAlignmentScore?: number; // 0-1
-  
+
   // Fact-checking metrics
   totalClaims: number;
   verifiedClaims: number;
@@ -470,14 +468,14 @@ export interface ContentMetrics {
   sourcesUsed: number;
   reliableSources: number;
   averageSourceCredibility?: number;
-  
+
   // Optimization metrics
   seoScore?: number; // 0-100
   readabilityScore?: number; // 0-100
   engagementScore?: number; // 0-100
   totalSuggestions: number;
   implementedSuggestions: number;
-  
+
   measuredAt: Date;
 }
 
@@ -568,7 +566,7 @@ export interface StyleGuideSettings {
     /** Voice preference */
     voice: 'active' | 'passive' | 'mixed';
   };
-  
+
   /** Vocabulary and language settings */
   language: {
     /** Technical jargon level */
@@ -580,7 +578,7 @@ export interface StyleGuideSettings {
     /** Industry-specific terminology usage */
     industryTerms: boolean;
   };
-  
+
   /** Formatting and structure preferences */
   formatting: {
     /** Use bullet points and lists */
@@ -592,7 +590,7 @@ export interface StyleGuideSettings {
     /** Preferred content structure */
     contentStructure: 'linear' | 'modular' | 'hierarchical';
   };
-  
+
   /** Brand voice characteristics */
   brandVoice: {
     /** Primary tone */
@@ -606,7 +604,7 @@ export interface StyleGuideSettings {
     /** Preferred expressions */
     preferredExpressions?: string[];
   };
-  
+
   /** Content quality standards */
   qualityStandards: {
     /** Minimum content originality score */
@@ -618,7 +616,7 @@ export interface StyleGuideSettings {
     /** Citation requirements */
     citationStyle?: 'apa' | 'mla' | 'chicago' | 'harvard' | 'custom';
   };
-  
+
   /** Content accessibility settings */
   accessibility: {
     /** Include alt text for images */
@@ -630,7 +628,7 @@ export interface StyleGuideSettings {
     /** Include content warnings where appropriate */
     contentWarnings: boolean;
   };
-  
+
   /** Compliance and legal requirements */
   compliance?: {
     /** Industry compliance standards */
@@ -664,7 +662,7 @@ export interface SEORequirements {
     /** Semantic keywords to include */
     semanticKeywords?: string[];
   };
-  
+
   /** Content length and structure requirements */
   contentStructure: {
     /** Target word count range */
@@ -693,7 +691,7 @@ export interface SEORequirements {
       includeCTA?: boolean;
     };
   };
-  
+
   /** Meta elements optimization */
   metaOptimization: {
     /** Title tag requirements */
@@ -724,7 +722,7 @@ export interface SEORequirements {
       useHyphens: boolean;
     };
   };
-  
+
   /** Internal linking requirements */
   internalLinking: {
     /** Minimum number of internal links */
@@ -736,7 +734,7 @@ export interface SEORequirements {
     /** Categories to link to */
     linkCategories?: string[];
   };
-  
+
   /** Image optimization requirements */
   imageOptimization: {
     /** Require alt text for all images */
@@ -748,7 +746,7 @@ export interface SEORequirements {
     /** Image caption requirements */
     captionRequirements?: 'none' | 'optional' | 'required';
   };
-  
+
   /** Technical SEO requirements */
   technicalSEO: {
     /** Schema markup requirements */
@@ -768,7 +766,7 @@ export interface SEORequirements {
       lazyLoadImages?: boolean;
     };
   };
-  
+
   /** Content freshness and updates */
   contentFreshness: {
     /** Include publication date */
@@ -778,7 +776,7 @@ export interface SEORequirements {
     /** Content review schedule */
     reviewSchedule?: '3months' | '6months' | '1year' | 'custom';
   };
-  
+
   /** Local SEO (if applicable) */
   localSEO?: {
     /** Include location-based keywords */
@@ -796,17 +794,16 @@ export interface SEORequirements {
 export interface WritingConfig {
   /** Content sections configuration */
   sections: ContentSection[];
-  
+
   /** Style guide settings and preferences */
   styleGuide: StyleGuideSettings;
-  
+
   /** SEO optimization requirements */
   seoRequirements: SEORequirements;
-  
+
   /** Enable automatic fact-checking */
   factCheckingEnabled: boolean;
-  
+
   /** Enable source verification */
   sourceVerification: boolean;
 }
-

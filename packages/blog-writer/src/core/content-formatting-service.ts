@@ -866,7 +866,7 @@ export class ContentFormattingService {
     // Add engagement optimizations based on platform
     
     if (platformName === 'linkedin' && !this.hasEngagementTriggers(content.content)) {
-      content.content += '\n\n💭 What's your experience with this? Share in the comments!';
+      content.content += "\n\n💭 What's your experience with this? Share in the comments!";
       
       modifications.push({
         type: 'structure_change',

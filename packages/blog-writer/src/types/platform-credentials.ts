@@ -1,5 +1,3 @@
-
-
 /**
  * Platform-specific credential types
  * Extension of the platform integration framework
@@ -73,7 +71,7 @@ export interface LinkedInCredentials {
 
 // ===== UNIFIED CREDENTIAL FACTORY =====
 
-export type PlatformSpecificCredentials = 
+export type PlatformSpecificCredentials =
   | ShopifyCredentials
   | WebflowCredentials
   | WordPressCredentials
@@ -82,17 +80,20 @@ export type PlatformSpecificCredentials =
 
 export function createPlatformCredentials(
   platform: string,
-  credentialData: PlatformSpecificCredentials
+  credentialData: PlatformSpecificCredentials,
 ): PlatformCredentials {
   return {
     type: getAuthenticationType(credentialData.type as string),
     data: credentialData,
     scopes: 'scopes' in credentialData ? credentialData.scopes : undefined,
-    expiresAt: 'expiresAt' in credentialData ? credentialData.expiresAt : undefined
+    expiresAt:
+      'expiresAt' in credentialData ? credentialData.expiresAt : undefined,
   };
 }
 
-function getAuthenticationType(type: string): 'api_key' | 'oauth2' | 'token' | 'basic_auth' | 'jwt' | 'custom' {
+function getAuthenticationType(
+  type: string,
+): 'api_key' | 'oauth2' | 'token' | 'basic_auth' | 'jwt' | 'custom' {
   switch (type) {
     case 'private_app':
     case 'api_key':
@@ -122,7 +123,9 @@ export interface CredentialValidationResult {
 }
 
 export class CredentialValidator {
-  static validateShopifyCredentials(credentials: ShopifyCredentials): CredentialValidationResult {
+  static validateShopifyCredentials(
+    credentials: ShopifyCredentials,
+  ): CredentialValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -134,24 +137,30 @@ export class CredentialValidator {
 
     if (credentials.type === 'private_app' || credentials.type === 'oauth2') {
       if (!credentials.accessToken) {
-        errors.push('Access token is required for private app and OAuth2 authentication');
+        errors.push(
+          'Access token is required for private app and OAuth2 authentication',
+        );
       }
     }
 
     if (credentials.type === 'api_key') {
       if (!credentials.apiKey || !credentials.apiSecret) {
-        errors.push('API key and secret are required for API key authentication');
+        errors.push(
+          'API key and secret are required for API key authentication',
+        );
       }
     }
 
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
-  static validateWebflowCredentials(credentials: WebflowCredentials): CredentialValidationResult {
+  static validateWebflowCredentials(
+    credentials: WebflowCredentials,
+  ): CredentialValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -172,17 +181,21 @@ export class CredentialValidator {
     }
 
     if (!credentials.collectionId) {
-      warnings.push('Collection ID not specified - will attempt to find blog collection automatically');
+      warnings.push(
+        'Collection ID not specified - will attempt to find blog collection automatically',
+      );
     }
 
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
-  static validateWordPressCredentials(credentials: WordPressCredentials): CredentialValidationResult {
+  static validateWordPressCredentials(
+    credentials: WordPressCredentials,
+  ): CredentialValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -205,8 +218,7 @@ export class CredentialValidator {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 }
-

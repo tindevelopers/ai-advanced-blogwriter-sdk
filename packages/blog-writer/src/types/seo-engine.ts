@@ -1,8 +1,6 @@
-
-
 /**
  * Week 9-10 SEO Analysis Engine Types
- * Comprehensive types for DataForSEO integration, keyword research, on-page optimization, 
+ * Comprehensive types for DataForSEO integration, keyword research, on-page optimization,
  * meta tag generation, schema markup, and readability analysis
  */
 
@@ -219,7 +217,12 @@ export interface ImageAnalysisDetail {
 }
 
 export interface ImageIssue {
-  type: 'missing_alt' | 'poor_alt' | 'oversized' | 'wrong_format' | 'not_optimized';
+  type:
+    | 'missing_alt'
+    | 'poor_alt'
+    | 'oversized'
+    | 'wrong_format'
+    | 'not_optimized';
   severity: 'low' | 'medium' | 'high';
   description: string;
 }
@@ -533,7 +536,11 @@ export interface ReadingLevel {
 }
 
 export interface ReadabilitySuggestion {
-  type: 'sentence_length' | 'word_complexity' | 'paragraph_length' | 'passive_voice';
+  type:
+    | 'sentence_length'
+    | 'word_complexity'
+    | 'paragraph_length'
+    | 'passive_voice';
   description: string;
   impact: 'low' | 'medium' | 'high';
   examples?: string[];
@@ -680,7 +687,7 @@ export interface SEOAnalysisResult {
   url?: string;
   blogPostId: string;
   analyzedAt: Date;
-  
+
   // Core Analysis Results
   keywordAnalysis: KeywordData[];
   onPageSEO: OnPageSEOAnalysis;
@@ -689,7 +696,7 @@ export interface SEOAnalysisResult {
   readabilityScore: ReadabilityMetrics;
   contentQuality: ContentQualityScore;
   competitorAnalysis?: CompetitorAnalysis;
-  
+
   // Aggregate Scores
   overallScore: number; // 0-100
   categoryScores: {
@@ -699,11 +706,11 @@ export interface SEOAnalysisResult {
     keywords: number;
     mobile: number;
   };
-  
+
   // Recommendations
   recommendations: SEORecommendation[];
   quickWins: SEORecommendation[];
-  
+
   // Metadata
   dataSource: 'dataforseo' | 'ai_analysis' | 'hybrid';
   processingTime: number; // milliseconds
@@ -738,7 +745,7 @@ export enum SEORecommendationType {
   SCHEMA_MARKUP = 'schema_markup',
   PAGE_SPEED = 'page_speed',
   MOBILE_OPTIMIZATION = 'mobile_optimization',
-  CANONICAL_URL = 'canonical_url'
+  CANONICAL_URL = 'canonical_url',
 }
 
 // ===== REQUESTED SPECIFIC INTERFACES =====
@@ -928,7 +935,12 @@ export interface LinkOpportunity {
   authority: number;
   relevance: number;
   difficulty: number;
-  type: 'guest_post' | 'resource_page' | 'broken_link' | 'mention' | 'directory';
+  type:
+    | 'guest_post'
+    | 'resource_page'
+    | 'broken_link'
+    | 'mention'
+    | 'directory';
   contactInfo?: string;
   notes: string;
 }
@@ -973,7 +985,13 @@ export interface KeywordResearchResponse {
 }
 
 export interface SchemaGenerationRequest {
-  contentType: 'article' | 'blog_post' | 'how_to' | 'faq' | 'product' | 'service';
+  contentType:
+    | 'article'
+    | 'blog_post'
+    | 'how_to'
+    | 'faq'
+    | 'product'
+    | 'service';
   title: string;
   description: string;
   author?: string;
@@ -988,4 +1006,3 @@ export interface SchemaGenerationRequest {
   };
   additionalData?: Record<string, any>;
 }
-

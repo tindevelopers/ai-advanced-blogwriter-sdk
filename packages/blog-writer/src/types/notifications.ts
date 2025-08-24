@@ -1,5 +1,3 @@
-
-
 /**
  * Notification System Types
  * Comprehensive notification system for workflow events
@@ -18,13 +16,13 @@ export interface Notification {
   createdAt: Date;
   readAt?: Date;
   expiresAt?: Date;
-  
+
   // Optional relationships
   blogPostId?: string;
   blogPost?: any;
 }
 
-export type NotificationType = 
+export type NotificationType =
   | 'workflow'
   | 'approval'
   | 'comment'
@@ -34,11 +32,7 @@ export type NotificationType =
   | 'reminder'
   | 'deadline';
 
-export type NotificationPriority = 
-  | 'low'
-  | 'medium' 
-  | 'high'
-  | 'urgent';
+export type NotificationPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export interface NotificationPreferences {
   userId: string;
@@ -97,4 +91,3 @@ export interface NotificationBatch {
   createdAt: Date;
   sentAt?: Date;
 }
-

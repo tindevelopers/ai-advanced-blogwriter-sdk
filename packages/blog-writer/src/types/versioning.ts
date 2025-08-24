@@ -1,5 +1,3 @@
-
-
 /**
  * Content Versioning System Types
  * Provides comprehensive version control for blog posts with branching and comparison capabilities
@@ -34,7 +32,7 @@ export interface VersionWithMetadata {
   createdAt: Date;
   createdBy?: string;
   changeSummary?: string;
-  
+
   // SEO snapshot
   focusKeyword?: string;
   keywords: string[];
@@ -118,7 +116,7 @@ export interface VersionRollbackOptions {
   preserveCurrent?: boolean;
 }
 
-export type BlogPostStatus = 
+export type BlogPostStatus =
   | 'DRAFT'
   | 'PENDING_REVIEW'
   | 'IN_REVIEW'
@@ -128,4 +126,3 @@ export type BlogPostStatus =
   | 'ARCHIVED'
   | 'SCHEDULED'
   | 'UNPUBLISHED';
-

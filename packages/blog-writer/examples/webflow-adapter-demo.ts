@@ -1,5 +1,3 @@
-
-
 /**
  * Webflow Platform Adapter Usage Example
  * Demonstrates how to use the WebflowAdapter for CMS publishing
@@ -8,14 +6,14 @@
 import {
   WebflowAdapter,
   MultiPlatformPublisher,
-  createPlatformCredentials
+  createPlatformCredentials,
 } from '../src/index';
 import type {
   BlogPost,
   WebflowCredentials,
   WebflowConfig,
   FormattedContent,
-  PublishResult
+  PublishResult,
 } from '../src/index';
 
 /**
@@ -23,43 +21,46 @@ import type {
  */
 async function basicWebflowExample() {
   console.log('=== Basic Webflow Adapter Example ===');
-  
+
   // 1. Configure Webflow adapter
   const webflowConfig: WebflowConfig = {
     siteId: 'your_webflow_site_id_here',
     apiVersion: 'v1',
     maxRetries: 3,
     retryDelay: 1000,
-    timeout: 30000
+    timeout: 30000,
   };
-  
+
   const webflowAdapter = new WebflowAdapter(webflowConfig);
-  
+
   // 2. Set up credentials for API token authentication
   const webflowCredentials: WebflowCredentials = {
     type: 'api_token',
     apiToken: 'your_webflow_api_token_here',
     siteId: 'your_webflow_site_id_here',
-    collectionId: 'your_blog_collection_id_here' // Optional - will auto-detect
+    collectionId: 'your_blog_collection_id_here', // Optional - will auto-detect
   };
-  
-  const platformCredentials = createPlatformCredentials('webflow', webflowCredentials);
-  
+
+  const platformCredentials = createPlatformCredentials(
+    'webflow',
+    webflowCredentials,
+  );
+
   try {
     // 3. Authenticate with Webflow
     console.log('Authenticating with Webflow...');
     const authResult = await webflowAdapter.authenticate(platformCredentials);
-    
+
     if (!authResult.success) {
       throw new Error(`Authentication failed: ${authResult.error}`);
     }
-    
+
     console.log('✅ Authentication successful');
     console.log('Site:', authResult.userInfo?.name);
-    
+
     // 4. Create a sample blog post with rich content
     const blogPost: BlogPost = {
-      title: "The Future of Web Design: Trends to Watch in 2024",
+      title: 'The Future of Web Design: Trends to Watch in 2024',
       content: `
         Web design continues to evolve at a rapid pace. Here are the key trends shaping the industry in 2024:
         
@@ -105,73 +106,88 @@ async function basicWebflowExample() {
         
         The web design landscape continues to evolve, and staying informed about these trends will help create more effective and engaging digital experiences.
       `,
-      excerpt: "Explore the cutting-edge web design trends shaping 2024, from immersive 3D experiences to sustainable design practices.",
+      excerpt:
+        'Explore the cutting-edge web design trends shaping 2024, from immersive 3D experiences to sustainable design practices.',
       tags: ['web design', 'design trends', '2024', 'UX', 'UI', 'technology'],
-      keywords: ['web design trends 2024', 'future web design', '3D web experiences', 'sustainable design'],
+      keywords: [
+        'web design trends 2024',
+        'future web design',
+        '3D web experiences',
+        'sustainable design',
+      ],
       author: 'Design Team',
       authorEmail: 'design@agency.com',
       publishedAt: new Date(),
       status: 'published',
-      seoTitle: "Web Design Trends 2024: The Future of Digital Experiences",
-      seoDescription: "Discover the top web design trends for 2024, including 3D experiences, sustainable design, and advanced typography. Stay ahead of the curve.",
+      seoTitle: 'Web Design Trends 2024: The Future of Digital Experiences',
+      seoDescription:
+        'Discover the top web design trends for 2024, including 3D experiences, sustainable design, and advanced typography. Stay ahead of the curve.',
       focusKeyword: 'web design trends 2024',
       format: 'markdown',
-      wordCount: 450
+      wordCount: 450,
     };
-    
+
     // 5. Format content for Webflow CMS
     console.log('\nFormatting content for Webflow...');
     const formattedContent = await webflowAdapter.formatContent(blogPost);
-    
+
     console.log('✅ Content formatted successfully');
     console.log('Format:', formattedContent.format);
     console.log('Word count:', formattedContent.adaptedWordCount);
     console.log('Adaptation score:', formattedContent.adaptationScore);
-    
+
     // 6. Validate content before publishing
     console.log('\nValidating content...');
     const validation = await webflowAdapter.validateContent(formattedContent);
-    
+
     if (!validation.isValid) {
       console.log('❌ Content validation failed:');
       validation.errors.forEach(error => console.log(`  - ${error.message}`));
       return;
     }
-    
+
     console.log('✅ Content validation passed');
     if (validation.warnings.length > 0) {
       console.log('Warnings:');
-      validation.warnings.forEach(warning => console.log(`  ⚠️  ${warning.message}`));
+      validation.warnings.forEach(warning =>
+        console.log(`  ⚠️  ${warning.message}`),
+      );
     }
-    
+
     // 7. Publish to Webflow CMS
     console.log('\nPublishing to Webflow...');
     const publishResult = await webflowAdapter.publish(formattedContent, {
-      status: 'published'
+      status: 'published',
     });
-    
+
     if (!publishResult.success) {
       throw new Error(`Publishing failed: ${publishResult.error}`);
     }
-    
+
     console.log('✅ Content published successfully!');
     console.log('External ID:', publishResult.externalId);
     console.log('External URL:', publishResult.externalUrl);
     console.log('Published at:', publishResult.publishedAt);
-    
+
     // 8. Get platform analytics (basic stats)
     console.log('\nFetching analytics...');
     const analytics = await webflowAdapter.getAnalytics({
       startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-      endDate: new Date()
+      endDate: new Date(),
     });
-    
+
     console.log('Analytics summary:');
     console.log('- Estimated page views:', analytics.pageViews);
     console.log('- Estimated unique visitors:', analytics.uniqueVisitors);
-    console.log('- Average session duration:', analytics.avgSessionDuration, 'seconds');
-    console.log('- Total CMS items:', analytics.platformSpecificMetrics.totalItems);
-    
+    console.log(
+      '- Average session duration:',
+      analytics.avgSessionDuration,
+      'seconds',
+    );
+    console.log(
+      '- Total CMS items:',
+      analytics.platformSpecificMetrics.totalItems,
+    );
   } catch (error) {
     console.error('❌ Error:', error.message);
   }
@@ -182,30 +198,33 @@ async function basicWebflowExample() {
  */
 async function advancedWebflowExample() {
   console.log('\n=== Advanced Webflow Features Example ===');
-  
+
   const webflowConfig: WebflowConfig = {
     siteId: 'advanced_site_id',
-    apiVersion: 'v1'
+    apiVersion: 'v1',
   };
-  
+
   const webflowAdapter = new WebflowAdapter(webflowConfig);
-  
+
   // Using OAuth2 authentication
   const webflowCredentials: WebflowCredentials = {
     type: 'oauth2',
     accessToken: 'your_oauth2_access_token_here',
     siteId: 'advanced_site_id',
-    collectionId: 'blog_collection_id'
+    collectionId: 'blog_collection_id',
   };
-  
-  const platformCredentials = createPlatformCredentials('webflow', webflowCredentials);
-  
+
+  const platformCredentials = createPlatformCredentials(
+    'webflow',
+    webflowCredentials,
+  );
+
   try {
     await webflowAdapter.authenticate(platformCredentials);
-    
+
     // 1. Rich content blog post with advanced formatting
     const richContentPost: BlogPost = {
-      title: "Mastering Responsive Design: A Complete Guide",
+      title: 'Mastering Responsive Design: A Complete Guide',
       content: `
         <div class="hero-section">
           <h1>Responsive Design Mastery</h1>
@@ -271,9 +290,22 @@ async function advancedWebflowExample() {
           <p>Mastering responsive design is an ongoing journey. As new devices and browsing contexts emerge, we must continue adapting our approach while maintaining the core principles of flexibility and user-centered design.</p>
         </div>
       `,
-      excerpt: "Learn advanced responsive design techniques and best practices for creating websites that adapt beautifully to any device.",
-      tags: ['responsive design', 'web development', 'CSS', 'mobile-first', 'UX'],
-      keywords: ['responsive design', 'mobile-first design', 'CSS Grid', 'Flexbox', 'web development'],
+      excerpt:
+        'Learn advanced responsive design techniques and best practices for creating websites that adapt beautifully to any device.',
+      tags: [
+        'responsive design',
+        'web development',
+        'CSS',
+        'mobile-first',
+        'UX',
+      ],
+      keywords: [
+        'responsive design',
+        'mobile-first design',
+        'CSS Grid',
+        'Flexbox',
+        'web development',
+      ],
       author: 'Development Team',
       publishedAt: new Date(),
       status: 'published',
@@ -286,49 +318,51 @@ async function advancedWebflowExample() {
           size: 245760,
           dimensions: { width: 1200, height: 800 },
           altText: 'Multiple devices showing responsive website layouts',
-          caption: 'Responsive design adapts to any screen size'
-        }
-      ]
+          caption: 'Responsive design adapts to any screen size',
+        },
+      ],
     };
-    
+
     // 2. Create as draft first
     console.log('Creating draft content...');
     const draftContent = await webflowAdapter.formatContent(richContentPost);
-    
+
     const draftResult = await webflowAdapter.publish(draftContent, {
-      status: 'draft'
+      status: 'draft',
     });
-    
+
     if (draftResult.success) {
       console.log('✅ Draft created successfully');
       console.log('Draft ID:', draftResult.externalId);
-      
+
       // 3. Update the draft with additional content
       const updatedPost = {
         ...richContentPost,
-        title: "Mastering Responsive Design: The Complete 2024 Guide",
-        content: richContentPost.content + `
+        title: 'Mastering Responsive Design: The Complete 2024 Guide',
+        content:
+          richContentPost.content +
+          `
           <div class="update-section">
             <h2>2024 Updates</h2>
             <p>New additions include Container Queries support and enhanced mobile viewport handling.</p>
           </div>
-        `
+        `,
       };
-      
+
       console.log('Updating draft...');
       const updatedContent = await webflowAdapter.formatContent(updatedPost);
       const updateResult = await webflowAdapter.update(
         draftResult.externalId!,
         updatedContent,
-        { status: 'published' }
+        { status: 'published' },
       );
-      
+
       if (updateResult.success) {
         console.log('✅ Content updated and published');
         console.log('Updated URL:', updateResult.externalUrl);
       }
     }
-    
+
     // 4. Get collection information
     console.log('\nFetching collection fields...');
     const customFields = await webflowAdapter.getCustomFields();
@@ -336,19 +370,18 @@ async function advancedWebflowExample() {
     customFields.forEach(field => {
       console.log(`- ${field.name} (${field.type})`);
     });
-    
+
     // 5. Check rate limits
     const rateLimit = await webflowAdapter.getRateLimit();
     console.log('\nRate limit status:');
     console.log('- Limit:', rateLimit.limit, 'requests per minute');
     console.log('- Remaining:', rateLimit.remaining);
     console.log('- Reset time:', rateLimit.resetTime);
-    
+
     // 6. Health check
     const health = await webflowAdapter.healthCheck();
     console.log('\nPlatform health:', health.status);
     console.log('Response time:', health.responseTime, 'ms');
-    
   } catch (error) {
     console.error('❌ Error in advanced example:', error.message);
   }
@@ -359,29 +392,29 @@ async function advancedWebflowExample() {
  */
 async function multiPlatformWithWebflow() {
   console.log('\n=== Multi-Platform Publishing with Webflow ===');
-  
+
   const multiPublisher = new MultiPlatformPublisher();
-  
+
   // Add Webflow adapter to multi-platform publisher
   const webflowAdapter = new WebflowAdapter({
     siteId: 'multi_platform_site_id',
-    apiVersion: 'v1'
+    apiVersion: 'v1',
   });
-  
+
   const webflowCredentials: WebflowCredentials = {
     type: 'api_token',
     apiToken: 'your_api_token_here',
-    siteId: 'multi_platform_site_id'
+    siteId: 'multi_platform_site_id',
   };
-  
+
   await multiPublisher.addPlatform(
     webflowAdapter,
-    createPlatformCredentials('webflow', webflowCredentials)
+    createPlatformCredentials('webflow', webflowCredentials),
   );
-  
+
   // Create content optimized for design-focused platforms
   const designBlogPost: BlogPost = {
-    title: "Color Theory in Digital Design: A Practical Guide",
+    title: 'Color Theory in Digital Design: A Practical Guide',
     content: `
       Color is one of the most powerful tools in a designer's toolkit. Understanding color theory can transform your digital designs from good to exceptional.
       
@@ -462,9 +495,15 @@ async function multiPlatformWithWebflow() {
       
       Remember, color theory provides guidelines, not rules. Trust your eye and don't be afraid to experiment while keeping these principles in mind.
     `,
-    excerpt: "Master the fundamentals of color theory and learn how to apply them effectively in digital design projects.",
+    excerpt:
+      'Master the fundamentals of color theory and learn how to apply them effectively in digital design projects.',
     tags: ['color theory', 'digital design', 'UI/UX', 'branding', 'web design'],
-    keywords: ['color theory digital design', 'color psychology', 'design principles', 'web design colors'],
+    keywords: [
+      'color theory digital design',
+      'color psychology',
+      'design principles',
+      'web design colors',
+    ],
     author: 'Creative Team',
     publishedAt: new Date(),
     status: 'published',
@@ -476,52 +515,56 @@ async function multiPlatformWithWebflow() {
         mimeType: 'image/png',
         size: 156789,
         dimensions: { width: 800, height: 600 },
-        altText: 'Traditional color wheel showing primary, secondary, and tertiary colors',
-        caption: 'The foundation of all color relationships'
-      }
-    ]
+        altText:
+          'Traditional color wheel showing primary, secondary, and tertiary colors',
+        caption: 'The foundation of all color relationships',
+      },
+    ],
   };
-  
+
   try {
     // Publish to Webflow with design-optimized settings
-    const result = await multiPublisher.publishToSelected(blogPost, ['webflow'], {
-      adaptContentPerPlatform: true,
-      platformSpecificOptions: {
-        webflow: {
-          status: 'published',
-          customFields: {
-            'featured': true,
-            'category': 'design-theory',
-            'difficulty-level': 'intermediate'
-          }
-        }
-      }
-    });
-    
+    const result = await multiPublisher.publishToSelected(
+      blogPost,
+      ['webflow'],
+      {
+        adaptContentPerPlatform: true,
+        platformSpecificOptions: {
+          webflow: {
+            status: 'published',
+            customFields: {
+              featured: true,
+              category: 'design-theory',
+              'difficulty-level': 'intermediate',
+            },
+          },
+        },
+      },
+    );
+
     console.log('Multi-platform publishing result:');
     console.log('- Success:', result.success);
     console.log('- Success count:', result.successCount);
-    
+
     if (result.results.webflow) {
       console.log('- Webflow URL:', result.results.webflow.externalUrl);
     }
-    
+
     // Get content-specific analytics
     if (result.results.webflow?.externalId) {
       const contentAnalytics = await webflowAdapter.getContentAnalytics(
         result.results.webflow.externalId,
         {
           startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
-          endDate: new Date()
-        }
+          endDate: new Date(),
+        },
       );
-      
+
       console.log('\nContent-specific analytics:');
       console.log('- Views:', contentAnalytics.views);
       console.log('- Unique views:', contentAnalytics.uniqueViews);
       console.log('- Published:', contentAnalytics.publishedAt);
     }
-    
   } catch (error) {
     console.error('❌ Error in multi-platform publishing:', error.message);
   }
@@ -532,11 +575,11 @@ async function multiPlatformWithWebflow() {
  */
 async function runExamples() {
   console.log('🌐 Webflow Platform Adapter Examples\n');
-  
+
   await basicWebflowExample();
   await advancedWebflowExample();
   await multiPlatformWithWebflow();
-  
+
   console.log('\n✨ All examples completed!');
 }
 
@@ -545,11 +588,10 @@ export {
   basicWebflowExample,
   advancedWebflowExample,
   multiPlatformWithWebflow,
-  runExamples
+  runExamples,
 };
 
 // Run examples if this file is executed directly
 if (require.main === module) {
   runExamples().catch(console.error);
 }
-

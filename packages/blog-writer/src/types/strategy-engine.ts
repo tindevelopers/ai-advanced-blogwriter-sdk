@@ -1,4 +1,3 @@
-
 /**
  * Week 5-6 Content Strategy Engine Types
  * Comprehensive types for strategic content planning and analysis
@@ -14,11 +13,11 @@ export interface TopicCluster {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Hierarchy
   parent?: TopicCluster;
   children: TopicCluster[];
-  
+
   // Related entities
   topics: TopicResearch[];
   competitors: CompetitorTopic[];
@@ -33,36 +32,36 @@ export interface TopicResearch {
   primaryKeywords: string[];
   secondaryKeywords: string[];
   longTailKeywords: string[];
-  
+
   // Search data
   searchVolume?: number;
   keywordDifficulty?: number;
   cpc?: number;
   seasonalityData?: SeasonalityData;
-  
+
   // Trend analysis
   trendScore: number; // 0-1
   trending: boolean;
   trendData?: TrendData;
   peakMonths: string[];
-  
+
   // Opportunity scoring
   opportunityScore: number; // 0-1
   competitionLevel: CompetitionLevel;
   contentGapScore: number; // 0-1
-  
+
   // Metadata
   status: TopicStatus;
   priority: Priority;
   estimatedEffort?: number; // Hours
   tags: string[];
-  
+
   clusterId?: string;
   cluster?: TopicCluster;
-  
+
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Related entities
   competitors: CompetitorTopic[];
   contentBriefs: ContentBrief[];
@@ -78,7 +77,7 @@ export interface TopicRelationship {
   relationshipType: TopicRelationshipType;
   strength: number; // 0-1
   createdAt: Date;
-  
+
   fromTopic: TopicResearch;
   toTopic: TopicResearch;
 }
@@ -110,9 +109,18 @@ export interface TrendData {
 }
 
 export type CompetitionLevel = 'low' | 'medium' | 'high';
-export type TopicStatus = 'researched' | 'planned' | 'in_progress' | 'published';
+export type TopicStatus =
+  | 'researched'
+  | 'planned'
+  | 'in_progress'
+  | 'published';
 export type Priority = 'low' | 'medium' | 'high' | 'urgent';
-export type TopicRelationshipType = 'related' | 'prerequisite' | 'followup' | 'similar' | 'alternative';
+export type TopicRelationshipType =
+  | 'related'
+  | 'prerequisite'
+  | 'followup'
+  | 'similar'
+  | 'alternative';
 
 // ===== EDITORIAL CALENDAR =====
 
@@ -124,7 +132,7 @@ export interface EditorialCalendar {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-  
+
   entries: EditorialCalendarEntry[];
 }
 
@@ -133,27 +141,27 @@ export interface EditorialCalendarEntry {
   calendarId: string;
   title: string;
   description?: string;
-  
+
   // Scheduling
   plannedDate: Date;
   publishDate?: Date;
   dueDate?: Date;
-  
+
   // Content details
   contentType: string;
   status: CalendarEntryStatus;
   priority: Priority;
-  
+
   // Assignment
   assignedTo?: string;
   reviewerIds: string[];
-  
+
   // Content planning
   targetWordCount?: number;
   estimatedHours?: number;
   tags: string[];
   categories: string[];
-  
+
   // Connections
   topicId?: string;
   topic?: TopicResearch;
@@ -161,13 +169,13 @@ export interface EditorialCalendarEntry {
   blogPost?: any; // BlogPost type
   contentBriefId?: string;
   contentBrief?: ContentBrief;
-  
+
   calendar: EditorialCalendar;
-  
+
   // Milestones and tracking
   milestones: CalendarMilestone[];
   timeTracking: TimeTrackingEntry[];
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -181,7 +189,7 @@ export interface CalendarMilestone {
   isCompleted: boolean;
   completedAt?: Date;
   completedBy?: string;
-  
+
   entry: EditorialCalendarEntry;
 }
 
@@ -193,11 +201,18 @@ export interface TimeTrackingEntry {
   duration: number; // Hours
   description?: string;
   trackedAt: Date;
-  
+
   calendarEntry: EditorialCalendarEntry;
 }
 
-export type CalendarEntryStatus = 'planned' | 'research' | 'writing' | 'review' | 'ready' | 'published' | 'cancelled';
+export type CalendarEntryStatus =
+  | 'planned'
+  | 'research'
+  | 'writing'
+  | 'review'
+  | 'ready'
+  | 'published'
+  | 'cancelled';
 export type ActivityType = 'research' | 'writing' | 'editing' | 'review';
 
 // ===== COMPETITOR ANALYSIS =====
@@ -208,16 +223,16 @@ export interface Competitor {
   domain: string;
   description?: string;
   type: CompetitorType;
-  
+
   // Metrics
   domainAuthority?: number;
   monthlyTraffic?: number;
   backlinks?: number;
-  
+
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Related data
   content: CompetitorContent[];
   topics: CompetitorTopic[];
@@ -231,25 +246,25 @@ export interface CompetitorContent {
   title: string;
   url: string;
   publishDate?: Date;
-  
+
   // Content analysis
   wordCount?: number;
   readabilityScore?: number;
   seoScore?: number;
   socialShares: number;
   backlinks: number;
-  
+
   // Keyword data
   primaryKeywords: string[];
   rankings?: KeywordRankings;
-  
+
   // Gap analysis
   gapOpportunity: number; // 0-1
   canImprove: boolean;
   improvementNotes?: string;
-  
+
   competitor: Competitor;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -259,16 +274,16 @@ export interface CompetitorTopic {
   competitorId: string;
   topicId?: string;
   clusterId?: string;
-  
+
   title: string;
   coverage: number; // 0-1
   ranking?: number;
   contentCount: number;
-  
+
   competitor: Competitor;
   topic?: TopicResearch;
   cluster?: TopicCluster;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -282,14 +297,14 @@ export interface CompetitorKeyword {
   difficulty?: number;
   traffic?: number;
   url?: string;
-  
+
   // Gap analysis
   ourPosition?: number;
   gapSize?: number;
   opportunity: number; // 0-1
-  
+
   competitor: Competitor;
-  
+
   trackedAt: Date;
   updatedAt: Date;
 }
@@ -297,22 +312,22 @@ export interface CompetitorKeyword {
 export interface CompetitorAnalysis {
   id: string;
   competitorId: string;
-  
+
   // Overall analysis
   overallScore: number; // 0-1
   contentQuality?: number;
   seoStrength?: number;
   socialPresence?: number;
-  
+
   // Content gaps
   contentGaps: ContentGap[];
   keywordGaps: KeywordGap[];
   topicGaps: TopicGap[];
-  
+
   // Recommendations
   recommendations: Recommendation[];
   opportunities: Opportunity[];
-  
+
   analyzedAt: Date;
   competitor: Competitor;
 }
@@ -382,66 +397,66 @@ export interface ContentBrief {
   title: string;
   slug: string;
   description?: string;
-  
+
   // Target content details
   targetWordCount?: number;
   targetContentType: string;
   targetAudience?: string;
-  
+
   // SEO requirements
   primaryKeyword?: string;
   secondaryKeywords: string[];
   searchIntent?: SearchIntent;
   targetKeywords?: TargetKeywords;
-  
+
   // Content structure
   outline?: ContentOutline;
   requiredSections: string[];
   suggestedSections: string[];
-  
+
   // Research data
   researchSources?: ResearchSource[];
   statisticsToInclude?: Statistic[];
   examplesNeeded: string[];
-  
+
   // Competition insights
   competitorAnalysis?: BriefCompetitorAnalysis;
   contentGaps?: ContentGap[];
   differentiators: string[];
-  
+
   // Requirements
   callsToAction: string[];
   internalLinks: string[];
   externalLinks?: ExternalLink[];
   imagesNeeded: string[];
-  
+
   // Personas and targeting
   primaryPersona?: string;
   secondaryPersonas: string[];
   userQuestions: string[];
   painPoints: string[];
-  
+
   // Technical requirements
   metaTitle?: string;
   metaDescription?: string;
   focusKeywordDensity?: number;
   readingLevel?: number;
   tone?: string;
-  
+
   // Connections
   topicId?: string;
   topic?: TopicResearch;
   clusterId?: string;
   cluster?: TopicCluster;
-  
+
   // Status and workflow
   status: BriefStatus;
   version: number;
-  
+
   createdAt: Date;
   updatedAt: Date;
   createdBy?: string;
-  
+
   // Relationships
   blogPosts: any[]; // BlogPost[]
   calendarEntries: EditorialCalendarEntry[];
@@ -514,7 +529,11 @@ export interface ExternalLink {
   reason: string;
 }
 
-export type SearchIntent = 'informational' | 'commercial' | 'navigational' | 'transactional';
+export type SearchIntent =
+  | 'informational'
+  | 'commercial'
+  | 'navigational'
+  | 'transactional';
 export type BriefStatus = 'draft' | 'ready' | 'in_use' | 'archived';
 
 // ===== ANALYSIS & REPORTING =====
@@ -522,14 +541,18 @@ export type BriefStatus = 'draft' | 'ready' | 'in_use' | 'archived';
 export interface StrategyReport {
   id: string;
   title: string;
-  type: 'topic_analysis' | 'competitor_analysis' | 'content_gap' | 'opportunity';
+  type:
+    | 'topic_analysis'
+    | 'competitor_analysis'
+    | 'content_gap'
+    | 'opportunity';
   generatedAt: Date;
-  
+
   summary: ReportSummary;
   data: any;
   recommendations: Recommendation[];
   nextSteps: string[];
-  
+
   createdBy?: string;
 }
 
@@ -625,10 +648,10 @@ export interface EditorialCalendarResponse {
 export interface CompetitorInsight {
   /** Competitor domain or name */
   competitor: string;
-  
+
   /** Domain authority score */
   domainAuthority?: number;
-  
+
   /** Content performance metrics */
   performance: {
     /** Average monthly traffic */
@@ -640,7 +663,7 @@ export interface CompetitorInsight {
     /** Average content length */
     averageContentLength: number;
   };
-  
+
   /** Top performing keywords */
   topKeywords: Array<{
     keyword: string;
@@ -648,7 +671,7 @@ export interface CompetitorInsight {
     searchVolume?: number;
     traffic?: number;
   }>;
-  
+
   /** Content strategy insights */
   strategy: {
     /** Primary content topics */
@@ -660,13 +683,13 @@ export interface CompetitorInsight {
     /** Tone and style characteristics */
     toneCharacteristics: string[];
   };
-  
+
   /** Identified weaknesses to exploit */
   weaknesses: string[];
-  
+
   /** Competitive advantages they have */
   strengths: string[];
-  
+
   /** Last analysis date */
   lastAnalyzed: Date;
 }
@@ -677,10 +700,10 @@ export interface CompetitorInsight {
 export interface TrendingTopic {
   /** Topic title or keyword phrase */
   topic: string;
-  
+
   /** Trend score (0-100) */
   trendScore: number;
-  
+
   /** Search volume data */
   searchVolume: {
     /** Current monthly search volume */
@@ -690,16 +713,16 @@ export interface TrendingTopic {
     /** Percentage change */
     changePercent?: number;
   };
-  
+
   /** Trend momentum */
   momentum: 'rising' | 'stable' | 'declining' | 'volatile';
-  
+
   /** Geographic regions where trending */
   regions?: string[];
-  
+
   /** Related keywords and phrases */
   relatedKeywords: string[];
-  
+
   /** Seasonality information */
   seasonality?: {
     /** Peak months */
@@ -709,7 +732,7 @@ export interface TrendingTopic {
     /** Is seasonal topic */
     isSeasonal: boolean;
   };
-  
+
   /** Content opportunity assessment */
   opportunity: {
     /** Difficulty to rank (0-100) */
@@ -721,17 +744,17 @@ export interface TrendingTopic {
     /** Recommended content types */
     recommendedContentTypes: string[];
   };
-  
+
   /** Trend data points over time */
   historicalData?: Array<{
     date: string;
     volume: number;
     interest: number;
   }>;
-  
+
   /** Data sources */
   sources: string[];
-  
+
   /** Last updated timestamp */
   lastUpdated: Date;
 }
@@ -741,14 +764,29 @@ export interface TrendingTopic {
  */
 export interface ContentStructure {
   /** Content type */
-  contentType: 'blog' | 'article' | 'guide' | 'tutorial' | 'listicle' | 'comparison' | 'review';
-  
+  contentType:
+    | 'blog'
+    | 'article'
+    | 'guide'
+    | 'tutorial'
+    | 'listicle'
+    | 'comparison'
+    | 'review';
+
   /** Recommended sections in order */
   sections: Array<{
     /** Section title */
     title: string;
     /** Section type */
-    type: 'introduction' | 'main' | 'conclusion' | 'cta' | 'faq' | 'list' | 'comparison' | 'steps';
+    type:
+      | 'introduction'
+      | 'main'
+      | 'conclusion'
+      | 'cta'
+      | 'faq'
+      | 'list'
+      | 'comparison'
+      | 'steps';
     /** Recommended word count for section */
     wordCount?: { min: number; max: number };
     /** Whether section is required */
@@ -758,7 +796,7 @@ export interface ContentStructure {
     /** Key points to cover */
     keyPoints?: string[];
   }>;
-  
+
   /** Overall content specifications */
   specifications: {
     /** Recommended total word count */
@@ -770,7 +808,7 @@ export interface ContentStructure {
     /** Content depth */
     depth: 'surface' | 'intermediate' | 'comprehensive';
   };
-  
+
   /** SEO structure recommendations */
   seoStructure: {
     /** Heading hierarchy */
@@ -791,7 +829,7 @@ export interface ContentStructure {
       urlStructure?: string;
     };
   };
-  
+
   /** Content elements to include */
   recommendedElements: {
     /** Include images */
@@ -807,7 +845,7 @@ export interface ContentStructure {
     /** Include interactive elements */
     interactive: boolean;
   };
-  
+
   /** Competitive advantage structure */
   differentiationStrategy: {
     /** Unique angles to take */
@@ -825,16 +863,16 @@ export interface ContentStructure {
 export interface ContentStrategy {
   /** Target keywords for the content strategy */
   targetKeywords: string[];
-  
+
   /** Competitor analysis insights */
   competitorAnalysis: CompetitorInsight[];
-  
+
   /** Identified content gaps and opportunities */
   contentGaps: ContentGap[];
-  
+
   /** Current trending topics relevant to strategy */
   trendingTopics: TrendingTopic[];
-  
+
   /** Recommended content structure and approach */
   recommendedStructure: ContentStructure;
 }

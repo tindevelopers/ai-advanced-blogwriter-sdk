@@ -1,6 +1,12 @@
-
 import { prisma } from './prisma';
-import type { BlogAIConfiguration, BlogTemplate, ContentResearch, ToneType, ContentType, ResearchDepth } from '../generated/prisma-client';
+import type {
+  BlogAIConfiguration,
+  BlogTemplate,
+  ContentResearch,
+  ToneType,
+  ContentType,
+  ResearchDepth,
+} from '../generated/prisma-client';
 import type { BlogAIConfig } from '../types';
 
 /**
@@ -47,7 +53,7 @@ export class ConfigurationRepository {
         description: config.description,
         modelProvider: config.modelProvider,
         modelId: config.modelId,
-        
+
         // SEO settings
         keywordDensity: config.seo?.keywordDensity,
         minLength: config.seo?.minLength,
@@ -55,24 +61,24 @@ export class ConfigurationRepository {
         optimizeMetaDescription: config.seo?.optimizeMetaDescription ?? true,
         generateAltText: config.seo?.generateAltText ?? true,
         focusKeywords: config.seo?.focusKeywords || [],
-        
+
         // Quality settings
         readingLevel: config.quality?.readingLevel,
         tone: config.quality?.tone,
         contentType: config.quality?.contentType,
         includeSources: config.quality?.includeSources ?? true,
         factCheck: config.quality?.factCheck ?? false,
-        
+
         // Template settings
         defaultTemplate: config.template?.type,
         templateVariables: config.template?.variables,
-        
+
         // Research settings
         researchEnabled: config.research?.enabled ?? true,
         researchDepth: config.research?.depth,
         includeTrends: config.research?.includeTrends ?? true,
         competitorAnalysis: config.research?.competitorAnalysis ?? false,
-        
+
         updatedAt: new Date(),
       },
       create: {
@@ -80,7 +86,7 @@ export class ConfigurationRepository {
         description: config.description,
         modelProvider: config.modelProvider,
         modelId: config.modelId,
-        
+
         // SEO settings
         keywordDensity: config.seo?.keywordDensity ?? 0.02,
         minLength: config.seo?.minLength ?? 300,
@@ -88,18 +94,18 @@ export class ConfigurationRepository {
         optimizeMetaDescription: config.seo?.optimizeMetaDescription ?? true,
         generateAltText: config.seo?.generateAltText ?? true,
         focusKeywords: config.seo?.focusKeywords || [],
-        
+
         // Quality settings
         readingLevel: config.quality?.readingLevel ?? 8,
         tone: config.quality?.tone ?? 'PROFESSIONAL',
         contentType: config.quality?.contentType ?? 'BLOG',
         includeSources: config.quality?.includeSources ?? true,
         factCheck: config.quality?.factCheck ?? false,
-        
+
         // Template settings
         defaultTemplate: config.template?.type,
         templateVariables: config.template?.variables,
-        
+
         // Research settings
         researchEnabled: config.research?.enabled ?? true,
         researchDepth: config.research?.depth ?? 'DETAILED',
@@ -261,7 +267,10 @@ export class ConfigurationRepository {
   /**
    * Find research by topic
    */
-  async findResearchByTopic(topic: string, limit = 5): Promise<ContentResearch[]> {
+  async findResearchByTopic(
+    topic: string,
+    limit = 5,
+  ): Promise<ContentResearch[]> {
     return prisma.contentResearch.findMany({
       where: {
         topic: { contains: topic, mode: 'insensitive' },
@@ -296,11 +305,25 @@ Target Audience: {{audience}}
 
 Make it actionable and easy to follow.`,
         structureTemplate: JSON.stringify({
-          sections: ['Introduction', 'Prerequisites', 'Instructions', 'Tips', 'Troubleshooting', 'Conclusion'],
+          sections: [
+            'Introduction',
+            'Prerequisites',
+            'Instructions',
+            'Tips',
+            'Troubleshooting',
+            'Conclusion',
+          ],
           required: ['title', 'introduction', 'steps', 'conclusion'],
         }),
         wordCountRange: { min: 800, max: 2500 },
-        sections: ['Introduction', 'Prerequisites', 'Instructions', 'Tips', 'Troubleshooting', 'Conclusion'],
+        sections: [
+          'Introduction',
+          'Prerequisites',
+          'Instructions',
+          'Tips',
+          'Troubleshooting',
+          'Conclusion',
+        ],
       },
       {
         name: 'listicle',
@@ -342,7 +365,14 @@ Keywords: {{keywords}}
 Include code examples, screenshots, and step-by-step instructions.
 Make it educational and thorough.`,
         wordCountRange: { min: 1500, max: 4000 },
-        sections: ['Overview', 'Prerequisites', 'Core Content', 'Exercises', 'Advanced Topics', 'Resources'],
+        sections: [
+          'Overview',
+          'Prerequisites',
+          'Core Content',
+          'Exercises',
+          'Advanced Topics',
+          'Resources',
+        ],
       },
       {
         name: 'comparison',
@@ -361,7 +391,13 @@ Include comparison tables and clear verdicts.
 Keywords: {{keywords}}
 Be objective and provide clear guidance.`,
         wordCountRange: { min: 1200, max: 2500 },
-        sections: ['Introduction', 'Criteria', 'Analysis', 'Pros & Cons', 'Recommendation'],
+        sections: [
+          'Introduction',
+          'Criteria',
+          'Analysis',
+          'Pros & Cons',
+          'Recommendation',
+        ],
       },
       {
         name: 'guide',
@@ -382,7 +418,15 @@ This should be comprehensive and authoritative.
 Keywords: {{keywords}}
 Include internal linking and resource lists.`,
         wordCountRange: { min: 2000, max: 5000 },
-        sections: ['TOC', 'Introduction', 'Fundamentals', 'Core Sections', 'Advanced', 'Resources', 'Conclusion'],
+        sections: [
+          'TOC',
+          'Introduction',
+          'Fundamentals',
+          'Core Sections',
+          'Advanced',
+          'Resources',
+          'Conclusion',
+        ],
       },
     ];
 
@@ -426,8 +470,13 @@ Include internal linking and resource lists.`,
     return template || 'howto';
   }
 
-  private mapResearchDepthFromPrisma(depth?: ResearchDepth): 'basic' | 'detailed' | 'comprehensive' {
-    const depthMap: Record<ResearchDepth, 'basic' | 'detailed' | 'comprehensive'> = {
+  private mapResearchDepthFromPrisma(
+    depth?: ResearchDepth,
+  ): 'basic' | 'detailed' | 'comprehensive' {
+    const depthMap: Record<
+      ResearchDepth,
+      'basic' | 'detailed' | 'comprehensive'
+    > = {
       BASIC: 'basic',
       DETAILED: 'detailed',
       COMPREHENSIVE: 'comprehensive',

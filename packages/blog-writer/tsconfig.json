@@ -1,4 +1,3 @@
-
 {
   "extends": "./node_modules/@vercel/ai-tsconfig/base.json",
   "compilerOptions": {
@@ -10,16 +9,8 @@
     "rootDir": ".",
     "outDir": "dist"
   },
-  "include": [
-    "src/**/*",
-    "examples/**/*"
-  ],
-  "exclude": [
-    "dist",
-    "build",
-    "node_modules",
-    "tsup.config.ts"
-  ],
+  "include": ["src/**/*", "examples/**/*"],
+  "exclude": ["dist", "build", "node_modules", "tsup.config.ts"],
   "references": [
     {
       "path": "../ai"

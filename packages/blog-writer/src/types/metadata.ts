@@ -1,11 +1,9 @@
-
-
 /**
  * Metadata Management Types
  * Comprehensive metadata system with SEO, social media, and custom fields
  */
 
-export type MetadataFieldType = 
+export type MetadataFieldType =
   | 'STRING'
   | 'TEXT'
   | 'NUMBER'
@@ -62,13 +60,13 @@ export interface CustomMetadata {
 export interface SeoMetadata {
   id: string;
   blogPostId: string;
-  
+
   // Basic SEO
   metaTitle?: string;
   metaDescription?: string;
   canonicalUrl?: string;
   robotsDirective?: string;
-  
+
   // Open Graph
   ogType?: string;
   ogTitle?: string;
@@ -78,7 +76,7 @@ export interface SeoMetadata {
   ogUrl?: string;
   ogSiteName?: string;
   ogLocale?: string;
-  
+
   // Twitter Cards
   twitterCard?: string;
   twitterSite?: string;
@@ -87,11 +85,11 @@ export interface SeoMetadata {
   twitterDescription?: string;
   twitterImage?: string;
   twitterImageAlt?: string;
-  
+
   // Schema.org structured data
   schemaType?: string;
   structuredData?: Record<string, any>;
-  
+
   // Additional SEO fields
   focusKeywords: string[];
   secondaryKeywords: string[];
@@ -100,7 +98,7 @@ export interface SeoMetadata {
   externalLinks: number;
   imageCount: number;
   headingStructure?: HeadingStructure;
-  
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -205,4 +203,3 @@ export interface MetadataSearchQuery {
     to: Date;
   };
 }
-

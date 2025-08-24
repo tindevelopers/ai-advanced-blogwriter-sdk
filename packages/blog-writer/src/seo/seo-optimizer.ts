@@ -1,4 +1,3 @@
-
 import { generateObject, type GenerateObjectResult } from 'ai';
 import type { LanguageModelV1 } from '@ai-sdk/provider';
 import type {
@@ -15,13 +14,13 @@ import type {
 export interface SEOOptimizerOptions {
   /** Model to use for SEO analysis */
   model: LanguageModelV1;
-  
+
   /** Blog post to optimize */
   blogPost: BlogPost;
-  
+
   /** SEO optimization settings */
   optimization: SEOOptimizationOptions;
-  
+
   /** Additional context */
   context?: string;
 }
@@ -32,10 +31,10 @@ export interface SEOOptimizerOptions {
 export interface SEOAnalysisResult {
   /** SEO analysis */
   analysis: SEOAnalysis;
-  
+
   /** Optimized blog post */
   optimizedPost?: BlogPost;
-  
+
   /** Optimization applied */
   optimizationsApplied: string[];
 }
@@ -45,13 +44,13 @@ export interface SEOAnalysisResult {
  */
 export class SEOOptimizer {
   constructor(private model: LanguageModelV1) {}
-  
+
   /**
    * Analyze SEO performance of a blog post
    */
   async analyze(blogPost: BlogPost): Promise<SEOAnalysis> {
     const prompt = this.createAnalysisPrompt(blogPost);
-    
+
     const result = await generateObject({
       model: this.model,
       prompt,
@@ -71,14 +70,26 @@ export class SEOOptimizer {
               images: { type: 'number', minimum: 0, maximum: 100 },
               url: { type: 'number', minimum: 0, maximum: 100 },
             },
-            required: ['title', 'metaDescription', 'headings', 'keywords', 'contentLength', 'internalLinks', 'images', 'url'],
+            required: [
+              'title',
+              'metaDescription',
+              'headings',
+              'keywords',
+              'contentLength',
+              'internalLinks',
+              'images',
+              'url',
+            ],
           },
           recommendations: {
             type: 'array',
             items: {
               type: 'object',
               properties: {
-                type: { type: 'string', enum: ['critical', 'important', 'minor'] },
+                type: {
+                  type: 'string',
+                  enum: ['critical', 'important', 'minor'],
+                },
                 category: { type: 'string' },
                 message: { type: 'string' },
                 current: { type: 'string' },
@@ -115,10 +126,22 @@ export class SEOOptimizer {
                       url: { type: 'boolean' },
                       altText: { type: 'boolean' },
                     },
-                    required: ['title', 'metaDescription', 'firstParagraph', 'headings', 'url', 'altText'],
+                    required: [
+                      'title',
+                      'metaDescription',
+                      'firstParagraph',
+                      'headings',
+                      'url',
+                      'altText',
+                    ],
                   },
                 },
-                required: ['keyword', 'density', 'recommendedDensity', 'positions'],
+                required: [
+                  'keyword',
+                  'density',
+                  'recommendedDensity',
+                  'positions',
+                ],
               },
               secondary: {
                 type: 'array',
@@ -136,81 +159,100 @@ export class SEOOptimizer {
               avgSentenceLength: { type: 'number' },
               paragraphCount: { type: 'number' },
             },
-            required: ['wordCount', 'readingLevel', 'readabilityScore', 'avgSentenceLength', 'paragraphCount'],
+            required: [
+              'wordCount',
+              'readingLevel',
+              'readabilityScore',
+              'avgSentenceLength',
+              'paragraphCount',
+            ],
           },
         },
         required: ['score', 'components', 'recommendations', 'content'],
       },
     });
-    
+
     return result.object as SEOAnalysis;
   }
-  
+
   /**
    * Optimize a blog post for SEO
    */
   async optimize(options: SEOOptimizerOptions): Promise<SEOAnalysisResult> {
     const { blogPost, optimization } = options;
-    
+
     // First, analyze current SEO performance
     const analysis = await this.analyze(blogPost);
-    
+
     // Apply optimizations
     let optimizedPost = { ...blogPost };
     const optimizationsApplied: string[] = [];
-    
+
     // Optimize title
     if (optimization.meta?.title) {
-      const optimizedTitle = await this.optimizeTitle(optimizedPost, optimization);
+      const optimizedTitle = await this.optimizeTitle(
+        optimizedPost,
+        optimization,
+      );
       if (optimizedTitle !== blogPost.metadata.title) {
         optimizedPost.metadata.title = optimizedTitle;
         optimizationsApplied.push('title');
       }
     }
-    
+
     // Optimize meta description
     if (optimization.meta?.description) {
-      const optimizedDescription = await this.optimizeMetaDescription(optimizedPost, optimization);
+      const optimizedDescription = await this.optimizeMetaDescription(
+        optimizedPost,
+        optimization,
+      );
       if (optimizedDescription !== blogPost.metadata.metaDescription) {
         optimizedPost.metadata.metaDescription = optimizedDescription;
         optimizationsApplied.push('meta_description');
       }
     }
-    
+
     // Optimize content
     if (optimization.content) {
-      const optimizedContent = await this.optimizeContent(optimizedPost, optimization);
+      const optimizedContent = await this.optimizeContent(
+        optimizedPost,
+        optimization,
+      );
       if (optimizedContent !== blogPost.content.content) {
         optimizedPost.content.content = optimizedContent;
         optimizationsApplied.push('content');
       }
     }
-    
+
     // Optimize images
     if (optimization.images?.altText) {
-      const optimizedImages = await this.optimizeImages(optimizedPost, optimization);
+      const optimizedImages = await this.optimizeImages(
+        optimizedPost,
+        optimization,
+      );
       optimizedPost = optimizedImages;
       if (optimizedImages !== blogPost) {
         optimizationsApplied.push('images');
       }
     }
-    
+
     return {
       analysis,
-      optimizedPost: optimizationsApplied.length > 0 ? optimizedPost : undefined,
+      optimizedPost:
+        optimizationsApplied.length > 0 ? optimizedPost : undefined,
       optimizationsApplied,
     };
   }
-  
+
   /**
    * Analyze keyword performance
    */
   async analyzeKeywords(
     content: string,
-    keywords: string[]
+    keywords: string[],
   ): Promise<KeywordAnalysis[]> {
     if (keywords.length === 0) return [];
-    
+
     const prompt = `Analyze keyword performance in this content:
 
 **Keywords to analyze**: ${keywords.join(', ')}
@@ -225,7 +267,7 @@ For each keyword, analyze:
 5. Long-tail variations
 
 Provide detailed analysis for optimization recommendations.`;
-    
+
     const result = await generateObject({
       model: this.model,
       prompt,
@@ -254,7 +296,14 @@ Provide detailed analysis for optimization recommendations.`;
                 url: { type: 'boolean' },
                 altText: { type: 'boolean' },
               },
-              required: ['title', 'metaDescription', 'firstParagraph', 'headings', 'url', 'altText'],
+              required: [
+                'title',
+                'metaDescription',
+                'firstParagraph',
+                'headings',
+                'url',
+                'altText',
+              ],
             },
             related: { type: 'array', items: { type: 'string' } },
             longTail: { type: 'array', items: { type: 'string' } },
@@ -263,16 +312,16 @@ Provide detailed analysis for optimization recommendations.`;
         },
       },
     });
-    
+
     return result.object as KeywordAnalysis[];
   }
-  
+
   /**
    * Generate SEO recommendations
    */
   async generateRecommendations(
     blogPost: BlogPost,
-    targetKeywords?: string[]
+    targetKeywords?: string[],
   ): Promise<SEORecommendation[]> {
     const prompt = `Analyze this blog post and provide specific SEO recommendations:
 
@@ -298,7 +347,7 @@ Each recommendation should include:
 - Suggested improvement
 - Expected impact (0-100)
 - How to fix it`;
-    
+
     const result = await generateObject({
       model: this.model,
       prompt,
@@ -319,14 +368,14 @@ Each recommendation should include:
         },
       },
     });
-    
+
     return result.object as SEORecommendation[];
   }
-  
+
   /**
    * Private helper methods
    */
-  
+
   private createAnalysisPrompt(blogPost: BlogPost): string {
     return `Perform a comprehensive SEO analysis of this blog post:
 
@@ -343,13 +392,14 @@ Each recommendation should include:
 
 Analyze all SEO aspects and provide scores (0-100) for each component, specific recommendations, keyword analysis, and content metrics. Be thorough and specific in your analysis.`;
   }
-  
+
   private async optimizeTitle(
     blogPost: BlogPost,
-    optimization: SEOOptimizationOptions
+    optimization: SEOOptimizationOptions,
   ): Promise<string> {
-    const keywords = optimization.keywords?.primary || blogPost.metadata.seo.focusKeyword;
-    
+    const keywords =
+      optimization.keywords?.primary || blogPost.metadata.seo.focusKeyword;
+
     const prompt = `Optimize this blog title for SEO:
 
 **Current Title**: ${blogPost.metadata.title}
@@ -364,7 +414,7 @@ Create an optimized title that:
 - Follows SEO best practices
 
 Return only the optimized title.`;
-    
+
     const result = await generateObject({
       model: this.model,
       prompt,
@@ -376,16 +426,17 @@ Return only the optimized title.`;
         required: ['title'],
       },
     });
-    
+
     return result.object.title;
   }
-  
+
   private async optimizeMetaDescription(
     blogPost: BlogPost,
-    optimization: SEOOptimizationOptions
+    optimization: SEOOptimizationOptions,
   ): Promise<string> {
-    const keywords = optimization.keywords?.primary || blogPost.metadata.seo.focusKeyword;
-    
+    const keywords =
+      optimization.keywords?.primary || blogPost.metadata.seo.focusKeyword;
+
     const prompt = `Create an SEO-optimized meta description:
 
 **Title**: ${blogPost.metadata.title}
@@ -401,7 +452,7 @@ Create a meta description that:
 - Has a clear value proposition
 
 Return only the optimized meta description.`;
-    
+
     const result = await generateObject({
       model: this.model,
       prompt,
@@ -413,13 +464,13 @@ Return only the optimized meta description.`;
         required: ['description'],
       },
     });
-    
+
     return result.object.description;
   }
-  
+
   private async optimizeContent(
     blogPost: BlogPost,
-    optimization: SEOOptimizationOptions
+    optimization: SEOOptimizationOptions,
   ): Promise<string> {
     const prompt = `Optimize this content for SEO while maintaining quality and readability:
 
@@ -434,7 +485,7 @@ Optimization goals:
 - Improve content structure
 
 Return the optimized content in markdown format.`;
-    
+
     const result = await generateObject({
       model: this.model,
       prompt,
@@ -446,13 +497,13 @@ Return the optimized content in markdown format.`;
         required: ['content'],
       },
     });
-    
+
     return result.object.content;
   }
-  
+
   private async optimizeImages(
     blogPost: BlogPost,
-    optimization: SEOOptimizationOptions
+    optimization: SEOOptimizationOptions,
   ): Promise<BlogPost> {
     // This would optimize image alt text, file names, and captions
     // For now, return the original post
@@ -465,7 +516,7 @@ Return the optimized content in markdown format.`;
  */
 export async function analyzeSEO(
   model: LanguageModelV1,
-  blogPost: BlogPost
+  blogPost: BlogPost,
 ): Promise<SEOAnalysis> {
   const optimizer = new SEOOptimizer(model);
   return optimizer.analyze(blogPost);
@@ -477,7 +528,7 @@ export async function analyzeSEO(
 export async function optimizeSEO(
   model: LanguageModelV1,
   blogPost: BlogPost,
-  options: SEOOptimizationOptions
+  options: SEOOptimizationOptions,
 ): Promise<SEOAnalysisResult> {
   const optimizer = new SEOOptimizer(model);
   return optimizer.optimize({

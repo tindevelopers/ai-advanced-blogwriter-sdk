@@ -1,7 +1,6 @@
-
 /**
  * Week 11-12 Performance Optimization Types
- * Comprehensive types for content performance tracking, A/B testing, 
+ * Comprehensive types for content performance tracking, A/B testing,
  * engagement prediction, and optimization recommendations
  */
 
@@ -11,7 +10,7 @@ export interface PerformanceMetrics {
   id?: string;
   blogPostId: string;
   timestamp: Date;
-  
+
   // Core metrics
   views: number;
   uniqueViews: number;
@@ -19,24 +18,24 @@ export interface PerformanceMetrics {
   conversions: ConversionMetrics;
   seoPerformance: SEOMetrics;
   socialShares: SocialMetrics;
-  
+
   // Time-based metrics
   timeOnPage: number; // seconds
   bounceRate: number; // percentage
   exitRate: number; // percentage
   avgSessionDuration: number; // seconds
-  
+
   // Traffic source breakdown
   trafficSources: TrafficSourceMetrics;
-  
+
   // Device and demographic data
   deviceMetrics: DeviceMetrics;
   demographicMetrics: DemographicMetrics;
-  
+
   // Performance period
   periodStart: Date;
   periodEnd: Date;
-  
+
   // Metadata
   recordedAt: Date;
   lastUpdated: Date;
@@ -134,7 +133,15 @@ export interface PlatformMetrics {
   engagement: number;
 }
 
-export type SocialPlatform = 'facebook' | 'twitter' | 'linkedin' | 'pinterest' | 'reddit' | 'instagram' | 'tiktok' | 'other';
+export type SocialPlatform =
+  | 'facebook'
+  | 'twitter'
+  | 'linkedin'
+  | 'pinterest'
+  | 'reddit'
+  | 'instagram'
+  | 'tiktok'
+  | 'other';
 
 export interface SentimentAnalysis {
   overallSentiment: 'positive' | 'negative' | 'neutral';
@@ -220,36 +227,36 @@ export interface ABTestConfig {
   testName: string;
   description?: string;
   blogPostId?: string; // optional for site-wide tests
-  
+
   // Test configuration
   variants: ContentVariant[];
   trafficSplit: number[]; // should sum to 100
   duration: number; // days
-  
+
   // Success criteria
   successMetrics: SuccessMetric[];
   primaryMetric: string;
   significanceLevel: number; // e.g., 0.05 for 95% confidence
   minimumSampleSize: number;
   minimumDetectableEffect: number; // percentage
-  
+
   // Test constraints
   targeting?: TestTargeting;
   excludeReturningVisitors?: boolean;
   deviceRestrictions?: ('desktop' | 'mobile' | 'tablet')[];
   geographicRestrictions?: string[]; // country codes
-  
+
   // Test lifecycle
   status: ABTestStatus;
   startDate: Date;
   endDate?: Date;
   actualEndDate?: Date;
-  
+
   // Results
   results?: ABTestResult;
   winner?: string; // variant ID
   confidence?: number;
-  
+
   // Metadata
   createdBy: string;
   createdAt: Date;
@@ -260,23 +267,23 @@ export interface ContentVariant {
   id: string;
   name: string;
   description?: string;
-  
+
   // Content variations
   headline?: string;
   subheadline?: string;
   content?: string;
   callToAction?: string;
   featuredImage?: string;
-  
+
   // Layout variations
   layout?: string;
   template?: string;
   colorScheme?: Record<string, string>;
-  
+
   // Advanced variations
   contentStructure?: ContentVariantStructure;
   seoElements?: SEOVariantElements;
-  
+
   // Assignment
   trafficAllocation: number; // percentage
   isControl: boolean;
@@ -314,15 +321,15 @@ export interface SuccessMetric {
   weight: number; // for composite scoring
 }
 
-export type MetricType = 
-  | 'conversion_rate' 
-  | 'click_through_rate' 
-  | 'engagement_rate' 
-  | 'time_on_page' 
-  | 'bounce_rate' 
-  | 'scroll_depth' 
-  | 'social_shares' 
-  | 'lead_generation' 
+export type MetricType =
+  | 'conversion_rate'
+  | 'click_through_rate'
+  | 'engagement_rate'
+  | 'time_on_page'
+  | 'bounce_rate'
+  | 'scroll_depth'
+  | 'social_shares'
+  | 'lead_generation'
   | 'revenue';
 
 export interface TestTargeting {
@@ -335,17 +342,22 @@ export interface TestTargeting {
 
 export interface TargetingRule {
   field: string;
-  operator: 'equals' | 'contains' | 'starts_with' | 'greater_than' | 'less_than';
+  operator:
+    | 'equals'
+    | 'contains'
+    | 'starts_with'
+    | 'greater_than'
+    | 'less_than';
   value: string | number;
 }
 
-export type ABTestStatus = 
-  | 'draft' 
-  | 'scheduled' 
-  | 'running' 
-  | 'paused' 
-  | 'completed' 
-  | 'stopped' 
+export type ABTestStatus =
+  | 'draft'
+  | 'scheduled'
+  | 'running'
+  | 'paused'
+  | 'completed'
+  | 'stopped'
   | 'archived';
 
 export interface ABTestResult {
@@ -355,11 +367,11 @@ export interface ABTestResult {
   confidenceInterval: number;
   pValue: number;
   effectSize: number;
-  
+
   // Detailed analysis
   segmentAnalysis?: SegmentAnalysisResult[];
   timeSeriesData?: TimeSeriesDataPoint[];
-  
+
   // Recommendations
   recommendation: TestRecommendation;
   nextSteps?: string[];
@@ -369,10 +381,10 @@ export interface VariantResult {
   variantId: string;
   participants: number;
   conversionRate: number;
-  
+
   // All metric results
   metrics: Record<string, VariantMetricResult>;
-  
+
   // Statistical analysis
   confidenceInterval: [number, number];
   standardError: number;
@@ -400,11 +412,11 @@ export interface TimeSeriesDataPoint {
   cumulativeValue: number;
 }
 
-export type TestRecommendation = 
-  | 'implement_winner' 
-  | 'continue_testing' 
-  | 'inconclusive' 
-  | 'stop_test' 
+export type TestRecommendation =
+  | 'implement_winner'
+  | 'continue_testing'
+  | 'inconclusive'
+  | 'stop_test'
   | 'redesign_experiment';
 
 // ===== ENGAGEMENT PREDICTION MODELS =====
@@ -413,43 +425,43 @@ export interface EngagementPrediction {
   id?: string;
   blogPostId: string;
   predictionType: PredictionType;
-  
+
   // Core predictions
   predictedViews: number;
   predictedViewsRange: [number, number]; // min, max
   engagementScore: number; // 0-100 scale
   viralityPotential: number; // 0-100 scale
-  
+
   // Detailed predictions
   predictedMetrics: PredictedMetrics;
-  
+
   // Optimization insights
   optimizationSuggestions: OptimizationSuggestion[];
-  
+
   // Model confidence
   confidenceLevel: number; // 0-100
   modelAccuracy?: number;
-  
+
   // Prediction metadata
   modelVersion: string;
   features: PredictionFeatures;
   trainingDataSize?: number;
-  
+
   // Temporal aspects
   timeHorizon: number; // days
   predictionMade: Date;
   validUntil: Date;
-  
+
   // Results tracking
   actualResults?: ActualVsPredicted;
   accuracy?: number;
 }
 
-export type PredictionType = 
-  | 'content_performance' 
-  | 'viral_potential' 
-  | 'audience_engagement' 
-  | 'conversion_probability' 
+export type PredictionType =
+  | 'content_performance'
+  | 'viral_potential'
+  | 'audience_engagement'
+  | 'conversion_probability'
   | 'seo_ranking_potential';
 
 export interface PredictedMetrics {
@@ -481,28 +493,28 @@ export interface SimpleOptimizationSuggestion {
   category: SuggestionCategory;
 }
 
-export type OptimizationType = 
-  | 'headline' 
-  | 'content' 
-  | 'structure' 
-  | 'seo' 
-  | 'timing' 
-  | 'imagery' 
-  | 'cta' 
-  | 'social_optimization' 
+export type OptimizationType =
+  | 'headline'
+  | 'content'
+  | 'structure'
+  | 'seo'
+  | 'timing'
+  | 'imagery'
+  | 'cta'
+  | 'social_optimization'
   | 'technical';
 
 export type SuggestionPriority = 'critical' | 'high' | 'medium' | 'low';
 
 export type EffortLevel = 'minimal' | 'low' | 'medium' | 'high' | 'extensive';
 
-export type SuggestionCategory = 
-  | 'content_quality' 
-  | 'user_experience' 
-  | 'technical_seo' 
-  | 'social_media' 
-  | 'conversion_optimization' 
-  | 'accessibility' 
+export type SuggestionCategory =
+  | 'content_quality'
+  | 'user_experience'
+  | 'technical_seo'
+  | 'social_media'
+  | 'conversion_optimization'
+  | 'accessibility'
   | 'performance';
 
 export interface PredictionFeatures {
@@ -581,12 +593,15 @@ export interface ActualVsPredicted {
   predictedViews: number;
   actualViews: number;
   accuracy: number;
-  
-  detailedComparison: Record<string, {
-    predicted: number;
-    actual: number;
-    accuracy: number;
-  }>;
+
+  detailedComparison: Record<
+    string,
+    {
+      predicted: number;
+      actual: number;
+      accuracy: number;
+    }
+  >;
 }
 
 // ===== OPTIMIZATION RECOMMENDATION ENGINE =====
@@ -594,43 +609,43 @@ export interface ActualVsPredicted {
 export interface OptimizationRecommendation {
   id?: string;
   blogPostId: string;
-  
+
   // Recommendation details
   type: OptimizationType;
   title: string;
   description: string;
   suggestion: string;
-  
+
   // Impact analysis
   expectedImpact: number; // percentage improvement
   impactMetrics: string[]; // which metrics will be affected
   confidence: number; // 0-100
-  
+
   // Prioritization
   priority: SuggestionPriority;
   urgency: 'immediate' | 'soon' | 'eventually';
-  
+
   // Implementation
   implementation: ImplementationGuide;
   estimatedEffort: EffortLevel;
   requiredSkills: string[];
   dependencies: string[];
-  
+
   // Context
   category: SuggestionCategory;
   tags: string[];
   relatedRecommendations?: string[]; // IDs of related recommendations
-  
+
   // Evidence
   evidence: RecommendationEvidence;
   benchmarks?: BenchmarkData[];
-  
+
   // Lifecycle
   status: RecommendationStatus;
   createdAt: Date;
   implementedAt?: Date;
   dismissedAt?: Date;
-  
+
   // Results tracking
   actualImpact?: ActualImpact;
 }
@@ -640,7 +655,7 @@ export interface ImplementationGuide {
   codeChanges?: CodeChange[];
   contentChanges?: ContentChange[];
   designChanges?: DesignChange[];
-  
+
   // Resources
   documentationLinks: string[];
   toolsRequired: string[];
@@ -682,14 +697,19 @@ export interface RecommendationEvidence {
   performanceComparison: PerformanceComparison;
   industryBenchmarks: IndustryBenchmark[];
   userFeedback?: UserFeedback[];
-  
+
   // AI analysis
   aiAnalysis: AIAnalysisResult;
   modelConfidence: number;
 }
 
 export interface DataSource {
-  type: 'analytics' | 'user_testing' | 'competitor_analysis' | 'industry_report' | 'ai_analysis';
+  type:
+    | 'analytics'
+    | 'user_testing'
+    | 'competitor_analysis'
+    | 'industry_report'
+    | 'ai_analysis';
   name: string;
   url?: string;
   reliability: number; // 0-100
@@ -738,28 +758,28 @@ export interface AIAnalysisResult {
   analysisDate: Date;
 }
 
-export type RecommendationStatus = 
-  | 'pending' 
-  | 'in_review' 
-  | 'approved' 
-  | 'in_progress' 
-  | 'implemented' 
-  | 'dismissed' 
+export type RecommendationStatus =
+  | 'pending'
+  | 'in_review'
+  | 'approved'
+  | 'in_progress'
+  | 'implemented'
+  | 'dismissed'
   | 'monitoring';
 
 export interface ActualImpact {
   implementationDate: Date;
   measurementPeriod: number; // days
-  
+
   // Measured improvements
   metricImprovements: MetricImprovement[];
   overallImprovement: number;
-  
+
   // Success assessment
   successful: boolean;
   notes?: string;
   unexpectedEffects?: string[];
-  
+
   // Learning
   lessonsLearned: string[];
   recommendationAccuracy: number;
@@ -983,7 +1003,13 @@ export interface ConversionData {
  */
 export interface OptimizationSuggestion {
   id: string;
-  category: 'seo' | 'engagement' | 'conversion' | 'traffic' | 'technical' | 'content';
+  category:
+    | 'seo'
+    | 'engagement'
+    | 'conversion'
+    | 'traffic'
+    | 'technical'
+    | 'content';
   priority: 'critical' | 'high' | 'medium' | 'low';
   title: string;
   description: string;
@@ -1312,16 +1338,16 @@ export interface BestPracticeReference {
 export interface PerformanceOptimizationConfig {
   // Analytics integration
   analyticsProviders: AnalyticsProvider[];
-  
+
   // A/B testing
   abTesting: ABTestingConfig;
-  
+
   // Prediction models
   predictionModels: PredictionModelConfig;
-  
+
   // Recommendations
   recommendationEngine: RecommendationEngineConfig;
-  
+
   // Data privacy
   privacySettings: PrivacySettings;
 }
@@ -1461,14 +1487,19 @@ export interface OptimizationResponse {
 
 export class PerformanceOptimizationError extends Error {
   public readonly code: string;
-  public readonly type: 'analytics' | 'prediction' | 'optimization' | 'ab_testing' | 'configuration';
+  public readonly type:
+    | 'analytics'
+    | 'prediction'
+    | 'optimization'
+    | 'ab_testing'
+    | 'configuration';
   public readonly details?: Record<string, any>;
 
   constructor(
-    message: string, 
-    code: string, 
+    message: string,
+    code: string,
     type: PerformanceOptimizationError['type'],
-    details?: Record<string, any>
+    details?: Record<string, any>,
   ) {
     super(message);
     this.name = 'PerformanceOptimizationError';
@@ -1477,4 +1508,3 @@ export class PerformanceOptimizationError extends Error {
     this.details = details;
   }
 }
-

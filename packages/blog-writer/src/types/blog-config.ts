@@ -1,4 +1,3 @@
-
 import type { AIConfig } from './base-config';
 
 // Define LanguageModelV1 interface locally to avoid dependency
@@ -12,9 +11,20 @@ interface LanguageModelV1 {
  */
 export interface ToneConfiguration {
   /** Primary tone of voice */
-  primary: 'professional' | 'casual' | 'authoritative' | 'friendly' | 'technical' | 'conversational';
+  primary:
+    | 'professional'
+    | 'casual'
+    | 'authoritative'
+    | 'friendly'
+    | 'technical'
+    | 'conversational';
   /** Emotional undertone */
-  emotion?: 'neutral' | 'enthusiastic' | 'empathetic' | 'confident' | 'encouraging';
+  emotion?:
+    | 'neutral'
+    | 'enthusiastic'
+    | 'empathetic'
+    | 'confident'
+    | 'encouraging';
   /** Formality level (1-5, with 5 being most formal) */
   formalityLevel?: number;
   /** Target audience awareness */
@@ -41,17 +51,17 @@ export interface BlogAIConfig extends AIConfig {
    * Content type for the blog post
    */
   contentType: 'blog' | 'article' | 'tutorial';
-  
+
   /**
    * Target length for the generated content in words
    */
   targetLength: number;
-  
+
   /**
    * Enable or disable SEO optimization
    */
   seoOptimization: boolean;
-  
+
   /**
    * Tone and style settings for content generation
    */
@@ -67,7 +77,7 @@ export interface ExtendedBlogAIConfig extends BlogAIConfig {
    * Default model for blog generation
    */
   model?: string;
-  
+
   /**
    * Advanced SEO optimization settings
    */
@@ -85,7 +95,7 @@ export interface ExtendedBlogAIConfig extends BlogAIConfig {
     /** Generate alt text for images */
     generateAltText?: boolean;
   };
-  
+
   /**
    * Content quality settings
    */
@@ -93,13 +103,20 @@ export interface ExtendedBlogAIConfig extends BlogAIConfig {
     /** Reading level (1-12, grade level) */
     readingLevel?: number;
     /** Content style */
-    style?: 'blog' | 'tutorial' | 'news' | 'review' | 'comparison' | 'howto' | 'listicle';
+    style?:
+      | 'blog'
+      | 'tutorial'
+      | 'news'
+      | 'review'
+      | 'comparison'
+      | 'howto'
+      | 'listicle';
     /** Include citations and sources */
     includeSources?: boolean;
     /** Fact-checking requirements */
     factCheck?: boolean;
   };
-  
+
   /**
    * Template-specific settings
    */
@@ -109,7 +126,7 @@ export interface ExtendedBlogAIConfig extends BlogAIConfig {
     /** Custom template variables */
     variables?: Record<string, any>;
   };
-  
+
   /**
    * Research and content enrichment
    */
@@ -128,7 +145,7 @@ export interface ExtendedBlogAIConfig extends BlogAIConfig {
 /**
  * Blog template types
  */
-export type BlogTemplate = 
+export type BlogTemplate =
   | 'howto'
   | 'listicle'
   | 'comparison'

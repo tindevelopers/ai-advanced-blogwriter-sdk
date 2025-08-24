@@ -1,12 +1,11 @@
-
 import { prisma } from './prisma';
 import type { BlogPost, BlogPostVersion } from '../types';
-import type { 
+import type {
   BlogPost as PrismaBlogPost,
   BlogPostStatus,
   ContentType,
   ToneType,
-  Prisma
+  Prisma,
 } from '../generated/prisma-client';
 
 /**
@@ -16,7 +15,9 @@ export class BlogPostRepository {
   /**
    * Create a new blog post
    */
-  async create(data: Omit<BlogPost, 'versions' | 'analytics' | 'suggestions'>): Promise<PrismaBlogPost> {
+  async create(
+    data: Omit<BlogPost, 'versions' | 'analytics' | 'suggestions'>,
+  ): Promise<PrismaBlogPost> {
     const createData: Prisma.BlogPostCreateInput = {
       title: data.metadata.title,
       slug: data.metadata.slug,
@@ -24,17 +25,19 @@ export class BlogPostRepository {
       excerpt: data.content.excerpt,
       content: data.content.content,
       status: this.mapStatusToPrisma(data.status),
-      contentType: this.mapContentTypeToPrisma(data.metadata.settings?.template),
-      
+      contentType: this.mapContentTypeToPrisma(
+        data.metadata.settings?.template,
+      ),
+
       // Author info
       authorName: data.metadata.author?.name,
       authorEmail: data.metadata.author?.email,
       authorBio: data.metadata.author?.bio,
-      
+
       // Content classification
       category: data.metadata.category,
       tags: data.metadata.tags || [],
-      
+
       // SEO data
       focusKeyword: data.metadata.seo?.focusKeyword,
       keywords: data.metadata.seo?.keywords || [],
@@ -43,26 +46,26 @@ export class BlogPostRepository {
       readabilityScore: data.metadata.seo?.readabilityScore,
       wordCount: data.metadata.seo?.wordCount || 0,
       readingTime: data.metadata.settings?.readingTime,
-      
+
       // Social media
       ogTitle: data.metadata.social?.ogTitle,
       ogDescription: data.metadata.social?.ogDescription,
       ogImage: data.metadata.social?.ogImage,
       twitterCard: data.metadata.social?.twitterCard,
       twitterImage: data.metadata.social?.twitterImage,
-      
+
       // Settings
       allowComments: data.metadata.settings?.allowComments ?? true,
       featured: data.metadata.settings?.featured ?? false,
       language: data.metadata.settings?.language || 'en',
       template: data.metadata.settings?.template,
-      
+
       // Featured image
       featuredImageUrl: data.content.featuredImage?.url,
       featuredImageAlt: data.content.featuredImage?.alt,
       featuredImageCaption: data.content.featuredImage?.caption,
       featuredImageCredit: data.content.featuredImage?.credit,
-      
+
       // Publishing dates
       publishedAt: data.metadata.publishedAt,
       scheduledAt: data.metadata.scheduledAt,
@@ -93,7 +96,10 @@ export class BlogPostRepository {
 
     // Create table of contents if provided
     if (data.content.tableOfContents) {
-      await this.updateTableOfContents(blogPost.id, data.content.tableOfContents);
+      await this.updateTableOfContents(
+        blogPost.id,
+        data.content.tableOfContents,
+      );
     }
 
     // Create media entries if provided
@@ -154,34 +160,46 @@ export class BlogPostRepository {
     if (data.metadata) {
       if (data.metadata.title) updateData.title = data.metadata.title;
       if (data.metadata.slug) updateData.slug = data.metadata.slug;
-      if (data.metadata.metaDescription) updateData.metaDescription = data.metadata.metaDescription;
+      if (data.metadata.metaDescription)
+        updateData.metaDescription = data.metadata.metaDescription;
       if (data.metadata.category) updateData.category = data.metadata.category;
       if (data.metadata.tags) updateData.tags = data.metadata.tags;
-      
+
       // Update SEO data
       if (data.metadata.seo) {
-        if (data.metadata.seo.focusKeyword) updateData.focusKeyword = data.metadata.seo.focusKeyword;
-        if (data.metadata.seo.keywords) updateData.keywords = data.metadata.seo.keywords;
-        if (data.metadata.seo.keywordDensity) updateData.keywordDensity = data.metadata.seo.keywordDensity;
-        if (data.metadata.seo.seoScore) updateData.seoScore = data.metadata.seo.seoScore;
-        if (data.metadata.seo.readabilityScore) updateData.readabilityScore = data.metadata.seo.readabilityScore;
-        if (data.metadata.seo.wordCount) updateData.wordCount = data.metadata.seo.wordCount;
+        if (data.metadata.seo.focusKeyword)
+          updateData.focusKeyword = data.metadata.seo.focusKeyword;
+        if (data.metadata.seo.keywords)
+          updateData.keywords = data.metadata.seo.keywords;
+        if (data.metadata.seo.keywordDensity)
+          updateData.keywordDensity = data.metadata.seo.keywordDensity;
+        if (data.metadata.seo.seoScore)
+          updateData.seoScore = data.metadata.seo.seoScore;
+        if (data.metadata.seo.readabilityScore)
+          updateData.readabilityScore = data.metadata.seo.readabilityScore;
+        if (data.metadata.seo.wordCount)
+          updateData.wordCount = data.metadata.seo.wordCount;
       }
 
       // Update social media data
       if (data.metadata.social) {
-        if (data.metadata.social.ogTitle) updateData.ogTitle = data.metadata.social.ogTitle;
-        if (data.metadata.social.ogDescription) updateData.ogDescription = data.metadata.social.ogDescription;
-        if (data.metadata.social.ogImage) updateData.ogImage = data.metadata.social.ogImage;
-        if (data.metadata.social.twitterCard) updateData.twitterCard = data.metadata.social.twitterCard;
-        if (data.metadata.social.twitterImage) updateData.twitterImage = data.metadata.social.twitterImage;
+        if (data.metadata.social.ogTitle)
+          updateData.ogTitle = data.metadata.social.ogTitle;
+        if (data.metadata.social.ogDescription)
+          updateData.ogDescription = data.metadata.social.ogDescription;
+        if (data.metadata.social.ogImage)
+          updateData.ogImage = data.metadata.social.ogImage;
+        if (data.metadata.social.twitterCard)
+          updateData.twitterCard = data.metadata.social.twitterCard;
+        if (data.metadata.social.twitterImage)
+          updateData.twitterImage = data.metadata.social.twitterImage;
       }
     }
 
     if (data.content) {
       if (data.content.content) updateData.content = data.content.content;
       if (data.content.excerpt) updateData.excerpt = data.content.excerpt;
-      
+
       // Update featured image
       if (data.content.featuredImage) {
         updateData.featuredImageUrl = data.content.featuredImage.url;
@@ -224,17 +242,19 @@ export class BlogPostRepository {
   /**
    * List blog posts with filtering and pagination
    */
-  async list(options: {
-    status?: BlogPostStatus[];
-    contentType?: ContentType;
-    category?: string;
-    tags?: string[];
-    search?: string;
-    limit?: number;
-    offset?: number;
-    orderBy?: 'createdAt' | 'updatedAt' | 'publishedAt' | 'title';
-    orderDirection?: 'asc' | 'desc';
-  } = {}): Promise<{ posts: PrismaBlogPost[]; total: number }> {
+  async list(
+    options: {
+      status?: BlogPostStatus[];
+      contentType?: ContentType;
+      category?: string;
+      tags?: string[];
+      search?: string;
+      limit?: number;
+      offset?: number;
+      orderBy?: 'createdAt' | 'updatedAt' | 'publishedAt' | 'title';
+      orderDirection?: 'asc' | 'desc';
+    } = {},
+  ): Promise<{ posts: PrismaBlogPost[]; total: number }> {
     const where: Prisma.BlogPostWhereInput = {};
 
     if (options.status?.length) {
@@ -291,7 +311,10 @@ export class BlogPostRepository {
   /**
    * Create a new version of a blog post
    */
-  async createVersion(blogPostId: string, versionData: BlogPostVersion): Promise<void> {
+  async createVersion(
+    blogPostId: string,
+    versionData: BlogPostVersion,
+  ): Promise<void> {
     await prisma.blogPostVersion.create({
       data: {
         version: versionData.version,
@@ -318,7 +341,7 @@ export class BlogPostRepository {
    */
   async updateTableOfContents(
     blogPostId: string,
-    tocEntries: { title: string; anchor: string; level: number }[]
+    tocEntries: { title: string; anchor: string; level: number }[],
   ): Promise<void> {
     // Delete existing entries
     await prisma.tableOfContentsEntry.deleteMany({
@@ -342,7 +365,13 @@ export class BlogPostRepository {
    */
   async updateMedia(
     blogPostId: string,
-    media: { type: string; url: string; alt?: string; caption?: string; position?: string }[]
+    media: {
+      type: string;
+      url: string;
+      alt?: string;
+      caption?: string;
+      position?: string;
+    }[],
   ): Promise<void> {
     // Delete existing entries
     await prisma.blogPostMedia.deleteMany({
@@ -351,7 +380,7 @@ export class BlogPostRepository {
 
     // Create new entries
     await prisma.blogPostMedia.createMany({
-      data: media.map((item) => ({
+      data: media.map(item => ({
         blogPostId,
         type: item.type,
         url: item.url,
@@ -367,7 +396,7 @@ export class BlogPostRepository {
    */
   async updateCTAs(
     blogPostId: string,
-    ctas: { text: string; url: string; type: string; position: string }[]
+    ctas: { text: string; url: string; type: string; position: string }[],
   ): Promise<void> {
     // Delete existing entries
     await prisma.blogPostCTA.deleteMany({
@@ -376,7 +405,7 @@ export class BlogPostRepository {
 
     // Create new entries
     await prisma.blogPostCTA.createMany({
-      data: ctas.map((cta) => ({
+      data: ctas.map(cta => ({
         blogPostId,
         text: cta.text,
         url: cta.url,
@@ -393,7 +422,7 @@ export class BlogPostRepository {
     blogPostId: string,
     type: 'seo' | 'quality' | 'readability' | 'engagement',
     message: string,
-    priority: 'low' | 'medium' | 'high' = 'medium'
+    priority: 'low' | 'medium' | 'high' = 'medium',
   ): Promise<void> {
     await prisma.blogPostSuggestion.create({
       data: {
@@ -427,7 +456,7 @@ export class BlogPostRepository {
       comments?: number;
       avgTimeOnPage?: number;
       bounceRate?: number;
-    }
+    },
   ): Promise<void> {
     await prisma.blogPost.update({
       where: { id: blogPostId },
@@ -454,7 +483,7 @@ export class BlogPostRepository {
       metaOptimization?: number;
       readability?: number;
       recommendations: any[];
-    }
+    },
   ): Promise<void> {
     await prisma.sEOAnalysis.create({
       data: {
@@ -472,29 +501,29 @@ export class BlogPostRepository {
   // Helper methods
   private mapStatusToPrisma(status: string): BlogPostStatus {
     const statusMap: Record<string, BlogPostStatus> = {
-      'draft': 'DRAFT',
-      'review': 'REVIEW',
-      'published': 'PUBLISHED',
-      'archived': 'ARCHIVED',
-      'scheduled': 'SCHEDULED',
+      draft: 'DRAFT',
+      review: 'REVIEW',
+      published: 'PUBLISHED',
+      archived: 'ARCHIVED',
+      scheduled: 'SCHEDULED',
     };
     return statusMap[status] || 'DRAFT';
   }
 
   private mapContentTypeToPrisma(contentType: string | undefined): ContentType {
     const typeMap: Record<string, ContentType> = {
-      'blog': 'BLOG',
-      'article': 'ARTICLE',
-      'tutorial': 'TUTORIAL',
-      'howto': 'HOWTO',
-      'listicle': 'LISTICLE',
-      'comparison': 'COMPARISON',
-      'news': 'NEWS',
-      'review': 'REVIEW',
-      'guide': 'GUIDE',
+      blog: 'BLOG',
+      article: 'ARTICLE',
+      tutorial: 'TUTORIAL',
+      howto: 'HOWTO',
+      listicle: 'LISTICLE',
+      comparison: 'COMPARISON',
+      news: 'NEWS',
+      review: 'REVIEW',
+      guide: 'GUIDE',
       'case-study': 'CASE_STUDY',
-      'opinion': 'OPINION',
-      'interview': 'INTERVIEW',
+      opinion: 'OPINION',
+      interview: 'INTERVIEW',
     };
     return typeMap[contentType || 'blog'] || 'BLOG';
   }

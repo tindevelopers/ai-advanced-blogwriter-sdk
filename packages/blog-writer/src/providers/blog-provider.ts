@@ -1,7 +1,9 @@
-
 import type { LanguageModelV1 } from '@ai-sdk/provider';
 import type { BlogAIConfig, BlogTemplate } from '../types';
-import { contentTypeDetector, type ContentTypeDetectionResult } from '../database/content-type-detector';
+import {
+  contentTypeDetector,
+  type ContentTypeDetectionResult,
+} from '../database/content-type-detector';
 import { configurationRepository } from '../database/configuration-repository';
 import { blogPostRepository } from '../database/blog-post-repository';
 
@@ -13,22 +15,22 @@ export interface BlogProviderOptions {
    * Default AI configuration
    */
   defaultConfig?: Partial<BlogAIConfig>;
-  
+
   /**
    * Auto-detect content types
    */
   autoDetectContentType?: boolean;
-  
+
   /**
    * Enable content routing based on type detection
    */
   enableContentRouting?: boolean;
-  
+
   /**
    * Persist blog posts to database
    */
   persistToDB?: boolean;
-  
+
   /**
    * Configuration name to load from database
    */
@@ -72,7 +74,9 @@ export class BlogProvider {
   async initialize(): Promise<void> {
     // Load configuration from database if specified
     if (this.config.configurationName) {
-      const dbConfig = await configurationRepository.getConfiguration(this.config.configurationName);
+      const dbConfig = await configurationRepository.getConfiguration(
+        this.config.configurationName,
+      );
       if (dbConfig) {
         this.loadedConfig = configurationRepository.toBlogAIConfig(dbConfig);
       }
@@ -80,7 +84,7 @@ export class BlogProvider {
 
     // Initialize content type detector
     await contentTypeDetector.initialize();
-    
+
     // Seed default templates if none exist
     const templates = await configurationRepository.getTemplatesByType();
     if (templates.length === 0) {
@@ -95,38 +99,43 @@ export class BlogProvider {
     topic: string,
     description?: string,
     additionalContext?: string,
-    model?: LanguageModelV1
+    model?: LanguageModelV1,
   ): Promise<ContentProcessingResult> {
     // Detect content type
     let contentTypeResult: ContentTypeDetectionResult;
-    
+
     if (this.config.autoDetectContentType && model) {
       // Use AI-powered detection if model is available
       contentTypeResult = await contentTypeDetector.detectContentTypeWithAI(
         model,
         topic,
         description,
-        additionalContext
+        additionalContext,
       );
     } else {
       // Fall back to pattern-based detection
       contentTypeResult = await contentTypeDetector.detectContentType(
         topic,
         description,
-        additionalContext
+        additionalContext,
       );
     }
 
     // Get routing configuration
-    const routingConfig = contentTypeDetector.getRoutingConfig(contentTypeResult.contentType);
+    const routingConfig = contentTypeDetector.getRoutingConfig(
+      contentTypeResult.contentType,
+    );
 
     // Build enhanced configuration
-    const enhancedConfig = this.buildEnhancedConfig(contentTypeResult, routingConfig);
+    const enhancedConfig = this.buildEnhancedConfig(
+      contentTypeResult,
+      routingConfig,
+    );
 
     // Get template prompt
     const templatePrompt = await this.getTemplatePrompt(
       contentTypeResult.suggestedTemplate || routingConfig.template,
-      contentTypeResult.contentType
+      contentTypeResult.contentType,
     );
 
     return {
@@ -150,7 +159,7 @@ export class BlogProvider {
       tone?: string;
       audience?: string;
       wordCount?: { min: number; max: number };
-    } = {}
+    } = {},
   ): LanguageModelV1 {
     // This would wrap the base model with blog-specific optimizations
     // For now, we'll return the base model with enhanced metadata
@@ -162,10 +171,10 @@ export class BlogProvider {
    */
   async getContentTypeConfig(
     contentType: string,
-    overrides?: Partial<BlogAIConfig>
+    overrides?: Partial<BlogAIConfig>,
   ): Promise<Partial<BlogAIConfig>> {
     const baseConfig = this.getMergedConfig();
-    
+
     // Content-type specific optimizations
     const typeOptimizations: Record<string, Partial<BlogAIConfig>> = {
       tutorial: {
@@ -235,7 +244,7 @@ export class BlogProvider {
   async saveProcessingResult(
     topic: string,
     result: ContentProcessingResult,
-    blogPostId?: string
+    blogPostId?: string,
   ): Promise<void> {
     if (!this.config.persistToDB) return;
 
@@ -265,16 +274,18 @@ export class BlogProvider {
   /**
    * Get available templates
    */
-  async getAvailableTemplates(contentType?: string): Promise<{
-    name: string;
-    type: string;
-    description?: string;
-    wordCountRange?: { min: number; max: number };
-  }[]> {
+  async getAvailableTemplates(contentType?: string): Promise<
+    {
+      name: string;
+      type: string;
+      description?: string;
+      wordCountRange?: { min: number; max: number };
+    }[]
+  > {
     const templates = await configurationRepository.getTemplatesByType(
-      contentType as any
+      contentType as any,
     );
-    
+
     return templates.map(template => ({
       name: template.name,
       type: template.type,
@@ -291,7 +302,7 @@ export class BlogProvider {
     config: Partial<BlogAIConfig> & {
       modelProvider: string;
       modelId: string;
-    }
+    },
   ): Promise<void> {
     await configurationRepository.saveConfiguration({
       name,
@@ -326,10 +337,10 @@ export class BlogProvider {
 
   private buildEnhancedConfig(
     contentType: ContentTypeDetectionResult,
-    routingConfig: any
+    routingConfig: any,
   ): BlogAIConfig {
     const baseConfig = this.getMergedConfig();
-    
+
     return {
       ...baseConfig,
       quality: {
@@ -349,9 +360,12 @@ export class BlogProvider {
     } as BlogAIConfig;
   }
 
-  private async getTemplatePrompt(templateName: string, contentType: any): Promise<string> {
+  private async getTemplatePrompt(
+    templateName: string,
+    contentType: any,
+  ): Promise<string> {
     const template = await configurationRepository.getTemplate(templateName);
-    
+
     if (template?.promptTemplate) {
       return template.promptTemplate;
     }
@@ -363,11 +377,16 @@ export class BlogProvider {
   private getDefaultPromptForType(contentType: any): string {
     const defaultPrompts: Record<string, string> = {
       BLOG: 'Create an engaging blog post about: {{topic}}\n\nMake it informative and reader-friendly.',
-      TUTORIAL: 'Create a step-by-step tutorial for: {{topic}}\n\nInclude clear instructions and examples.',
-      HOWTO: 'Create a how-to guide for: {{topic}}\n\nMake it practical and actionable.',
-      LISTICLE: 'Create a list-based article: {{topic}}\n\nMake each item substantial and valuable.',
-      COMPARISON: 'Create a detailed comparison: {{topic}}\n\nBe objective and provide clear recommendations.',
-      GUIDE: 'Create a comprehensive guide: {{topic}}\n\nCover all important aspects thoroughly.',
+      TUTORIAL:
+        'Create a step-by-step tutorial for: {{topic}}\n\nInclude clear instructions and examples.',
+      HOWTO:
+        'Create a how-to guide for: {{topic}}\n\nMake it practical and actionable.',
+      LISTICLE:
+        'Create a list-based article: {{topic}}\n\nMake each item substantial and valuable.',
+      COMPARISON:
+        'Create a detailed comparison: {{topic}}\n\nBe objective and provide clear recommendations.',
+      GUIDE:
+        'Create a comprehensive guide: {{topic}}\n\nCover all important aspects thoroughly.',
     };
 
     return defaultPrompts[contentType] || defaultPrompts.BLOG;
@@ -384,7 +403,7 @@ export class BlogProvider {
       REVIEW: 'review',
       NEWS: 'news',
     };
-    
+
     return styleMap[contentType] || 'blog';
   }
 
@@ -399,7 +418,7 @@ export class BlogProvider {
       REVIEW: 8,
       NEWS: 7,
     };
-    
+
     return readingLevels[contentType] || 8;
   }
 
@@ -442,7 +461,9 @@ export class BlogProvider {
 /**
  * Create a blog provider instance
  */
-export function createBlogProvider(options: BlogProviderOptions = {}): BlogProvider {
+export function createBlogProvider(
+  options: BlogProviderOptions = {},
+): BlogProvider {
   return new BlogProvider(options);
 }
 

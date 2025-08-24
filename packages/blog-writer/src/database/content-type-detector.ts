@@ -1,4 +1,3 @@
-
 import { prisma } from './prisma';
 import type { ContentType } from '../generated/prisma-client';
 import type { LanguageModelV1 } from '@ai-sdk/provider';
@@ -69,12 +68,17 @@ export class ContentTypeDetector {
   async detectContentType(
     topic: string,
     description?: string,
-    additionalContext?: string
+    additionalContext?: string,
   ): Promise<ContentTypeDetectionResult> {
     await this.initialize();
 
-    const content = `${topic} ${description || ''} ${additionalContext || ''}`.toLowerCase();
-    const results: Array<{ contentType: ContentType; score: number; matches: string[] }> = [];
+    const content =
+      `${topic} ${description || ''} ${additionalContext || ''}`.toLowerCase();
+    const results: Array<{
+      contentType: ContentType;
+      score: number;
+      matches: string[];
+    }> = [];
 
     // Pattern-based detection
     for (const pattern of this.patterns) {
@@ -100,10 +104,11 @@ export class ContentTypeDetector {
 
       // Calculate weighted score
       if (matches.length >= pattern.minMatches) {
-        const weightedScore = (score / (pattern.keywords.length + pattern.patterns.length)) * 
-                             pattern.priority * 
-                             (matches.length / pattern.keywords.length);
-        
+        const weightedScore =
+          (score / (pattern.keywords.length + pattern.patterns.length)) *
+          pattern.priority *
+          (matches.length / pattern.keywords.length);
+
         results.push({
           contentType: pattern.contentType,
           score: weightedScore,
@@ -122,7 +127,9 @@ export class ContentTypeDetector {
         confidence: 0.5,
         matchedPatterns: [],
         suggestedTemplate: 'howto',
-        recommendations: ['Consider providing more specific keywords or context for better content type detection'],
+        recommendations: [
+          'Consider providing more specific keywords or context for better content type detection',
+        ],
       };
     }
 
@@ -134,7 +141,10 @@ export class ContentTypeDetector {
       confidence,
       matchedPatterns: bestResult.matches,
       suggestedTemplate: this.getSuggestedTemplate(bestResult.contentType),
-      recommendations: this.getRecommendations(bestResult.contentType, confidence),
+      recommendations: this.getRecommendations(
+        bestResult.contentType,
+        confidence,
+      ),
     };
   }
 
@@ -145,7 +155,7 @@ export class ContentTypeDetector {
     model: LanguageModelV1,
     topic: string,
     description?: string,
-    additionalContext?: string
+    additionalContext?: string,
   ): Promise<ContentTypeDetectionResult> {
     const prompt = `
 Analyze the following content topic and determine the most appropriate content type for a blog post.
@@ -193,7 +203,7 @@ Example response:
       });
 
       const parsed = JSON.parse(result.text);
-      
+
       return {
         contentType: parsed.contentType as ContentType,
         confidence: Math.max(0.1, Math.min(0.95, parsed.confidence)),
@@ -203,7 +213,7 @@ Example response:
       };
     } catch (error) {
       console.error('AI content type detection failed:', error);
-      
+
       // Fall back to pattern-based detection
       return this.detectContentType(topic, description, additionalContext);
     }
@@ -234,26 +244,79 @@ Example response:
   /**
    * Get optimization recommendations for content type
    */
-  private getRecommendations(contentType: ContentType, confidence: number): string[] {
+  private getRecommendations(
+    contentType: ContentType,
+    confidence: number,
+  ): string[] {
     const baseRecommendations: Record<ContentType, string[]> = {
-      BLOG: ['Focus on providing value to readers', 'Include relevant keywords', 'Add engaging visuals'],
-      ARTICLE: ['Conduct thorough research', 'Include authoritative sources', 'Structure with clear sections'],
-      TUTORIAL: ['Break down into clear steps', 'Include examples and screenshots', 'Add troubleshooting section'],
-      HOWTO: ['Use numbered steps', 'Include prerequisite information', 'Add success criteria'],
-      LISTICLE: ['Use compelling numbers', 'Make each item substantial', 'Include brief explanations'],
-      COMPARISON: ['Create comparison tables', 'Include pros and cons', 'Provide clear recommendations'],
-      NEWS: ['Include recent developments', 'Add credible sources', 'Keep content timely'],
-      REVIEW: ['Include personal experience', 'Add ratings or scores', 'Compare with alternatives'],
-      GUIDE: ['Create comprehensive coverage', 'Include resources and tools', 'Add actionable advice'],
-      CASE_STUDY: ['Include specific metrics', 'Tell a complete story', 'Add lessons learned'],
-      OPINION: ['Support with evidence', 'Acknowledge counterarguments', 'Include personal insights'],
-      INTERVIEW: ['Prepare thoughtful questions', 'Include background context', 'Add key takeaways'],
+      BLOG: [
+        'Focus on providing value to readers',
+        'Include relevant keywords',
+        'Add engaging visuals',
+      ],
+      ARTICLE: [
+        'Conduct thorough research',
+        'Include authoritative sources',
+        'Structure with clear sections',
+      ],
+      TUTORIAL: [
+        'Break down into clear steps',
+        'Include examples and screenshots',
+        'Add troubleshooting section',
+      ],
+      HOWTO: [
+        'Use numbered steps',
+        'Include prerequisite information',
+        'Add success criteria',
+      ],
+      LISTICLE: [
+        'Use compelling numbers',
+        'Make each item substantial',
+        'Include brief explanations',
+      ],
+      COMPARISON: [
+        'Create comparison tables',
+        'Include pros and cons',
+        'Provide clear recommendations',
+      ],
+      NEWS: [
+        'Include recent developments',
+        'Add credible sources',
+        'Keep content timely',
+      ],
+      REVIEW: [
+        'Include personal experience',
+        'Add ratings or scores',
+        'Compare with alternatives',
+      ],
+      GUIDE: [
+        'Create comprehensive coverage',
+        'Include resources and tools',
+        'Add actionable advice',
+      ],
+      CASE_STUDY: [
+        'Include specific metrics',
+        'Tell a complete story',
+        'Add lessons learned',
+      ],
+      OPINION: [
+        'Support with evidence',
+        'Acknowledge counterarguments',
+        'Include personal insights',
+      ],
+      INTERVIEW: [
+        'Prepare thoughtful questions',
+        'Include background context',
+        'Add key takeaways',
+      ],
     };
 
     const recommendations = [...(baseRecommendations[contentType] || [])];
 
     if (confidence < 0.7) {
-      recommendations.unshift('Consider refining your topic or providing more context for better content type detection');
+      recommendations.unshift(
+        'Consider refining your topic or providing more context for better content type detection',
+      );
     }
 
     return recommendations;
@@ -266,7 +329,7 @@ Example response:
     contentType: ContentType,
     keywords: string[],
     patterns: string[],
-    priority: number = 1
+    priority: number = 1,
   ): Promise<void> {
     await prisma.contentTypePattern.create({
       data: {
@@ -289,62 +352,173 @@ Example response:
     const defaultPatterns = [
       {
         contentType: 'TUTORIAL' as ContentType,
-        keywords: ['tutorial', 'learn', 'course', 'lesson', 'training', 'education', 'teaching'],
+        keywords: [
+          'tutorial',
+          'learn',
+          'course',
+          'lesson',
+          'training',
+          'education',
+          'teaching',
+        ],
         patterns: ['\\btutorial\\b', '\\blearn how\\b', '\\bstep by step\\b'],
         priority: 8,
       },
       {
         contentType: 'HOWTO' as ContentType,
-        keywords: ['how to', 'guide', 'instructions', 'steps', 'method', 'way', 'process'],
-        patterns: ['\\bhow to\\b', '\\bguide to\\b', '\\bsteps to\\b', '\\binstructions\\b'],
+        keywords: [
+          'how to',
+          'guide',
+          'instructions',
+          'steps',
+          'method',
+          'way',
+          'process',
+        ],
+        patterns: [
+          '\\bhow to\\b',
+          '\\bguide to\\b',
+          '\\bsteps to\\b',
+          '\\binstructions\\b',
+        ],
         priority: 9,
       },
       {
         contentType: 'LISTICLE' as ContentType,
-        keywords: ['top', 'best', 'worst', 'reasons', 'ways', 'tips', 'tricks', 'ideas'],
-        patterns: ['\\d+\\s+(ways|tips|reasons|ideas|tools|methods)', '\\btop\\s+\\d+\\b', '\\bbest\\s+\\d+\\b'],
+        keywords: [
+          'top',
+          'best',
+          'worst',
+          'reasons',
+          'ways',
+          'tips',
+          'tricks',
+          'ideas',
+        ],
+        patterns: [
+          '\\d+\\s+(ways|tips|reasons|ideas|tools|methods)',
+          '\\btop\\s+\\d+\\b',
+          '\\bbest\\s+\\d+\\b',
+        ],
         priority: 7,
       },
       {
         contentType: 'COMPARISON' as ContentType,
-        keywords: ['vs', 'versus', 'compare', 'comparison', 'difference', 'better', 'alternative'],
-        patterns: ['\\bvs\\b', '\\bversus\\b', '\\bcompare\\b', '\\balternative to\\b'],
+        keywords: [
+          'vs',
+          'versus',
+          'compare',
+          'comparison',
+          'difference',
+          'better',
+          'alternative',
+        ],
+        patterns: [
+          '\\bvs\\b',
+          '\\bversus\\b',
+          '\\bcompare\\b',
+          '\\balternative to\\b',
+        ],
         priority: 6,
       },
       {
         contentType: 'REVIEW' as ContentType,
-        keywords: ['review', 'rating', 'opinion', 'experience', 'test', 'evaluation'],
-        patterns: ['\\breview\\b', '\\brating\\b', '\\bmy experience\\b', '\\btested\\b'],
+        keywords: [
+          'review',
+          'rating',
+          'opinion',
+          'experience',
+          'test',
+          'evaluation',
+        ],
+        patterns: [
+          '\\breview\\b',
+          '\\brating\\b',
+          '\\bmy experience\\b',
+          '\\btested\\b',
+        ],
         priority: 7,
       },
       {
         contentType: 'NEWS' as ContentType,
-        keywords: ['news', 'announcement', 'update', 'release', 'breaking', 'latest'],
-        patterns: ['\\bnews\\b', '\\bannouncement\\b', '\\bupdate\\b', '\\breleased\\b'],
+        keywords: [
+          'news',
+          'announcement',
+          'update',
+          'release',
+          'breaking',
+          'latest',
+        ],
+        patterns: [
+          '\\bnews\\b',
+          '\\bannouncement\\b',
+          '\\bupdate\\b',
+          '\\breleased\\b',
+        ],
         priority: 6,
       },
       {
         contentType: 'CASE_STUDY' as ContentType,
-        keywords: ['case study', 'success story', 'example', 'real world', 'implementation'],
-        patterns: ['\\bcase study\\b', '\\bsuccess story\\b', '\\breal world\\b'],
+        keywords: [
+          'case study',
+          'success story',
+          'example',
+          'real world',
+          'implementation',
+        ],
+        patterns: [
+          '\\bcase study\\b',
+          '\\bsuccess story\\b',
+          '\\breal world\\b',
+        ],
         priority: 5,
       },
       {
         contentType: 'INTERVIEW' as ContentType,
-        keywords: ['interview', 'conversation', 'chat', 'discussion', 'q&a', 'questions'],
+        keywords: [
+          'interview',
+          'conversation',
+          'chat',
+          'discussion',
+          'q&a',
+          'questions',
+        ],
         patterns: ['\\binterview\\b', '\\bq&a\\b', '\\bconversation with\\b'],
         priority: 5,
       },
       {
         contentType: 'GUIDE' as ContentType,
-        keywords: ['guide', 'complete', 'comprehensive', 'ultimate', 'definitive', 'master'],
-        patterns: ['\\bcomplete guide\\b', '\\bultimate guide\\b', '\\bcomprehensive\\b'],
+        keywords: [
+          'guide',
+          'complete',
+          'comprehensive',
+          'ultimate',
+          'definitive',
+          'master',
+        ],
+        patterns: [
+          '\\bcomplete guide\\b',
+          '\\bultimate guide\\b',
+          '\\bcomprehensive\\b',
+        ],
         priority: 6,
       },
       {
         contentType: 'OPINION' as ContentType,
-        keywords: ['opinion', 'thoughts', 'perspective', 'view', 'believe', 'think'],
-        patterns: ['\\bmy opinion\\b', '\\bmy thoughts\\b', '\\bi think\\b', '\\bi believe\\b'],
+        keywords: [
+          'opinion',
+          'thoughts',
+          'perspective',
+          'view',
+          'believe',
+          'think',
+        ],
+        patterns: [
+          '\\bmy opinion\\b',
+          '\\bmy thoughts\\b',
+          '\\bi think\\b',
+          '\\bi believe\\b',
+        ],
         priority: 4,
       },
     ];
@@ -379,8 +553,19 @@ Example response:
       TUTORIAL: {
         template: 'tutorial',
         wordCountRange: { min: 1500, max: 4000 },
-        sections: ['Prerequisites', 'Step-by-Step Instructions', 'Troubleshooting', 'Conclusion'],
-        requiredElements: ['title', 'prerequisites', 'steps', 'examples', 'summary'],
+        sections: [
+          'Prerequisites',
+          'Step-by-Step Instructions',
+          'Troubleshooting',
+          'Conclusion',
+        ],
+        requiredElements: [
+          'title',
+          'prerequisites',
+          'steps',
+          'examples',
+          'summary',
+        ],
       },
       HOWTO: {
         template: 'howto',
@@ -397,7 +582,12 @@ Example response:
       COMPARISON: {
         template: 'comparison',
         wordCountRange: { min: 1200, max: 2500 },
-        sections: ['Introduction', 'Comparison Criteria', 'Analysis', 'Recommendation'],
+        sections: [
+          'Introduction',
+          'Comparison Criteria',
+          'Analysis',
+          'Recommendation',
+        ],
         requiredElements: ['title', 'criteria', 'comparison_table', 'verdict'],
       },
       NEWS: {
@@ -410,25 +600,54 @@ Example response:
         template: 'review',
         wordCountRange: { min: 800, max: 2000 },
         sections: ['Introduction', 'Features', 'Pros & Cons', 'Verdict'],
-        requiredElements: ['title', 'overview', 'pros_cons', 'rating', 'recommendation'],
+        requiredElements: [
+          'title',
+          'overview',
+          'pros_cons',
+          'rating',
+          'recommendation',
+        ],
       },
       GUIDE: {
         template: 'guide',
         wordCountRange: { min: 2000, max: 5000 },
         sections: ['Overview', 'Fundamentals', 'Advanced Topics', 'Resources'],
-        requiredElements: ['title', 'table_of_contents', 'sections', 'resources'],
+        requiredElements: [
+          'title',
+          'table_of_contents',
+          'sections',
+          'resources',
+        ],
       },
       CASE_STUDY: {
         template: 'case-study',
         wordCountRange: { min: 1200, max: 2500 },
         sections: ['Background', 'Challenge', 'Solution', 'Results', 'Lessons'],
-        requiredElements: ['title', 'background', 'problem', 'solution', 'results', 'takeaways'],
+        requiredElements: [
+          'title',
+          'background',
+          'problem',
+          'solution',
+          'results',
+          'takeaways',
+        ],
       },
       OPINION: {
         template: 'opinion',
         wordCountRange: { min: 1000, max: 2500 },
-        sections: ['Introduction', 'Arguments', 'Counterarguments', 'Conclusion'],
-        requiredElements: ['title', 'thesis', 'arguments', 'evidence', 'conclusion'],
+        sections: [
+          'Introduction',
+          'Arguments',
+          'Counterarguments',
+          'Conclusion',
+        ],
+        requiredElements: [
+          'title',
+          'thesis',
+          'arguments',
+          'evidence',
+          'conclusion',
+        ],
       },
       INTERVIEW: {
         template: 'interview',

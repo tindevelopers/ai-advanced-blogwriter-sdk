@@ -1,4 +1,3 @@
-
 /**
  * Basic SEO analysis result (legacy interface)
  * @deprecated Use the comprehensive SEOAnalysis interface from seo-engine.ts instead
@@ -6,7 +5,7 @@
 export interface BasicSEOAnalysis {
   /** Overall SEO score (0-100) */
   score: number;
-  
+
   /** Individual component scores */
   components: {
     /** Title optimization score */
@@ -26,10 +25,10 @@ export interface BasicSEOAnalysis {
     /** URL structure score */
     url: number;
   };
-  
+
   /** Specific recommendations */
   recommendations: SEORecommendation[];
-  
+
   /** Keyword analysis */
   keywords: {
     /** Primary keyword analysis */
@@ -46,7 +45,7 @@ export interface BasicSEOAnalysis {
       issue: 'too_high' | 'too_low';
     }[];
   };
-  
+
   /** Content analysis */
   content: {
     /** Word count */
@@ -68,22 +67,29 @@ export interface BasicSEOAnalysis {
 export interface SEORecommendation {
   /** Recommendation type */
   type: 'critical' | 'important' | 'minor';
-  
+
   /** Category of the recommendation */
-  category: 'title' | 'meta' | 'content' | 'keywords' | 'structure' | 'images' | 'links';
-  
+  category:
+    | 'title'
+    | 'meta'
+    | 'content'
+    | 'keywords'
+    | 'structure'
+    | 'images'
+    | 'links';
+
   /** Recommendation message */
   message: string;
-  
+
   /** Current value (if applicable) */
   current?: string | number;
-  
+
   /** Suggested value (if applicable) */
   suggested?: string | number;
-  
+
   /** Impact score (0-100) */
   impact: number;
-  
+
   /** How to fix the issue */
   fix: string;
 }
@@ -94,25 +100,25 @@ export interface SEORecommendation {
 export interface KeywordAnalysis {
   /** The keyword */
   keyword: string;
-  
+
   /** Search volume (monthly) */
   searchVolume?: number;
-  
+
   /** Keyword difficulty (0-100) */
   difficulty?: number;
-  
+
   /** Competition level */
   competition?: 'low' | 'medium' | 'high';
-  
+
   /** Current density in content (0-1) */
   density: number;
-  
+
   /** Recommended density range */
   recommendedDensity: {
     min: number;
     max: number;
   };
-  
+
   /** Positions where keyword appears */
   positions: {
     /** In title */
@@ -128,10 +134,10 @@ export interface KeywordAnalysis {
     /** In alt text */
     altText: boolean;
   };
-  
+
   /** Related keywords and synonyms */
   related?: string[];
-  
+
   /** Long-tail variations */
   longTail?: string[];
 }
@@ -149,7 +155,7 @@ export interface SEOOptimizationOptions {
     /** Long-tail keywords */
     longTail?: string[];
   };
-  
+
   /** Content optimization */
   content?: {
     /** Target word count range */
@@ -164,7 +170,7 @@ export interface SEOOptimizationOptions {
     /** Optimize headings */
     optimizeHeadings?: boolean;
   };
-  
+
   /** Meta optimization */
   meta?: {
     /** Generate optimized title */
@@ -174,7 +180,7 @@ export interface SEOOptimizationOptions {
     /** Optimize URL slug */
     slug?: boolean;
   };
-  
+
   /** Image optimization */
   images?: {
     /** Generate alt text */
@@ -184,7 +190,7 @@ export interface SEOOptimizationOptions {
     /** Add captions */
     captions?: boolean;
   };
-  
+
   /** Link optimization */
   links?: {
     /** Include internal links */
@@ -202,7 +208,7 @@ export interface SEOOptimizationOptions {
 export interface SEOCompetitiveAnalysis {
   /** Target keyword */
   keyword: string;
-  
+
   /** Top competitors */
   competitors: {
     /** Competitor URL */
@@ -229,10 +235,10 @@ export interface SEOCompetitiveAnalysis {
       speedScore?: number;
     };
   }[];
-  
+
   /** Content gap analysis */
   contentGaps: string[];
-  
+
   /** Opportunity keywords */
   opportunities: {
     keyword: string;

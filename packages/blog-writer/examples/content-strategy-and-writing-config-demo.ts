@@ -1,4 +1,3 @@
-
 /**
  * Comprehensive demonstration of ContentStrategy and WritingConfig interfaces
  * This example shows how to use the newly implemented interfaces for strategic content planning
@@ -17,7 +16,7 @@ import {
   ToneCategory,
   SectionType,
   AdvancedContentOutline,
-  AdvancedOutlineSection
+  AdvancedOutlineSection,
 } from '../src/types';
 
 // ===== CONTENT STRATEGY EXAMPLE =====
@@ -35,30 +34,45 @@ export function createExampleContentStrategy(): ContentStrategy {
         averageTraffic: 15000000,
         publishingFrequency: 25,
         engagementRate: 0.085,
-        averageContentLength: 1200
+        averageContentLength: 1200,
       },
       topKeywords: [
-        { keyword: 'artificial intelligence', position: 3, searchVolume: 45000, traffic: 12000 },
-        { keyword: 'machine learning', position: 5, searchVolume: 33000, traffic: 8500 },
-        { keyword: 'startup funding', position: 2, searchVolume: 18000, traffic: 9000 }
+        {
+          keyword: 'artificial intelligence',
+          position: 3,
+          searchVolume: 45000,
+          traffic: 12000,
+        },
+        {
+          keyword: 'machine learning',
+          position: 5,
+          searchVolume: 33000,
+          traffic: 8500,
+        },
+        {
+          keyword: 'startup funding',
+          position: 2,
+          searchVolume: 18000,
+          traffic: 9000,
+        },
       ],
       strategy: {
         primaryTopics: ['AI/ML', 'Startups', 'Tech News', 'Product Launches'],
         contentTypes: ['news articles', 'analysis pieces', 'interviews'],
         publishingPattern: 'Multiple times daily, peak at 9 AM EST',
-        toneCharacteristics: ['authoritative', 'timely', 'insider knowledge']
+        toneCharacteristics: ['authoritative', 'timely', 'insider knowledge'],
       },
       weaknesses: [
         'Limited long-form tutorial content',
         'Lacks beginner-friendly explanations',
-        'Minimal video content integration'
+        'Minimal video content integration',
       ],
       strengths: [
         'First-to-market with breaking news',
         'Strong industry connections',
-        'High social media engagement'
+        'High social media engagement',
       ],
-      lastAnalyzed: new Date('2024-01-15')
+      lastAnalyzed: new Date('2024-01-15'),
     },
     {
       competitor: 'towards-data-science.medium.com',
@@ -67,31 +81,51 @@ export function createExampleContentStrategy(): ContentStrategy {
         averageTraffic: 2500000,
         publishingFrequency: 50,
         engagementRate: 0.12,
-        averageContentLength: 2800
+        averageContentLength: 2800,
       },
       topKeywords: [
-        { keyword: 'data science tutorial', position: 1, searchVolume: 12000, traffic: 6000 },
-        { keyword: 'python machine learning', position: 2, searchVolume: 19000, traffic: 7500 },
-        { keyword: 'data visualization', position: 4, searchVolume: 15000, traffic: 4200 }
+        {
+          keyword: 'data science tutorial',
+          position: 1,
+          searchVolume: 12000,
+          traffic: 6000,
+        },
+        {
+          keyword: 'python machine learning',
+          position: 2,
+          searchVolume: 19000,
+          traffic: 7500,
+        },
+        {
+          keyword: 'data visualization',
+          position: 4,
+          searchVolume: 15000,
+          traffic: 4200,
+        },
       ],
       strategy: {
-        primaryTopics: ['Data Science', 'Machine Learning', 'Python', 'Statistics'],
+        primaryTopics: [
+          'Data Science',
+          'Machine Learning',
+          'Python',
+          'Statistics',
+        ],
         contentTypes: ['tutorials', 'case studies', 'opinion pieces'],
         publishingPattern: 'Daily, community-driven publishing',
-        toneCharacteristics: ['educational', 'practical', 'community-focused']
+        toneCharacteristics: ['educational', 'practical', 'community-focused'],
       },
       weaknesses: [
         'Variable content quality',
         'Less timely industry news coverage',
-        'Fragmented content organization'
+        'Fragmented content organization',
       ],
       strengths: [
         'Deep technical content',
         'Strong community engagement',
-        'Practical code examples'
+        'Practical code examples',
       ],
-      lastAnalyzed: new Date('2024-01-15')
-    }
+      lastAnalyzed: new Date('2024-01-15'),
+    },
   ];
 
   // Define trending topics
@@ -102,7 +136,7 @@ export function createExampleContentStrategy(): ContentStrategy {
       searchVolume: {
         current: 58000,
         previous: 31000,
-        changePercent: 87.1
+        changePercent: 87.1,
       },
       momentum: 'rising',
       regions: ['United States', 'United Kingdom', 'Canada', 'Australia'],
@@ -111,27 +145,27 @@ export function createExampleContentStrategy(): ContentStrategy {
         'ChatGPT coding',
         'AI programming assistant',
         'automated code generation',
-        'developer productivity tools'
+        'developer productivity tools',
       ],
       seasonality: {
         peakMonths: ['January', 'September', 'October'],
         lowMonths: ['June', 'July', 'December'],
-        isSeasonal: true
+        isSeasonal: true,
       },
       opportunity: {
         difficulty: 45,
         trafficPotential: 25000,
         competitionLevel: 'medium',
-        recommendedContentTypes: ['tutorials', 'comparisons', 'case studies']
+        recommendedContentTypes: ['tutorials', 'comparisons', 'case studies'],
       },
       historicalData: [
         { date: '2023-10-01', volume: 31000, interest: 52 },
         { date: '2023-11-01', volume: 42000, interest: 71 },
         { date: '2023-12-01', volume: 48000, interest: 78 },
-        { date: '2024-01-01', volume: 58000, interest: 89 }
+        { date: '2024-01-01', volume: 58000, interest: 89 },
       ],
       sources: ['Google Trends', 'Ahrefs', 'SEMrush'],
-      lastUpdated: new Date('2024-01-15')
+      lastUpdated: new Date('2024-01-15'),
     },
     {
       topic: 'Large Language Model Fine-tuning',
@@ -139,7 +173,7 @@ export function createExampleContentStrategy(): ContentStrategy {
       searchVolume: {
         current: 23000,
         previous: 14000,
-        changePercent: 64.3
+        changePercent: 64.3,
       },
       momentum: 'rising',
       regions: ['United States', 'China', 'United Kingdom'],
@@ -148,17 +182,21 @@ export function createExampleContentStrategy(): ContentStrategy {
         'custom AI models',
         'transfer learning',
         'model training',
-        'AI customization'
+        'AI customization',
       ],
       opportunity: {
         difficulty: 65,
         trafficPotential: 12000,
         competitionLevel: 'high',
-        recommendedContentTypes: ['technical guides', 'tutorials', 'best practices']
+        recommendedContentTypes: [
+          'technical guides',
+          'tutorials',
+          'best practices',
+        ],
       },
       sources: ['Google Trends', 'Academic Search Trends'],
-      lastUpdated: new Date('2024-01-15')
-    }
+      lastUpdated: new Date('2024-01-15'),
+    },
   ];
 
   // Define content structure
@@ -170,12 +208,13 @@ export function createExampleContentStrategy(): ContentStrategy {
         type: 'introduction',
         wordCount: { min: 200, max: 300 },
         required: true,
-        description: 'Hook readers with the transformative potential of AI in development',
+        description:
+          'Hook readers with the transformative potential of AI in development',
         keyPoints: [
           'Current state of AI code generation',
           'Why developers should care',
-          'What this guide covers'
-        ]
+          'What this guide covers',
+        ],
       },
       {
         title: 'Understanding AI Code Generation Tools',
@@ -186,8 +225,8 @@ export function createExampleContentStrategy(): ContentStrategy {
         keyPoints: [
           'How AI code generation works',
           'Major tools comparison',
-          'Strengths and limitations'
-        ]
+          'Strengths and limitations',
+        ],
       },
       {
         title: 'Practical Implementation Guide',
@@ -199,8 +238,8 @@ export function createExampleContentStrategy(): ContentStrategy {
           'Setup and configuration',
           'Best practices for prompting',
           'Integration with existing workflows',
-          'Code quality assurance'
-        ]
+          'Code quality assurance',
+        ],
       },
       {
         title: 'Real-World Case Studies',
@@ -211,8 +250,8 @@ export function createExampleContentStrategy(): ContentStrategy {
         keyPoints: [
           'Startup success story',
           'Enterprise integration example',
-          'Performance metrics and ROI'
-        ]
+          'Performance metrics and ROI',
+        ],
       },
       {
         title: 'Future of AI-Assisted Development',
@@ -223,36 +262,62 @@ export function createExampleContentStrategy(): ContentStrategy {
         keyPoints: [
           'Emerging trends',
           'Skill development recommendations',
-          'Getting started today'
-        ]
-      }
+          'Getting started today',
+        ],
+      },
     ],
     specifications: {
       totalWordCount: { min: 2200, max: 3200 },
       readingLevel: 10,
       tone: 'professional yet accessible',
-      depth: 'comprehensive'
+      depth: 'comprehensive',
     },
     seoStructure: {
       headingStructure: [
-        { level: 1, text: 'Complete Guide to AI Code Generation Tools in 2024', includeKeyword: true },
-        { level: 2, text: 'What Are AI Code Generation Tools?', includeKeyword: true },
-        { level: 2, text: 'Top AI Coding Assistants Compared', includeKeyword: false },
-        { level: 3, text: 'GitHub Copilot vs ChatGPT for Coding', includeKeyword: false },
-        { level: 2, text: 'How to Implement AI Code Generation', includeKeyword: true },
+        {
+          level: 1,
+          text: 'Complete Guide to AI Code Generation Tools in 2024',
+          includeKeyword: true,
+        },
+        {
+          level: 2,
+          text: 'What Are AI Code Generation Tools?',
+          includeKeyword: true,
+        },
+        {
+          level: 2,
+          text: 'Top AI Coding Assistants Compared',
+          includeKeyword: false,
+        },
+        {
+          level: 3,
+          text: 'GitHub Copilot vs ChatGPT for Coding',
+          includeKeyword: false,
+        },
+        {
+          level: 2,
+          text: 'How to Implement AI Code Generation',
+          includeKeyword: true,
+        },
         { level: 3, text: 'Setup and Configuration', includeKeyword: false },
-        { level: 3, text: 'Best Practices for AI Prompting', includeKeyword: false }
+        {
+          level: 3,
+          text: 'Best Practices for AI Prompting',
+          includeKeyword: false,
+        },
       ],
       internalLinkingSuggestions: [
         'Link to beginner programming tutorials',
         'Reference developer productivity tools',
-        'Connect to AI/ML fundamentals content'
+        'Connect to AI/ML fundamentals content',
       ],
       metaRecommendations: {
-        titleStructure: '[Primary Keyword] - Complete Guide for [Year] | [Brand]',
-        descriptionFormat: 'Learn [Primary Keyword] with our comprehensive guide. Includes [Key Benefit 1], [Key Benefit 2], and real-world examples.',
-        urlStructure: '/ai-code-generation-tools-guide-2024'
-      }
+        titleStructure:
+          '[Primary Keyword] - Complete Guide for [Year] | [Brand]',
+        descriptionFormat:
+          'Learn [Primary Keyword] with our comprehensive guide. Includes [Key Benefit 1], [Key Benefit 2], and real-world examples.',
+        urlStructure: '/ai-code-generation-tools-guide-2024',
+      },
     },
     recommendedElements: {
       images: true,
@@ -260,25 +325,25 @@ export function createExampleContentStrategy(): ContentStrategy {
       infographics: true,
       codeExamples: true,
       downloads: false,
-      interactive: false
+      interactive: false,
     },
     differentiationStrategy: {
       uniqueAngles: [
         'Focus on practical ROI measurement',
         'Include enterprise security considerations',
-        'Provide framework-specific examples'
+        'Provide framework-specific examples',
       ],
       gapsToFill: [
         'Limited coverage of enterprise implementation',
         'Lack of security best practices',
-        'Missing performance benchmarking'
+        'Missing performance benchmarking',
       ],
       valuePropositions: [
         'Only guide with real ROI calculations',
         'Includes enterprise security framework',
-        'Framework-agnostic implementation examples'
-      ]
-    }
+        'Framework-agnostic implementation examples',
+      ],
+    },
   };
 
   // Combine into complete strategy
@@ -289,31 +354,44 @@ export function createExampleContentStrategy(): ContentStrategy {
       'GitHub Copilot alternatives',
       'AI programming helper',
       'machine learning code generation',
-      'developer productivity AI'
+      'developer productivity AI',
     ],
     competitorAnalysis,
     contentGaps: [
       {
         type: 'enterprise implementation',
-        description: 'Lack of comprehensive guides for enterprise AI code generation adoption',
+        description:
+          'Lack of comprehensive guides for enterprise AI code generation adoption',
         opportunity: 0.8,
         difficulty: 0.6,
         estimatedTraffic: 15000,
-        keywords: ['enterprise AI coding', 'business code generation', 'team AI tools'],
-        competitorUrls: ['techcrunch.com/ai-enterprise', 'medium.com/ai-business']
+        keywords: [
+          'enterprise AI coding',
+          'business code generation',
+          'team AI tools',
+        ],
+        competitorUrls: [
+          'techcrunch.com/ai-enterprise',
+          'medium.com/ai-business',
+        ],
       },
       {
         type: 'security considerations',
-        description: 'Missing content on security implications of AI code generation',
+        description:
+          'Missing content on security implications of AI code generation',
         opportunity: 0.9,
         difficulty: 0.4,
         estimatedTraffic: 8000,
-        keywords: ['AI code security', 'safe AI programming', 'code generation privacy'],
-        competitorUrls: []
-      }
+        keywords: [
+          'AI code security',
+          'safe AI programming',
+          'code generation privacy',
+        ],
+        competitorUrls: [],
+      },
     ],
     trendingTopics,
-    recommendedStructure
+    recommendedStructure,
   };
 
   return contentStrategy;
@@ -339,12 +417,12 @@ export function createExampleWritingConfig(): WritingConfig {
       keyPoints: [
         'AI code generation transforms development',
         'Multiple tools available in market',
-        'Guide covers practical implementation'
+        'Guide covers practical implementation',
       ],
       contextTags: ['ai', 'programming', 'tools', 'introduction'],
       children: [],
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     },
     {
       id: 'main-content-section',
@@ -358,13 +436,13 @@ export function createExampleWritingConfig(): WritingConfig {
       keyPoints: [
         'How neural networks generate code',
         'Training data and model architecture',
-        'Limitations and considerations'
+        'Limitations and considerations',
       ],
       contextTags: ['ai', 'technology', 'neural-networks', 'explanation'],
       children: [],
       createdAt: new Date(),
-      updatedAt: new Date()
-    }
+      updatedAt: new Date(),
+    },
   ];
 
   // Define style guide settings
@@ -373,67 +451,61 @@ export function createExampleWritingConfig(): WritingConfig {
       sentenceStructure: 'mixed',
       maxSentenceLength: 25,
       paragraphLength: 'medium',
-      voice: 'active'
+      voice: 'active',
     },
     language: {
       technicalLevel: 'moderate',
       readingLevel: 10,
       vocabularyComplexity: 'intermediate',
-      industryTerms: true
+      industryTerms: true,
     },
     formatting: {
       useBulletPoints: true,
       includeSubheadings: true,
       maxHeadingLevel: 4,
-      contentStructure: 'hierarchical'
+      contentStructure: 'hierarchical',
     },
     brandVoice: {
       primaryTone: ToneCategory.PROFESSIONAL,
       secondaryTones: [ToneCategory.INFORMATIVE, ToneCategory.FRIENDLY],
       personalityTraits: {
-        'authoritative': 0.8,
-        'approachable': 0.7,
-        'innovative': 0.9,
-        'reliable': 0.8
+        authoritative: 0.8,
+        approachable: 0.7,
+        innovative: 0.9,
+        reliable: 0.8,
       },
-      avoidedPhrases: [
-        'obviously',
-        'just',
-        'simply',
-        'easy',
-        'everyone knows'
-      ],
+      avoidedPhrases: ['obviously', 'just', 'simply', 'easy', 'everyone knows'],
       preferredExpressions: [
-        'let\'s explore',
+        "let's explore",
         'consider this approach',
-        'here\'s how',
+        "here's how",
         'practical implementation',
-        'real-world application'
-      ]
+        'real-world application',
+      ],
     },
     qualityStandards: {
       originalityThreshold: 0.85,
       factCheckingLevel: 'thorough',
       sourceQualityThreshold: 0.75,
-      citationStyle: 'apa'
+      citationStyle: 'apa',
     },
     accessibility: {
       requireAltText: true,
       descriptiveLinkText: true,
       properHeadingHierarchy: true,
-      contentWarnings: false
+      contentWarnings: false,
     },
     compliance: {
       industryStandards: ['IEEE', 'ACM Guidelines'],
       requiredDisclaimers: [
         'AI tools are evolving rapidly',
-        'Always review generated code'
+        'Always review generated code',
       ],
       reviewRequirements: [
         'Technical accuracy review',
-        'Legal compliance check'
-      ]
-    }
+        'Legal compliance check',
+      ],
+    },
   };
 
   // Define SEO requirements
@@ -444,56 +516,56 @@ export function createExampleWritingConfig(): WritingConfig {
         'automated coding assistant',
         'GitHub Copilot',
         'AI programming helper',
-        'machine learning code generation'
+        'machine learning code generation',
       ],
       longTailKeywords: [
         'best AI code generation tools 2024',
         'how to use AI for programming',
-        'AI coding assistant comparison'
+        'AI coding assistant comparison',
       ],
       densityTargets: {
         primary: { min: 0.01, max: 0.025 },
-        secondary: { min: 0.005, max: 0.015 }
+        secondary: { min: 0.005, max: 0.015 },
       },
       semanticKeywords: [
         'artificial intelligence programming',
         'automated development tools',
         'coding productivity software',
-        'developer AI assistance'
-      ]
+        'developer AI assistance',
+      ],
     },
     contentStructure: {
       wordCount: { min: 2200, max: 3200 },
       headingStructure: {
         requireH1: true,
         minH2Count: 4,
-        maxHeadingDepth: 4
+        maxHeadingDepth: 4,
       },
       introduction: {
         maxLength: 300,
-        includePrimaryKeyword: true
+        includePrimaryKeyword: true,
       },
       conclusion: {
         required: true,
-        includeCTA: true
-      }
+        includeCTA: true,
+      },
     },
     metaOptimization: {
       title: {
         maxLength: 60,
         includePrimaryKeyword: true,
-        structureTemplate: '[Primary Keyword] - [Benefit] | [Brand] [Year]'
+        structureTemplate: '[Primary Keyword] - [Benefit] | [Brand] [Year]',
       },
       description: {
         maxLength: 155,
         includePrimaryKeyword: true,
-        includeCTA: true
+        includeCTA: true,
       },
       urlSlug: {
         maxLength: 75,
         includePrimaryKeyword: true,
-        useHyphens: true
-      }
+        useHyphens: true,
+      },
     },
     internalLinking: {
       minInternalLinks: 3,
@@ -502,36 +574,36 @@ export function createExampleWritingConfig(): WritingConfig {
       linkCategories: [
         'AI/ML tutorials',
         'Programming guides',
-        'Developer tools'
-      ]
+        'Developer tools',
+      ],
     },
     imageOptimization: {
       requireAltText: true,
       optimizeFileNames: true,
       keywordsInAltText: true,
-      captionRequirements: 'optional'
+      captionRequirements: 'optional',
     },
     technicalSEO: {
       schemaMarkup: {
         articleSchema: true,
         faqSchema: true,
-        howToSchema: false
+        howToSchema: false,
       },
       pageSpeed: {
         coreWebVitals: true,
-        lazyLoadImages: true
-      }
+        lazyLoadImages: true,
+      },
     },
     contentFreshness: {
       includePublishDate: true,
       includeUpdateDate: true,
-      reviewSchedule: '6months'
+      reviewSchedule: '6months',
     },
     localSEO: {
       locationKeywords: [],
       localBusinessSchema: false,
-      geoTargeting: ['United States', 'Canada', 'United Kingdom']
-    }
+      geoTargeting: ['United States', 'Canada', 'United Kingdom'],
+    },
   };
 
   // Combine into complete writing config
@@ -540,7 +612,7 @@ export function createExampleWritingConfig(): WritingConfig {
     styleGuide,
     seoRequirements,
     factCheckingEnabled: true,
-    sourceVerification: true
+    sourceVerification: true,
   };
 
   return writingConfig;
@@ -553,36 +625,52 @@ export function createExampleWritingConfig(): WritingConfig {
  */
 export async function demonstrateInterfaceUsage() {
   console.log('=== Content Strategy and Writing Config Demo ===\n');
-  
+
   // Create example content strategy
   const contentStrategy = createExampleContentStrategy();
   console.log('✅ Created comprehensive content strategy');
   console.log(`   - Target keywords: ${contentStrategy.targetKeywords.length}`);
-  console.log(`   - Competitor insights: ${contentStrategy.competitorAnalysis.length}`);
-  console.log(`   - Content gaps identified: ${contentStrategy.contentGaps.length}`);
+  console.log(
+    `   - Competitor insights: ${contentStrategy.competitorAnalysis.length}`,
+  );
+  console.log(
+    `   - Content gaps identified: ${contentStrategy.contentGaps.length}`,
+  );
   console.log(`   - Trending topics: ${contentStrategy.trendingTopics.length}`);
-  console.log(`   - Content type: ${contentStrategy.recommendedStructure.contentType}\n`);
-  
+  console.log(
+    `   - Content type: ${contentStrategy.recommendedStructure.contentType}\n`,
+  );
+
   // Create example writing config
   const writingConfig = createExampleWritingConfig();
   console.log('✅ Created comprehensive writing configuration');
   console.log(`   - Content sections: ${writingConfig.sections.length}`);
-  console.log(`   - Primary tone: ${writingConfig.styleGuide.brandVoice.primaryTone}`);
-  console.log(`   - Reading level: ${writingConfig.styleGuide.language.readingLevel}`);
-  console.log(`   - Primary keyword: ${writingConfig.seoRequirements.keywords.primaryKeyword}`);
-  console.log(`   - Fact checking: ${writingConfig.factCheckingEnabled ? 'Enabled' : 'Disabled'}`);
-  console.log(`   - Source verification: ${writingConfig.sourceVerification ? 'Enabled' : 'Disabled'}\n`);
-  
+  console.log(
+    `   - Primary tone: ${writingConfig.styleGuide.brandVoice.primaryTone}`,
+  );
+  console.log(
+    `   - Reading level: ${writingConfig.styleGuide.language.readingLevel}`,
+  );
+  console.log(
+    `   - Primary keyword: ${writingConfig.seoRequirements.keywords.primaryKeyword}`,
+  );
+  console.log(
+    `   - Fact checking: ${writingConfig.factCheckingEnabled ? 'Enabled' : 'Disabled'}`,
+  );
+  console.log(
+    `   - Source verification: ${writingConfig.sourceVerification ? 'Enabled' : 'Disabled'}\n`,
+  );
+
   // Demonstrate integration potential
   console.log('🔗 Integration opportunities:');
   console.log('   - Use content strategy to inform writing config sections');
   console.log('   - Apply trending topics to SEO keyword targeting');
   console.log('   - Leverage competitor insights for content differentiation');
   console.log('   - Align content structure with SEO requirements');
-  
+
   return {
     contentStrategy,
-    writingConfig
+    writingConfig,
   };
 }
 
@@ -617,11 +705,15 @@ export function validateWritingConfig(config: WritingConfig): boolean {
 // Export demo function for use in examples
 if (require.main === module) {
   demonstrateInterfaceUsage()
-    .then((result) => {
+    .then(result => {
       console.log('\n✨ Demo completed successfully!');
       console.log('Validation results:');
-      console.log(`   - ContentStrategy valid: ${validateContentStrategy(result.contentStrategy)}`);
-      console.log(`   - WritingConfig valid: ${validateWritingConfig(result.writingConfig)}`);
+      console.log(
+        `   - ContentStrategy valid: ${validateContentStrategy(result.contentStrategy)}`,
+      );
+      console.log(
+        `   - WritingConfig valid: ${validateWritingConfig(result.writingConfig)}`,
+      );
     })
     .catch(console.error);
 }

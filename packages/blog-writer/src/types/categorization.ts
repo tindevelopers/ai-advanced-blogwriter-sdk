@@ -1,5 +1,3 @@
-
-
 /**
  * Content Categorization & Tagging Types
  * Hierarchical categories, flexible tagging, and content relationships
@@ -17,11 +15,11 @@ export interface Category {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Hierarchical relationships
   parent?: Category;
   children?: Category[];
-  
+
   // Posts in this category
   postCount?: number;
   blogPosts?: BlogPostCategory[];
@@ -46,7 +44,7 @@ export interface Tag {
   usageCount: number;
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Auto-suggestions
   suggestedTags?: Tag[];
   relatedTags?: Tag[];
@@ -81,9 +79,9 @@ export interface ContentRelationship {
   createdBy?: string;
 }
 
-export type RelationshipType = 
+export type RelationshipType =
   | 'related'
-  | 'series' 
+  | 'series'
   | 'prerequisite'
   | 'followup'
   | 'similar'
@@ -249,4 +247,3 @@ export interface CategorizationMetrics {
   mostUsedTags: Tag[];
   systemTagsCount: number;
 }
-

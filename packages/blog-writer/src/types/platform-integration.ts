@@ -1,8 +1,7 @@
-
 /**
  * Platform Integration Framework Types
  * Week 13-14 Implementation
- * 
+ *
  * Comprehensive type definitions for multi-platform content distribution
  * following the established provider pattern from AI SDK
  */
@@ -21,7 +20,7 @@ export interface PlatformCapabilities {
   maxTitleLength?: number;
   maxDescriptionLength?: number;
   maxTagsCount?: number;
-  
+
   // Media support
   supportsImages: boolean;
   supportsVideo: boolean;
@@ -29,7 +28,7 @@ export interface PlatformCapabilities {
   supportsGalleries?: boolean;
   maxImageSize?: number; // in bytes
   supportedImageFormats?: string[];
-  
+
   // Publishing features
   supportsScheduling: boolean;
   supportsDrafts: boolean;
@@ -37,32 +36,32 @@ export interface PlatformCapabilities {
   supportsDeleting: boolean;
   supportsCategories?: boolean;
   supportsTags?: boolean;
-  
+
   // Analytics and tracking
   supportsAnalytics: boolean;
   supportsRealTimeMetrics?: boolean;
   supportsCustomEvents?: boolean;
-  
+
   // SEO and metadata
   supportsCustomMeta: boolean;
   supportsOpenGraph: boolean;
   supportsTwitterCards: boolean;
   supportsSchema: boolean;
   supportsCanonical?: boolean;
-  
+
   // Formatting and styling
   supportedFormats: ContentFormat[];
   supportsMarkdown?: boolean;
   supportsHTML: boolean;
   supportsRichText: boolean;
   supportsCustomCSS?: boolean;
-  
+
   // Social and engagement
   supportsComments?: boolean;
   supportsSharing?: boolean;
   supportsReactions?: boolean;
   supportsSubscriptions?: boolean;
-  
+
   // Advanced features
   supportsA11y?: boolean; // Accessibility
   supportsMultiLanguage?: boolean;
@@ -77,7 +76,7 @@ export enum ContentFormat {
   PLAIN_TEXT = 'plain_text',
   JSON = 'json',
   AMP = 'amp',
-  RSS = 'rss'
+  RSS = 'rss',
 }
 
 /**
@@ -97,7 +96,7 @@ export enum AuthenticationType {
   BASIC_AUTH = 'basic_auth',
   TOKEN = 'token',
   JWT = 'jwt',
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 /**
@@ -108,19 +107,19 @@ export interface FormattedContent {
   title: string;
   content: string;
   excerpt?: string;
-  
+
   // Metadata
   metadata: ContentMetadata;
   seo: SEOMetadata;
-  
+
   // Media and attachments
   featuredImage?: MediaFile;
   gallery?: MediaFile[];
   attachments?: MediaFile[];
-  
+
   // Platform-specific data
   platformSpecific?: Record<string, any>;
-  
+
   // Formatting info
   format: ContentFormat;
   originalWordCount: number;
@@ -135,16 +134,16 @@ export interface ContentMetadata {
   keywords?: string[];
   tags?: string[];
   categories?: string[];
-  
+
   // Publishing metadata
   publishDate?: Date;
   lastModified?: Date;
   status?: string;
   visibility?: 'public' | 'private' | 'unlisted' | 'password';
-  
+
   // Author information
   author?: AuthorInfo;
-  
+
   // Custom metadata
   customFields?: Record<string, any>;
 }
@@ -154,24 +153,24 @@ export interface SEOMetadata {
   metaTitle?: string;
   metaDescription?: string;
   focusKeyword?: string;
-  
+
   // Open Graph
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
   ogType?: string;
-  
+
   // Twitter Cards
   twitterCard?: 'summary' | 'summary_large_image' | 'app' | 'player';
   twitterTitle?: string;
   twitterDescription?: string;
   twitterImage?: string;
-  
+
   // Technical SEO
   canonical?: string;
   robots?: string;
   schema?: Record<string, any>;
-  
+
   // Platform-specific SEO
   platformSEO?: Record<string, any>;
 }
@@ -212,35 +211,58 @@ export interface PlatformAdapter {
   readonly displayName: string;
   readonly version: string;
   readonly capabilities: PlatformCapabilities;
-  
+
   // Connection management
   authenticate(credentials: PlatformCredentials): Promise<AuthenticationResult>;
   validateConnection(): Promise<ConnectionValidationResult>;
   refreshAuth(refreshToken: string): Promise<AuthenticationResult>;
   disconnect(): Promise<void>;
-  
+
   // Content operations
-  formatContent(content: BlogPost, options?: FormatOptions): Promise<FormattedContent>;
+  formatContent(
+    content: BlogPost,
+    options?: FormatOptions,
+  ): Promise<FormattedContent>;
   validateContent(content: FormattedContent): Promise<ValidationResult>;
-  
+
   // Publishing operations
-  publish(content: FormattedContent, options?: PublishOptions): Promise<PublishResult>;
-  schedule(content: FormattedContent, publishTime: Date, options?: PublishOptions): Promise<ScheduleResult>;
-  update(externalId: string, content: FormattedContent, options?: PublishOptions): Promise<PublishResult>;
+  publish(
+    content: FormattedContent,
+    options?: PublishOptions,
+  ): Promise<PublishResult>;
+  schedule(
+    content: FormattedContent,
+    publishTime: Date,
+    options?: PublishOptions,
+  ): Promise<ScheduleResult>;
+  update(
+    externalId: string,
+    content: FormattedContent,
+    options?: PublishOptions,
+  ): Promise<PublishResult>;
   delete(externalId: string): Promise<DeleteResult>;
-  
+
   // Batch operations
-  publishMultiple(contents: FormattedContent[], options?: BulkPublishOptions): Promise<BulkPublishResult>;
-  
+  publishMultiple(
+    contents: FormattedContent[],
+    options?: BulkPublishOptions,
+  ): Promise<BulkPublishResult>;
+
   // Analytics and metrics
-  getAnalytics(timeRange: DateRange, options?: AnalyticsOptions): Promise<PlatformAnalytics>;
-  getContentAnalytics(externalId: string, timeRange: DateRange): Promise<ContentAnalytics>;
-  
+  getAnalytics(
+    timeRange: DateRange,
+    options?: AnalyticsOptions,
+  ): Promise<PlatformAnalytics>;
+  getContentAnalytics(
+    externalId: string,
+    timeRange: DateRange,
+  ): Promise<ContentAnalytics>;
+
   // Platform-specific operations
   getCategories?(): Promise<Category[]>;
   getTags?(): Promise<Tag[]>;
   getCustomFields?(): Promise<CustomField[]>;
-  
+
   // Health and status
   healthCheck(): Promise<HealthCheckResult>;
   getRateLimit(): Promise<RateLimitStatus>;
@@ -306,7 +328,7 @@ export interface PublishResult {
   publishedAt?: Date;
   error?: string;
   warnings?: string[];
-  
+
   // Analytics and tracking
   initialMetrics?: {
     views?: number;
@@ -392,14 +414,14 @@ export interface AnalyticsOptions {
 export interface PlatformAnalytics {
   platformName: string;
   timeRange: DateRange;
-  
+
   // Traffic metrics
   pageViews: number;
   uniqueVisitors: number;
   sessions: number;
   bounceRate: number;
   avgSessionDuration: number;
-  
+
   // Engagement metrics
   totalEngagements: number;
   engagementRate: number;
@@ -407,23 +429,23 @@ export interface PlatformAnalytics {
   comments: number;
   likes: number;
   saves?: number;
-  
+
   // Conversion metrics
   conversions: number;
   conversionRate: number;
   goalCompletions?: GoalCompletion[];
-  
+
   // Content performance
   topContent: ContentPerformance[];
   contentBreakdown: ContentBreakdown[];
-  
+
   // Audience insights
   audienceInsights: AudienceInsights;
-  
+
   // Revenue (if applicable)
   revenue?: number;
   revenuePerVisitor?: number;
-  
+
   // Raw platform data
   platformSpecificMetrics: Record<string, any>;
 }
@@ -432,23 +454,23 @@ export interface ContentAnalytics {
   contentId: string;
   externalId: string;
   title: string;
-  
+
   // Performance metrics
   views: number;
   uniqueViews: number;
   engagements: number;
   shares: number;
   comments: number;
-  
+
   // Time-based metrics
   publishedAt: Date;
   lastUpdated?: Date;
   peakTrafficTime?: Date;
-  
+
   // Engagement patterns
   engagementOverTime: TimeSeriesData[];
   topReferrers: TrafficSource[];
-  
+
   // Social metrics
   socialShares: SocialShareBreakdown[];
   viralityScore?: number;
@@ -540,22 +562,22 @@ export interface PublishSchedule {
   id: string;
   name: string;
   description?: string;
-  
+
   // Timing
   scheduledTime: Date;
   timezone: string;
   recurringPattern?: RecurringPattern;
-  
+
   // Content and targeting
   content: FormattedContent;
   platforms: string[];
   targetAudience?: AudienceTargeting;
-  
+
   // Status
   status: ScheduleStatus;
   lastExecuted?: Date;
   nextExecution?: Date;
-  
+
   // Results
   executionHistory: ScheduleExecution[];
 }
@@ -566,7 +588,7 @@ export enum ScheduleStatus {
   COMPLETED = 'completed',
   CANCELLED = 'cancelled',
   FAILED = 'failed',
-  EXPIRED = 'expired'
+  EXPIRED = 'expired',
 }
 
 export interface RecurringPattern {
@@ -659,24 +681,48 @@ export interface QuotaStatus {
  */
 export interface MultiPlatformPublisher {
   // Platform management
-  addPlatform(adapter: PlatformAdapter, credentials: PlatformCredentials): Promise<void>;
+  addPlatform(
+    adapter: PlatformAdapter,
+    credentials: PlatformCredentials,
+  ): Promise<void>;
   removePlatform(platformName: string): Promise<void>;
   getPlatforms(): PlatformAdapter[];
-  
+
   // Cross-platform publishing
-  publishToAll(content: BlogPost, platforms?: string[], options?: MultiPlatformPublishOptions): Promise<MultiPlatformPublishResult>;
-  publishToSelected(content: BlogPost, platforms: string[], options?: MultiPlatformPublishOptions): Promise<MultiPlatformPublishResult>;
-  
+  publishToAll(
+    content: BlogPost,
+    platforms?: string[],
+    options?: MultiPlatformPublishOptions,
+  ): Promise<MultiPlatformPublishResult>;
+  publishToSelected(
+    content: BlogPost,
+    platforms: string[],
+    options?: MultiPlatformPublishOptions,
+  ): Promise<MultiPlatformPublishResult>;
+
   // Scheduling
-  scheduleAcrossPlatforms(content: BlogPost, schedule: PublishSchedule): Promise<MultiPlatformScheduleResult>;
-  
+  scheduleAcrossPlatforms(
+    content: BlogPost,
+    schedule: PublishSchedule,
+  ): Promise<MultiPlatformScheduleResult>;
+
   // Analytics aggregation
-  getAggregatedAnalytics(platforms?: string[], timeRange?: DateRange): Promise<AggregatedAnalytics>;
-  getComparativeAnalytics(platforms: string[], timeRange: DateRange): Promise<ComparativeAnalytics>;
-  
+  getAggregatedAnalytics(
+    platforms?: string[],
+    timeRange?: DateRange,
+  ): Promise<AggregatedAnalytics>;
+  getComparativeAnalytics(
+    platforms: string[],
+    timeRange: DateRange,
+  ): Promise<ComparativeAnalytics>;
+
   // Batch operations
-  bulkPublish(contents: BlogPost[], platforms: string[], options?: BulkPublishOptions): Promise<BulkPublishResult>;
-  
+  bulkPublish(
+    contents: BlogPost[],
+    platforms: string[],
+    options?: BulkPublishOptions,
+  ): Promise<BulkPublishResult>;
+
   // Health monitoring
   checkPlatformHealth(): Promise<PlatformHealthReport>;
 }
@@ -686,7 +732,7 @@ export interface MultiPlatformPublishOptions extends PublishOptions {
   publishOrder?: string[]; // Order to publish to platforms
   stopOnFirstFailure?: boolean;
   requireAllSuccess?: boolean;
-  
+
   // Content adaptation per platform
   adaptContentPerPlatform?: boolean;
   adaptationRules?: Record<string, FormatOptions>;
@@ -710,22 +756,22 @@ export interface MultiPlatformScheduleResult {
 export interface AggregatedAnalytics {
   platforms: string[];
   timeRange: DateRange;
-  
+
   // Aggregated totals
   totalViews: number;
   totalEngagements: number;
   totalShares: number;
   totalConversions: number;
   totalRevenue: number;
-  
+
   // Average metrics
   avgEngagementRate: number;
   avgConversionRate: number;
   avgBounceRate: number;
-  
+
   // Platform breakdown
   platformBreakdown: Record<string, PlatformAnalytics>;
-  
+
   // Cross-platform insights
   crossPlatformInsights: CrossPlatformInsight[];
   topPerformingPlatform: string;
@@ -735,13 +781,13 @@ export interface AggregatedAnalytics {
 export interface ComparativeAnalytics {
   platforms: string[];
   timeRange: DateRange;
-  
+
   // Head-to-head comparisons
   comparisons: PlatformComparison[];
-  
+
   // Performance rankings
   rankings: PlatformRanking[];
-  
+
   // Insights and recommendations
   insights: AnalyticsInsight[];
   winnerByMetric: Record<string, string>; // metric -> platform
@@ -850,7 +896,7 @@ export class PlatformError extends Error {
     message: string,
     public platform: string,
     public code?: string,
-    public details?: any
+    public details?: any,
   ) {
     super(message);
     this.name = 'PlatformError';
@@ -876,7 +922,11 @@ export class RateLimitError extends PlatformError {
 
 export class ContentValidationError extends PlatformError {
   constructor(platform: string, validationErrors: ValidationError[]) {
-    super(`Content validation failed for ${platform}`, platform, 'VALIDATION_ERROR');
+    super(
+      `Content validation failed for ${platform}`,
+      platform,
+      'VALIDATION_ERROR',
+    );
     this.name = 'ContentValidationError';
     this.details = { errors: validationErrors };
   }

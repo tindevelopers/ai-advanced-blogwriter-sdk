@@ -1,9 +1,7 @@
-
-
 /**
  * Complete AI Blog Writer SDK Workflow - Weeks 1-10 Integration
  * End-to-end demonstration of how all features work together:
- * 
+ *
  * Weeks 1-2: Core architecture and basic blog generation
  * Weeks 3-4: Content management, versioning, workflow automation
  * Weeks 5-6: Content strategy engine, competitive analysis
@@ -17,28 +15,28 @@ import {
   // Core blog generation (Weeks 1-2)
   generateEnhancedBlog,
   BlogAIConfig,
-  
+
   // Content management (Weeks 3-4)
   ContentManagementService,
   WorkflowManager,
   VersionManager,
   NotificationManager,
-  
+
   // Content strategy (Weeks 5-6)
   ContentStrategyService,
   TopicResearchService,
   CompetitorAnalysisService,
-  
+
   // Advanced writing (Weeks 7-8)
   AdvancedWritingService,
   MultiSectionGenerationService,
   ToneStyleConsistencyService,
   FactCheckingService,
-  
+
   // SEO analysis (Weeks 9-10)
   SEOAnalysisService,
   KeywordResearchService,
-  DataForSEOService
+  DataForSEOService,
 } from '../src/index';
 import type {
   ContentStrategy,
@@ -46,7 +44,7 @@ import type {
   CompetitorAnalysisRequest,
   MultiSectionGenerationRequest,
   SEOAnalysisRequest,
-  DataForSEOConfig
+  DataForSEOConfig,
 } from '../src/types';
 
 // Configuration
@@ -64,32 +62,32 @@ const blogConfig: BlogAIConfig = {
     focusKeyword: 'artificial intelligence',
     keywords: ['AI', 'machine learning', 'automation', 'technology'],
     optimizeMetaDescription: true,
-    generateAltText: true
+    generateAltText: true,
   },
   research: {
     enabled: true,
     depth: 'comprehensive',
     includeTrends: true,
-    competitorAnalysis: true
+    competitorAnalysis: true,
   },
   quality: {
     readingLevel: 8,
     includeSources: true,
     factCheck: true,
-    toneConsistency: true
-  }
+    toneConsistency: true,
+  },
 };
 
 const dataForSEOConfig: DataForSEOConfig = {
   username: process.env.DATAFORSEO_USERNAME || 'demo_user',
   password: process.env.DATAFORSEO_PASSWORD || 'demo_pass',
   apiKey: process.env.DATAFORSEO_API_KEY || 'demo_key',
-  fallbackMode: true
+  fallbackMode: true,
 };
 
 async function completeWorkflowDemo() {
   console.log('🚀 AI Blog Writer SDK - Complete Workflow Demo (Weeks 1-10)\n');
-  console.log('=' .repeat(60));
+  console.log('='.repeat(60));
 
   try {
     // ===== PHASE 1: CONTENT STRATEGY & RESEARCH (Weeks 5-6) =====
@@ -100,38 +98,47 @@ async function completeWorkflowDemo() {
     const contentStrategyService = new ContentStrategyService({
       model,
       prisma,
-      cacheResults: true
+      cacheResults: true,
     });
 
     const topicResearchService = new TopicResearchService({
       model,
       prisma,
-      researchDepth: 'comprehensive'
+      researchDepth: 'comprehensive',
     });
 
     const competitorService = new CompetitorAnalysisService({
       model,
-      prisma
+      prisma,
     });
 
     // 1. Topic Research
     console.log('\n🔍 Step 1: Topic Research & Trend Analysis');
-    
+
     const topicRequest: TopicResearchRequest = {
-      seedTopics: ['artificial intelligence in business', 'AI automation', 'machine learning trends'],
+      seedTopics: [
+        'artificial intelligence in business',
+        'AI automation',
+        'machine learning trends',
+      ],
       industry: 'technology',
       targetAudience: 'business professionals',
       contentGoals: ['thought leadership', 'lead generation'],
       competitorDomains: ['techcrunch.com', 'wired.com', 'venturebeat.com'],
       includeKeywordData: true,
       includeTrends: true,
-      maxSuggestions: 20
+      maxSuggestions: 20,
     };
 
-    const topicResearch = await topicResearchService.researchTopics(topicRequest);
+    const topicResearch =
+      await topicResearchService.researchTopics(topicRequest);
     console.log(`✓ Generated ${topicResearch.topics.length} topic suggestions`);
-    console.log(`✓ Identified ${topicResearch.trendingTopics.length} trending topics`);
-    console.log(`✓ Found ${topicResearch.keywordOpportunities.length} keyword opportunities`);
+    console.log(
+      `✓ Identified ${topicResearch.trendingTopics.length} trending topics`,
+    );
+    console.log(
+      `✓ Found ${topicResearch.keywordOpportunities.length} keyword opportunities`,
+    );
 
     // Select the best topic
     const selectedTopic = topicResearch.topics[0];
@@ -141,61 +148,86 @@ async function completeWorkflowDemo() {
 
     // 2. Competitor Analysis
     console.log('\n🏆 Step 2: Competitive Analysis');
-    
+
     const competitorRequest: CompetitorAnalysisRequest = {
       topics: [selectedTopic.title],
       competitorDomains: ['techcrunch.com', 'wired.com'],
       analysisDepth: 'detailed',
       includeContentGaps: true,
-      includeKeywordGaps: true
+      includeKeywordGaps: true,
     };
 
-    const competitorAnalysis = await competitorService.analyzeCompetitors(competitorRequest);
-    console.log(`✓ Analyzed ${competitorAnalysis.competitors.length} competitors`);
-    console.log(`✓ Found ${competitorAnalysis.contentGaps.length} content gaps`);
-    console.log(`✓ Identified ${competitorAnalysis.keywordGaps.length} keyword opportunities`);
+    const competitorAnalysis =
+      await competitorService.analyzeCompetitors(competitorRequest);
+    console.log(
+      `✓ Analyzed ${competitorAnalysis.competitors.length} competitors`,
+    );
+    console.log(
+      `✓ Found ${competitorAnalysis.contentGaps.length} content gaps`,
+    );
+    console.log(
+      `✓ Identified ${competitorAnalysis.keywordGaps.length} keyword opportunities`,
+    );
 
     // 3. Content Strategy Development
     console.log('\n📋 Step 3: Content Strategy Development');
-    
+
     const contentStrategy: ContentStrategy = {
       targetKeywords: [
         selectedTopic.title,
-        ...selectedTopic.relatedKeywords.slice(0, 3)
+        ...selectedTopic.relatedKeywords.slice(0, 3),
       ],
       competitorAnalysis: {
         competitors: competitorAnalysis.competitors.map(c => ({
           domain: c.domain,
           strengths: c.strengths,
           weaknesses: c.weaknesses,
-          contentGaps: c.contentGaps
+          contentGaps: c.contentGaps,
         })),
         opportunities: competitorAnalysis.keywordGaps.map(gap => ({
           keyword: gap.keyword,
           difficulty: gap.difficulty,
-          opportunity: gap.opportunity
+          opportunity: gap.opportunity,
         })),
-        insights: competitorAnalysis.strategicInsights
+        insights: competitorAnalysis.strategicInsights,
       },
       contentGaps: competitorAnalysis.contentGaps,
       trendingTopics: topicResearch.trendingTopics,
       recommendedStructure: {
         sections: [
           { title: 'Introduction', type: 'introduction', estimatedWords: 200 },
-          { title: 'Current State of AI', type: 'analysis', estimatedWords: 400 },
-          { title: 'Business Applications', type: 'examples', estimatedWords: 500 },
-          { title: 'Implementation Strategy', type: 'howto', estimatedWords: 400 },
+          {
+            title: 'Current State of AI',
+            type: 'analysis',
+            estimatedWords: 400,
+          },
+          {
+            title: 'Business Applications',
+            type: 'examples',
+            estimatedWords: 500,
+          },
+          {
+            title: 'Implementation Strategy',
+            type: 'howto',
+            estimatedWords: 400,
+          },
           { title: 'Future Outlook', type: 'prediction', estimatedWords: 300 },
-          { title: 'Conclusion', type: 'conclusion', estimatedWords: 200 }
+          { title: 'Conclusion', type: 'conclusion', estimatedWords: 200 },
         ],
         estimatedLength: 2000,
-        targetKeywordDensity: 1.5
-      }
+        targetKeywordDensity: 1.5,
+      },
     };
 
-    console.log(`✓ Strategy targeting ${contentStrategy.targetKeywords.length} keywords`);
-    console.log(`✓ Identified ${contentStrategy.contentGaps.length} content opportunities`);
-    console.log(`✓ Recommended ${contentStrategy.recommendedStructure.sections.length} content sections`);
+    console.log(
+      `✓ Strategy targeting ${contentStrategy.targetKeywords.length} keywords`,
+    );
+    console.log(
+      `✓ Identified ${contentStrategy.contentGaps.length} content opportunities`,
+    );
+    console.log(
+      `✓ Recommended ${contentStrategy.recommendedStructure.sections.length} content sections`,
+    );
 
     // ===== PHASE 2: ADVANCED CONTENT GENERATION (Weeks 7-8) =====
     console.log('\n🎨 PHASE 2: Advanced Content Generation');
@@ -210,12 +242,12 @@ async function completeWorkflowDemo() {
         enableMultiSection: true,
         enableToneStyle: true,
         enableFactChecking: true,
-        enableOptimization: true
+        enableOptimization: true,
       },
       apiKeys: {
         newsApi: process.env.NEWS_API_KEY,
-        serpApi: process.env.SERP_API_KEY
-      }
+        serpApi: process.env.SERP_API_KEY,
+      },
     });
 
     // 1. Multi-Section Content Generation
@@ -225,15 +257,17 @@ async function completeWorkflowDemo() {
       topic: selectedTopic.title,
       outline: {
         title: selectedTopic.title,
-        sections: contentStrategy.recommendedStructure.sections.map((section, index) => ({
-          title: section.title,
-          type: section.type as any,
-          level: index === 0 ? 1 : 2,
-          order: index + 1,
-          estimatedWordCount: section.estimatedWords,
-          keyPoints: [],
-          contextTags: contentStrategy.targetKeywords
-        }))
+        sections: contentStrategy.recommendedStructure.sections.map(
+          (section, index) => ({
+            title: section.title,
+            type: section.type as any,
+            level: index === 0 ? 1 : 2,
+            order: index + 1,
+            estimatedWordCount: section.estimatedWords,
+            keyPoints: [],
+            contextTags: contentStrategy.targetKeywords,
+          }),
+        ),
       },
       requirements: {
         totalWordCount: contentStrategy.recommendedStructure.estimatedLength,
@@ -242,30 +276,38 @@ async function completeWorkflowDemo() {
         targetKeywords: contentStrategy.targetKeywords,
         includeExamples: true,
         includeStatistics: true,
-        factCheck: true
+        factCheck: true,
       },
       seoOptions: {
         optimizeHeadings: true,
-        keywordDensity: contentStrategy.recommendedStructure.targetKeywordDensity / 100,
-        includeInternalLinking: true
-      }
+        keywordDensity:
+          contentStrategy.recommendedStructure.targetKeywordDensity / 100,
+        includeInternalLinking: true,
+      },
     };
 
-    const multiSectionResult = await advancedWritingService.generateMultiSectionContent(
-      multiSectionRequest,
-      {
-        onSectionGenerated: (section) => {
-          console.log(`  ✓ Generated section: ${section.title} (${section.wordCount} words)`);
+    const multiSectionResult =
+      await advancedWritingService.generateMultiSectionContent(
+        multiSectionRequest,
+        {
+          onSectionGenerated: section => {
+            console.log(
+              `  ✓ Generated section: ${section.title} (${section.wordCount} words)`,
+            );
+          },
+          onProgress: (current, total) => {
+            console.log(`  Progress: ${current}/${total} sections`);
+          },
         },
-        onProgress: (current, total) => {
-          console.log(`  Progress: ${current}/${total} sections`);
-        }
-      }
-    );
+      );
 
-    console.log(`✓ Generated ${multiSectionResult.sections.length} content sections`);
+    console.log(
+      `✓ Generated ${multiSectionResult.sections.length} content sections`,
+    );
     console.log(`✓ Total word count: ${multiSectionResult.totalWordCount}`);
-    console.log(`✓ Overall quality score: ${multiSectionResult.qualityScore}/100`);
+    console.log(
+      `✓ Overall quality score: ${multiSectionResult.qualityScore}/100`,
+    );
 
     // ===== PHASE 3: SEO ANALYSIS & OPTIMIZATION (Weeks 9-10) =====
     console.log('\n🔍 PHASE 3: SEO Analysis & Optimization');
@@ -279,19 +321,19 @@ async function completeWorkflowDemo() {
       defaultOrganization: {
         name: 'TechInsights Corp',
         logo: 'https://play-lh.googleusercontent.com/PikR_16xlfuvm1MqIFgMee2Xz4HGPLkfCJQRA8VztDaaKzcOGBuh8MA7vTjB3RTcjvI=w600-h300-pc0xffffff-pd',
-        url: 'https://techinsights.com'
+        url: 'https://techinsights.com',
       },
       defaultSite: {
         name: 'TechInsights Blog',
         url: 'https://blog.techinsights.com',
-        twitterHandle: '@techinsights'
+        twitterHandle: '@techinsights',
       },
       cacheResults: true,
       qualityGates: {
         minimumScore: 75,
         minimumReadability: 65,
-        minimumContentLength: 1500
-      }
+        minimumContentLength: 1500,
+      },
     });
 
     // 1. Save blog post to database for SEO analysis
@@ -306,7 +348,8 @@ async function completeWorkflowDemo() {
         title: selectedTopic.title,
         slug: selectedTopic.title.toLowerCase().replace(/\s+/g, '-'),
         content: fullContent,
-        excerpt: multiSectionResult.sections[0]?.content.substring(0, 160) || '',
+        excerpt:
+          multiSectionResult.sections[0]?.content.substring(0, 160) || '',
         metaDescription: `${selectedTopic.title} - A comprehensive guide covering strategies, implementation, and future trends.`,
         status: 'DRAFT',
         contentType: 'BLOG',
@@ -314,8 +357,8 @@ async function completeWorkflowDemo() {
         authorName: 'AI Content Generator',
         focusKeyword: contentStrategy.targetKeywords[0],
         keywords: contentStrategy.targetKeywords,
-        wordCount: multiSectionResult.totalWordCount
-      }
+        wordCount: multiSectionResult.totalWordCount,
+      },
     });
 
     console.log(`✓ Created blog post: ${blogPost.id}`);
@@ -327,7 +370,9 @@ async function completeWorkflowDemo() {
       blogPostId: blogPost.id,
       url: `https://blog.techinsights.com/${blogPost.slug}`,
       targetKeywords: contentStrategy.targetKeywords,
-      competitorUrls: competitorAnalysis.competitors.map(c => c.topPages[0]?.url).filter(Boolean)
+      competitorUrls: competitorAnalysis.competitors
+        .map(c => c.topPages[0]?.url)
+        .filter(Boolean),
     };
 
     const seoAnalysis = await seoAnalysisService.analyzeSEO(
@@ -341,12 +386,13 @@ async function completeWorkflowDemo() {
         useDataForSEO: true,
         prioritizeQuickWins: true,
         targetAudience: 'business professionals',
-        contentType: 'blog'
+        contentType: 'blog',
       },
       {
         onProgress: (step, progress) => console.log(`  ${step}: ${progress}%`),
-        onComplete: (result) => console.log(`  ✓ SEO Analysis complete: ${result.overallScore}/100`)
-      }
+        onComplete: result =>
+          console.log(`  ✓ SEO Analysis complete: ${result.overallScore}/100`),
+      },
     );
 
     console.log(`✓ SEO Score: ${seoAnalysis.overallScore}/100`);
@@ -363,14 +409,14 @@ async function completeWorkflowDemo() {
       model,
       prisma,
       autoVersioning: true,
-      workflowEnabled: true
+      workflowEnabled: true,
     });
 
     const workflowManager = new WorkflowManager({
       model,
       prisma,
       autoApproval: false,
-      notificationEnabled: true
+      notificationEnabled: true,
     });
 
     // 1. Apply SEO optimizations
@@ -383,23 +429,23 @@ async function completeWorkflowDemo() {
     // Apply quick wins automatically
     for (const quickWin of seoAnalysis.quickWins) {
       console.log(`  Applying: ${quickWin.title}`);
-      
+
       if (quickWin.type === 'title_optimization' && quickWin.suggestedValue) {
         optimizedTitle = quickWin.suggestedValue;
       }
-      
+
       if (quickWin.type === 'meta_description' && quickWin.suggestedValue) {
         optimizedMeta = quickWin.suggestedValue;
       }
-      
+
       // Mark as implemented
       await prisma.sEORecommendation.updateMany({
         where: { id: quickWin.id },
-        data: { 
+        data: {
           status: 'completed',
           implementedAt: new Date(),
-          implementedBy: 'Auto-optimization system'
-        }
+          implementedBy: 'Auto-optimization system',
+        },
       });
     }
 
@@ -412,7 +458,7 @@ async function completeWorkflowDemo() {
       metaDescription: optimizedMeta,
       changeSummary: `Applied ${seoAnalysis.quickWins.length} SEO quick wins automatically`,
       keywords: contentStrategy.targetKeywords,
-      seoScore: seoAnalysis.overallScore
+      seoScore: seoAnalysis.overallScore,
     });
 
     console.log(`✓ Created optimized version: ${optimizedVersion.version}`);
@@ -429,8 +475,8 @@ async function completeWorkflowDemo() {
         seoScore: seoAnalysis.overallScore,
         wordCount: multiSectionResult.totalWordCount,
         keywordsTargeted: contentStrategy.targetKeywords.length,
-        quickWinsApplied: seoAnalysis.quickWins.length
-      }
+        quickWinsApplied: seoAnalysis.quickWins.length,
+      },
     });
 
     console.log(`✓ Submitted to workflow: ${workflowEntry.id}`);
@@ -448,9 +494,10 @@ async function completeWorkflowDemo() {
         ...blogConfig.seo!,
         focusKeyword: contentStrategy.targetKeywords[0],
         keywords: contentStrategy.targetKeywords,
-        keywordDensity: contentStrategy.recommendedStructure.targetKeywordDensity / 100
+        keywordDensity:
+          contentStrategy.recommendedStructure.targetKeywordDensity / 100,
       },
-      contentStrategy: contentStrategy
+      contentStrategy: contentStrategy,
     };
 
     const finalBlogPost = await generateEnhancedBlog(
@@ -466,19 +513,26 @@ async function completeWorkflowDemo() {
         SEO Requirements:
         - Target keywords: ${contentStrategy.targetKeywords.join(', ')}
         - Current SEO score to improve upon: ${seoAnalysis.overallScore}/100
-        - Address these SEO gaps: ${seoAnalysis.recommendations.slice(0, 3).map(r => r.title).join(', ')}
+        - Address these SEO gaps: ${seoAnalysis.recommendations
+          .slice(0, 3)
+          .map(r => r.title)
+          .join(', ')}
         
         Content gaps to address based on competitor analysis:
         ${contentStrategy.contentGaps.slice(0, 3).join(', ')}
         
-        Ensure high-quality, authoritative content that demonstrates expertise and builds trust.`
+        Ensure high-quality, authoritative content that demonstrates expertise and builds trust.`,
       },
-      enhancedBlogConfig
+      enhancedBlogConfig,
     );
 
-    console.log(`✓ Generated final blog post: ${finalBlogPost.blogPost.metadata.wordCount} words`);
+    console.log(
+      `✓ Generated final blog post: ${finalBlogPost.blogPost.metadata.wordCount} words`,
+    );
     console.log(`✓ SEO analysis score: ${finalBlogPost.seoAnalysis.score}/100`);
-    console.log(`✓ Content type detection: ${finalBlogPost.contentTypeDetection.detectedType} (${finalBlogPost.contentTypeDetection.confidence}% confidence)`);
+    console.log(
+      `✓ Content type detection: ${finalBlogPost.contentTypeDetection.detectedType} (${finalBlogPost.contentTypeDetection.confidence}% confidence)`,
+    );
 
     // 2. Update database with final version
     const finalVersion = await prisma.blogPost.update({
@@ -491,8 +545,8 @@ async function completeWorkflowDemo() {
         wordCount: finalBlogPost.blogPost.metadata.wordCount,
         seoScore: finalBlogPost.seoAnalysis.score,
         readabilityScore: 85, // Would come from readability analysis
-        status: 'PENDING_REVIEW'
-      }
+        status: 'PENDING_REVIEW',
+      },
     });
 
     // ===== WORKFLOW SUMMARY =====
@@ -504,18 +558,26 @@ async function completeWorkflowDemo() {
     console.log(`• Word Count: ${finalVersion.wordCount}`);
     console.log(`• SEO Score: ${finalVersion.seoScore}/100`);
     console.log(`• Status: ${finalVersion.status}`);
-    console.log(`• Target Keywords: ${contentStrategy.targetKeywords.join(', ')}`);
+    console.log(
+      `• Target Keywords: ${contentStrategy.targetKeywords.join(', ')}`,
+    );
 
     console.log('\n🔧 Process Metrics:');
     console.log(`• Topics researched: ${topicResearch.topics.length}`);
-    console.log(`• Competitors analyzed: ${competitorAnalysis.competitors.length}`);
-    console.log(`• Content sections generated: ${multiSectionResult.sections.length}`);
+    console.log(
+      `• Competitors analyzed: ${competitorAnalysis.competitors.length}`,
+    );
+    console.log(
+      `• Content sections generated: ${multiSectionResult.sections.length}`,
+    );
     console.log(`• SEO recommendations: ${seoAnalysis.recommendations.length}`);
     console.log(`• Quick wins applied: ${seoAnalysis.quickWins.length}`);
     console.log(`• Versions created: 3 (draft, optimized, final)`);
 
     console.log('\n🚀 Workflow Benefits:');
-    console.log('✓ Strategic topic selection based on research and competition');
+    console.log(
+      '✓ Strategic topic selection based on research and competition',
+    );
     console.log('✓ Comprehensive content covering identified gaps');
     console.log('✓ Advanced multi-section generation with fact-checking');
     console.log('✓ Professional SEO analysis with DataForSEO integration');
@@ -531,8 +593,9 @@ async function completeWorkflowDemo() {
     console.log('4. Monitor performance and iterate based on results');
 
     // Generate improvement roadmap
-    const roadmap = await seoAnalysisService.generateSEOImprovementRoadmap(seoAnalysis);
-    
+    const roadmap =
+      await seoAnalysisService.generateSEOImprovementRoadmap(seoAnalysis);
+
     console.log('\n🗺️  SEO Improvement Roadmap:');
     console.log(`• Remaining quick wins: ${roadmap.quickWins.length}`);
     console.log(`• Short-term improvements: ${roadmap.shortTerm.length}`);
@@ -547,9 +610,8 @@ async function completeWorkflowDemo() {
       competitorAnalysis,
       multiSectionResult,
       workflowEntry,
-      roadmap
+      roadmap,
     };
-
   } catch (error) {
     console.error('❌ Workflow Error:', error);
     throw error;
@@ -564,10 +626,9 @@ export { completeWorkflowDemo };
 // Run the demo if called directly
 if (require.main === module) {
   completeWorkflowDemo()
-    .then((result) => {
+    .then(result => {
       console.log('\n🎯 Workflow completed successfully!');
       console.log(`Final blog post created with ID: ${result.blogPost.id}`);
     })
     .catch(console.error);
 }
-

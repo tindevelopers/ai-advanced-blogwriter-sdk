@@ -1,18 +1,12 @@
-
 /**
  * Blog post status - core statuses as specified in requirements
  */
-export type BlogPostStatus = 
-  | 'draft'
-  | 'published'
-  | 'archived';
+export type BlogPostStatus = 'draft' | 'published' | 'archived';
 
 /**
  * Extended blog post status with additional workflow states
  */
-export type ExtendedBlogPostStatus = BlogPostStatus
-  | 'review'
-  | 'scheduled';
+export type ExtendedBlogPostStatus = BlogPostStatus | 'review' | 'scheduled';
 
 /**
  * Post metadata as specified in the requirements
@@ -87,33 +81,33 @@ export interface RequiredBlogPost {
 export interface BlogPostMetadata {
   /** Unique identifier */
   id: string;
-  
+
   /** Post title */
   title: string;
-  
+
   /** Meta description for SEO */
   metaDescription?: string;
-  
+
   /** URL slug */
   slug: string;
-  
+
   /** Author information */
   author?: {
     name: string;
     email?: string;
     bio?: string;
   };
-  
+
   /** Publishing information */
   createdAt: Date;
   updatedAt: Date;
   publishedAt?: Date;
   scheduledAt?: Date;
-  
+
   /** Content classification */
   category?: string;
   tags?: string[];
-  
+
   /** SEO and optimization */
   seo: {
     /** Primary focus keyword */
@@ -129,7 +123,7 @@ export interface BlogPostMetadata {
     /** Content length in words */
     wordCount: number;
   };
-  
+
   /** Social media and sharing */
   social?: {
     /** Open Graph title */
@@ -143,7 +137,7 @@ export interface BlogPostMetadata {
     /** Twitter image URL */
     twitterImage?: string;
   };
-  
+
   /** Content settings */
   settings: {
     /** Allow comments */
@@ -165,17 +159,17 @@ export interface BlogPostMetadata {
 export interface BlogPostContent {
   /** Main content in markdown or HTML */
   content: string;
-  
+
   /** Content excerpts */
   excerpt?: string;
-  
+
   /** Table of contents */
   tableOfContents?: {
     title: string;
     anchor: string;
     level: number;
   }[];
-  
+
   /** Featured image */
   featuredImage?: {
     url: string;
@@ -183,7 +177,7 @@ export interface BlogPostContent {
     caption?: string;
     credit?: string;
   };
-  
+
   /** Additional media */
   media?: {
     type: 'image' | 'video' | 'audio' | 'embed';
@@ -192,7 +186,7 @@ export interface BlogPostContent {
     caption?: string;
     position?: 'inline' | 'sidebar' | 'header' | 'footer';
   }[];
-  
+
   /** Call-to-action sections */
   cta?: {
     text: string;
@@ -208,20 +202,20 @@ export interface BlogPostContent {
 export interface BlogPostVersion {
   /** Version identifier */
   version: string;
-  
+
   /** Version metadata */
   metadata: BlogPostMetadata;
-  
+
   /** Version content */
   content: BlogPostContent;
-  
+
   /** Version creation info */
   createdAt: Date;
   createdBy?: string;
-  
+
   /** Change summary */
   changeSummary?: string;
-  
+
   /** Version status */
   status: BlogPostStatus;
 }
@@ -232,16 +226,16 @@ export interface BlogPostVersion {
 export interface BlogPost {
   /** Current metadata */
   metadata: BlogPostMetadata;
-  
+
   /** Current content */
   content: BlogPostContent;
-  
+
   /** Current status */
   status: BlogPostStatus;
-  
+
   /** Version history */
   versions?: BlogPostVersion[];
-  
+
   /** Analytics and performance */
   analytics?: {
     /** Page views */
@@ -263,7 +257,7 @@ export interface BlogPost {
       searchEngine: string;
     }[];
   };
-  
+
   /** Content optimization suggestions */
   suggestions?: {
     /** SEO improvements */

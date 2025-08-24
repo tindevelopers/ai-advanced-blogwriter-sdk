@@ -1,4 +1,3 @@
-
 /**
  * Base AI configuration interface that can be extended
  */
@@ -12,12 +11,12 @@ export interface BaseAIConfig {
   topK?: number;
   frequencyPenalty?: number;
   presencePenalty?: number;
-  
+
   /**
    * Custom headers for API requests
    */
   headers?: Record<string, string>;
-  
+
   /**
    * Additional provider-specific options
    */
@@ -32,12 +31,12 @@ export interface AIConfig extends BaseAIConfig {
    * Model identifier
    */
   model?: string;
-  
+
   /**
    * API key for the provider
    */
   apiKey?: string;
-  
+
   /**
    * Base URL for the API
    */

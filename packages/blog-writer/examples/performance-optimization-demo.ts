@@ -1,7 +1,6 @@
-
 /**
  * Week 11-12 Performance Optimization Demo
- * Comprehensive demonstration of performance tracking, A/B testing, 
+ * Comprehensive demonstration of performance tracking, A/B testing,
  * engagement prediction, and optimization recommendation features
  */
 
@@ -12,7 +11,7 @@ import {
   ABTestingService,
   EngagementPredictionService,
   OptimizationRecommendationEngine,
-  
+
   // Types
   PerformanceTrackingRequest,
   ABTestConfig,
@@ -22,7 +21,7 @@ import {
   PerformanceMetrics,
   ABTestResult,
   EngagementPrediction,
-  OptimizationRecommendation
+  OptimizationRecommendation,
 } from '../src/index';
 
 async function demonstratePerformanceOptimization() {
@@ -31,13 +30,19 @@ async function demonstratePerformanceOptimization() {
 
   // Initialize Prisma client
   const prisma = new PrismaClient();
-  
+
   try {
     // Initialize services
     const performanceTracker = new PerformanceTrackingService(prisma);
     const abTester = new ABTestingService(prisma);
-    const engagementPredictor = new EngagementPredictionService(prisma, process.env.ABACUSAI_API_KEY);
-    const recommendationEngine = new OptimizationRecommendationEngine(prisma, process.env.ABACUSAI_API_KEY);
+    const engagementPredictor = new EngagementPredictionService(
+      prisma,
+      process.env.ABACUSAI_API_KEY,
+    );
+    const recommendationEngine = new OptimizationRecommendationEngine(
+      prisma,
+      process.env.ABACUSAI_API_KEY,
+    );
 
     // Sample blog post ID (this would exist in your database)
     const blogPostId = 'sample-blog-post-id';
@@ -52,9 +57,9 @@ async function demonstratePerformanceOptimization() {
       'web_analytics',
       {
         propertyId: 'GA4-PROPERTY-ID',
-        measurementId: 'G-MEASUREMENT-ID'
+        measurementId: 'G-MEASUREMENT-ID',
       },
-      'your-ga4-api-key'
+      'your-ga4-api-key',
     );
 
     // Track performance metrics
@@ -62,21 +67,30 @@ async function demonstratePerformanceOptimization() {
       blogPostId,
       timeRange: {
         start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-        end: new Date()
+        end: new Date(),
       },
       metrics: ['views', 'engagement', 'conversions', 'seo'],
-      includeSegmentation: true
+      includeSegmentation: true,
     };
 
-    const performanceResponse = await performanceTracker.trackPerformance(performanceRequest);
-    
+    const performanceResponse =
+      await performanceTracker.trackPerformance(performanceRequest);
+
     if (performanceResponse.success) {
       console.log('✅ Performance tracking successful:');
       console.log(`   • Total Views: ${performanceResponse.data.views}`);
-      console.log(`   • Engagement Rate: ${(performanceResponse.data.engagement.engagementRate * 100).toFixed(2)}%`);
-      console.log(`   • Conversion Rate: ${(performanceResponse.data.conversions.conversionRate * 100).toFixed(2)}%`);
-      console.log(`   • Bounce Rate: ${(performanceResponse.data.bounceRate * 100).toFixed(2)}%`);
-      console.log(`   • Time on Page: ${Math.floor(performanceResponse.data.timeOnPage / 60)}m ${performanceResponse.data.timeOnPage % 60}s`);
+      console.log(
+        `   • Engagement Rate: ${(performanceResponse.data.engagement.engagementRate * 100).toFixed(2)}%`,
+      );
+      console.log(
+        `   • Conversion Rate: ${(performanceResponse.data.conversions.conversionRate * 100).toFixed(2)}%`,
+      );
+      console.log(
+        `   • Bounce Rate: ${(performanceResponse.data.bounceRate * 100).toFixed(2)}%`,
+      );
+      console.log(
+        `   • Time on Page: ${Math.floor(performanceResponse.data.timeOnPage / 60)}m ${performanceResponse.data.timeOnPage % 60}s`,
+      );
     } else {
       console.log('❌ Performance tracking failed:', performanceResponse.error);
     }
@@ -86,17 +100,21 @@ async function demonstratePerformanceOptimization() {
     console.log('✅ Real-time tracking enabled');
 
     // Generate performance report
-    const performanceReport = await performanceTracker.generatePerformanceReport(
-      blogPostId,
-      {
+    const performanceReport =
+      await performanceTracker.generatePerformanceReport(blogPostId, {
         start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-        end: new Date()
-      }
-    );
+        end: new Date(),
+      });
 
-    console.log(`✅ Performance report generated with score: ${performanceReport.performanceScore}/100`);
-    console.log(`   • Key insights: ${performanceReport.executiveSummary.keyInsights.length} insights identified`);
-    console.log(`   • Trend direction: ${performanceReport.executiveSummary.trendDirection}`);
+    console.log(
+      `✅ Performance report generated with score: ${performanceReport.performanceScore}/100`,
+    );
+    console.log(
+      `   • Key insights: ${performanceReport.executiveSummary.keyInsights.length} insights identified`,
+    );
+    console.log(
+      `   • Trend direction: ${performanceReport.executiveSummary.trendDirection}`,
+    );
 
     console.log('\n' + '='.repeat(50) + '\n');
 
@@ -112,7 +130,7 @@ async function demonstratePerformanceOptimization() {
         description: 'Current headline',
         headline: 'How to Improve Your Blog Content',
         isControl: true,
-        trafficAllocation: 50
+        trafficAllocation: 50,
       },
       {
         id: 'variant-a',
@@ -120,14 +138,15 @@ async function demonstratePerformanceOptimization() {
         description: 'More emotional and engaging',
         headline: '10 Secrets That Will Transform Your Blog Content Forever',
         isControl: false,
-        trafficAllocation: 50
-      }
+        trafficAllocation: 50,
+      },
     ];
 
     // Configure A/B test
     const testConfig: ABTestConfig = {
       testName: 'Headline Optimization Test',
-      description: 'Testing different headline approaches for better engagement',
+      description:
+        'Testing different headline approaches for better engagement',
       blogPostId,
       variants,
       trafficSplit: [50, 50],
@@ -139,28 +158,28 @@ async function demonstratePerformanceOptimization() {
           type: 'conversion_rate',
           goal: 0.05,
           direction: 'increase',
-          weight: 1
+          weight: 1,
         },
         {
           name: 'engagement_rate',
           type: 'engagement_rate',
           goal: 0.08,
           direction: 'increase',
-          weight: 0.7
-        }
+          weight: 0.7,
+        },
       ],
       significanceLevel: 0.05,
       minimumSampleSize: 1000,
       minimumDetectableEffect: 0.02,
       status: 'draft',
       startDate: new Date(),
-      createdBy: 'demo-user'
+      createdBy: 'demo-user',
     };
 
     // Create A/B test
     const testResponse = await abTester.createABTest({
       testConfig,
-      autoStart: false
+      autoStart: false,
     });
 
     if (testResponse.success) {
@@ -174,21 +193,44 @@ async function demonstratePerformanceOptimization() {
       console.log('✅ A/B test started');
 
       // Simulate some test data (in real scenario, this comes from user interactions)
-      await abTester.recordVisitorAssignment(testResponse.testId, 'control', 'user1');
-      await abTester.recordVisitorAssignment(testResponse.testId, 'variant-a', 'user2');
-      
-      await abTester.recordConversion(testResponse.testId, 'control', 'user1', 'newsletter_signup');
-      await abTester.recordConversion(testResponse.testId, 'variant-a', 'user2', 'newsletter_signup');
+      await abTester.recordVisitorAssignment(
+        testResponse.testId,
+        'control',
+        'user1',
+      );
+      await abTester.recordVisitorAssignment(
+        testResponse.testId,
+        'variant-a',
+        'user2',
+      );
+
+      await abTester.recordConversion(
+        testResponse.testId,
+        'control',
+        'user1',
+        'newsletter_signup',
+      );
+      await abTester.recordConversion(
+        testResponse.testId,
+        'variant-a',
+        'user2',
+        'newsletter_signup',
+      );
 
       console.log('✅ Test data recorded');
 
       // Get test results (in real scenario, this would be after sufficient data collection)
       const testResults = await abTester.getTestResults(testResponse.testId);
-      console.log(`✅ Test results analyzed - Statistical significance: ${testResults.statisticalSignificance ? 'Yes' : 'No'}`);
+      console.log(
+        `✅ Test results analyzed - Statistical significance: ${testResults.statisticalSignificance ? 'Yes' : 'No'}`,
+      );
 
       // Generate optimization recommendations from test
-      const testRecommendations = await abTester.generateOptimizationRecommendations(testResponse.testId);
-      console.log(`✅ Generated ${testRecommendations.length} recommendations from A/B test`);
+      const testRecommendations =
+        await abTester.generateOptimizationRecommendations(testResponse.testId);
+      console.log(
+        `✅ Generated ${testRecommendations.length} recommendations from A/B test`,
+      );
     } else {
       console.log('❌ A/B test creation failed:', testResponse.error);
     }
@@ -197,10 +239,16 @@ async function demonstratePerformanceOptimization() {
     const multivariateResponse = await abTester.createMultivariateTest(
       'Multivariate Content Test',
       [
-        { name: 'headline', values: ['Original', 'Question Format', 'Number Format'] },
-        { name: 'callToAction', values: ['Subscribe Now', 'Get Started', 'Learn More'] }
+        {
+          name: 'headline',
+          values: ['Original', 'Question Format', 'Number Format'],
+        },
+        {
+          name: 'callToAction',
+          values: ['Subscribe Now', 'Get Started', 'Learn More'],
+        },
       ],
-      { duration: 21, minimumSampleSize: 2000 }
+      { duration: 21, minimumSampleSize: 2000 },
     );
 
     if (multivariateResponse.success) {
@@ -220,37 +268,57 @@ async function demonstratePerformanceOptimization() {
         'content_performance',
         'viral_potential',
         'audience_engagement',
-        'conversion_probability'
+        'conversion_probability',
       ],
       timeHorizon: 30, // 30 days
-      includeOptimizations: true
+      includeOptimizations: true,
     };
 
-    const predictionResponse = await engagementPredictor.predictEngagement(predictionRequest);
+    const predictionResponse =
+      await engagementPredictor.predictEngagement(predictionRequest);
 
     if (predictionResponse.success) {
       console.log('✅ Engagement predictions generated:');
-      
+
       for (const prediction of predictionResponse.predictions) {
         console.log(`\n   📈 ${prediction.predictionType.toUpperCase()}:`);
-        console.log(`      • Predicted Views: ${prediction.predictedViews.toLocaleString()}`);
-        console.log(`      • Engagement Score: ${prediction.engagementScore.toFixed(1)}/100`);
-        console.log(`      • Virality Potential: ${prediction.viralityPotential.toFixed(1)}/100`);
-        console.log(`      • Confidence Level: ${prediction.confidenceLevel.toFixed(1)}%`);
-        console.log(`      • Optimization Suggestions: ${prediction.optimizationSuggestions?.length || 0}`);
+        console.log(
+          `      • Predicted Views: ${prediction.predictedViews.toLocaleString()}`,
+        );
+        console.log(
+          `      • Engagement Score: ${prediction.engagementScore.toFixed(1)}/100`,
+        );
+        console.log(
+          `      • Virality Potential: ${prediction.viralityPotential.toFixed(1)}/100`,
+        );
+        console.log(
+          `      • Confidence Level: ${prediction.confidenceLevel.toFixed(1)}%`,
+        );
+        console.log(
+          `      • Optimization Suggestions: ${prediction.optimizationSuggestions?.length || 0}`,
+        );
 
         // Show optimization suggestions
-        if (prediction.optimizationSuggestions && prediction.optimizationSuggestions.length > 0) {
+        if (
+          prediction.optimizationSuggestions &&
+          prediction.optimizationSuggestions.length > 0
+        ) {
           console.log('      Suggestions:');
-          prediction.optimizationSuggestions.slice(0, 2).forEach((suggestion, index) => {
-            console.log(`      ${index + 1}. ${suggestion.suggestion} (${suggestion.expectedImpact}% impact)`);
-          });
+          prediction.optimizationSuggestions
+            .slice(0, 2)
+            .forEach((suggestion, index) => {
+              console.log(
+                `      ${index + 1}. ${suggestion.suggestion} (${suggestion.expectedImpact}% impact)`,
+              );
+            });
         }
       }
 
       console.log(`\n   🤖 Model Info:`);
       console.log(`      • Version: ${predictionResponse.modelInfo.version}`);
-      console.log(`      • Accuracy: ${(predictionResponse.modelInfo.accuracy * 100).toFixed(1)}%`);
+      console.log(
+        `      • Accuracy: ${(predictionResponse.modelInfo.accuracy * 100).toFixed(1)}%`,
+      );
     } else {
       console.log('❌ Engagement prediction failed:', predictionResponse.error);
     }
@@ -258,32 +326,45 @@ async function demonstratePerformanceOptimization() {
     // Analyze virality potential
     const viralityAnalysis = await engagementPredictor.analyzeViralityPotential(
       blogPostId,
-      ['facebook', 'twitter', 'linkedin', 'pinterest']
+      ['facebook', 'twitter', 'linkedin', 'pinterest'],
     );
 
     console.log(`\n✅ Virality analysis completed:`);
-    console.log(`   • Overall Virality Score: ${viralityAnalysis.overallViralityScore.toFixed(1)}/100`);
-    console.log(`   • Shareability Index: ${viralityAnalysis.shareabilityIndex.toFixed(1)}/100`);
+    console.log(
+      `   • Overall Virality Score: ${viralityAnalysis.overallViralityScore.toFixed(1)}/100`,
+    );
+    console.log(
+      `   • Shareability Index: ${viralityAnalysis.shareabilityIndex.toFixed(1)}/100`,
+    );
     console.log(`   • Time to Viral: ${viralityAnalysis.timeToViral}`);
     console.log(`   • Platform Scores:`);
-    
-    Object.entries(viralityAnalysis.platformScores).forEach(([platform, score]) => {
-      console.log(`     - ${platform}: ${score.toFixed(1)}`);
-    });
 
-    // Generate performance forecast
-    const performanceForecast = await engagementPredictor.generatePerformanceForecast(
-      blogPostId,
-      90, // 90 days
-      ['optimistic', 'realistic', 'pessimistic']
+    Object.entries(viralityAnalysis.platformScores).forEach(
+      ([platform, score]) => {
+        console.log(`     - ${platform}: ${score.toFixed(1)}`);
+      },
     );
 
+    // Generate performance forecast
+    const performanceForecast =
+      await engagementPredictor.generatePerformanceForecast(
+        blogPostId,
+        90, // 90 days
+        ['optimistic', 'realistic', 'pessimistic'],
+      );
+
     console.log(`\n✅ Performance forecast generated:`);
-    console.log(`   • Forecast Period: ${performanceForecast.forecastPeriod} days`);
+    console.log(
+      `   • Forecast Period: ${performanceForecast.forecastPeriod} days`,
+    );
     console.log(`   • Scenarios:`);
-    Object.entries(performanceForecast.scenarios).forEach(([scenario, data]) => {
-      console.log(`     - ${scenario}: ${data.views.toLocaleString()} views (${(data.confidence * 100).toFixed(1)}% confidence)`);
-    });
+    Object.entries(performanceForecast.scenarios).forEach(
+      ([scenario, data]) => {
+        console.log(
+          `     - ${scenario}: ${data.views.toLocaleString()} views (${(data.confidence * 100).toFixed(1)}% confidence)`,
+        );
+      },
+    );
 
     console.log('\n' + '='.repeat(50) + '\n');
 
@@ -294,77 +375,115 @@ async function demonstratePerformanceOptimization() {
     // Generate comprehensive recommendations
     const optimizationRequest: OptimizationRequest = {
       blogPostId,
-      categories: ['content_quality', 'user_experience', 'conversion_optimization', 'technical_seo'],
+      categories: [
+        'content_quality',
+        'user_experience',
+        'conversion_optimization',
+        'technical_seo',
+      ],
       priority: 'medium',
-      maxRecommendations: 10
+      maxRecommendations: 10,
     };
 
-    const optimizationResponse = await recommendationEngine.generateRecommendations(optimizationRequest);
+    const optimizationResponse =
+      await recommendationEngine.generateRecommendations(optimizationRequest);
 
     if (optimizationResponse.success) {
       console.log('✅ Optimization recommendations generated:');
-      console.log(`   • Total Recommendations: ${optimizationResponse.recommendations.length}`);
-      console.log(`   • Priority Score: ${optimizationResponse.priorityScore.toFixed(1)}/100`);
-      console.log(`   • Total Impact Potential: ${optimizationResponse.totalImpactPotential.toFixed(1)}%`);
+      console.log(
+        `   • Total Recommendations: ${optimizationResponse.recommendations.length}`,
+      );
+      console.log(
+        `   • Priority Score: ${optimizationResponse.priorityScore.toFixed(1)}/100`,
+      );
+      console.log(
+        `   • Total Impact Potential: ${optimizationResponse.totalImpactPotential.toFixed(1)}%`,
+      );
 
       console.log('\n   📋 Top Recommendations:');
       optimizationResponse.recommendations.slice(0, 5).forEach((rec, index) => {
         console.log(`\n   ${index + 1}. ${rec.title}`);
-        console.log(`      Priority: ${rec.priority.toUpperCase()} | Impact: ${rec.expectedImpact}% | Effort: ${rec.estimatedEffort}`);
-        console.log(`      Category: ${rec.category} | Confidence: ${rec.confidence}%`);
+        console.log(
+          `      Priority: ${rec.priority.toUpperCase()} | Impact: ${rec.expectedImpact}% | Effort: ${rec.estimatedEffort}`,
+        );
+        console.log(
+          `      Category: ${rec.category} | Confidence: ${rec.confidence}%`,
+        );
         console.log(`      Suggestion: ${rec.suggestion.substring(0, 100)}...`);
         console.log(`      Time Estimate: ${rec.timeEstimate}`);
-        
+
         if (rec.implementation && rec.implementation.steps.length > 0) {
-          console.log(`      Steps: ${rec.implementation.steps.length} implementation steps`);
+          console.log(
+            `      Steps: ${rec.implementation.steps.length} implementation steps`,
+          );
         }
       });
 
       // Implement a recommendation
       if (optimizationResponse.recommendations.length > 0) {
         const firstRecommendation = optimizationResponse.recommendations[0];
-        
+
         if (firstRecommendation.id) {
-          const implementationResult = await recommendationEngine.implementRecommendation(
-            firstRecommendation.id,
-            'demo-user',
-            'Demo implementation of top recommendation'
-          );
+          const implementationResult =
+            await recommendationEngine.implementRecommendation(
+              firstRecommendation.id,
+              'demo-user',
+              'Demo implementation of top recommendation',
+            );
 
           if (implementationResult.success) {
             console.log('\n✅ Recommendation implemented successfully');
-            console.log(`   • Implementation Date: ${implementationResult.implementedAt.toLocaleDateString()}`);
-            console.log(`   • Monitoring Enabled: ${implementationResult.monitoringEnabled ? 'Yes' : 'No'}`);
+            console.log(
+              `   • Implementation Date: ${implementationResult.implementedAt.toLocaleDateString()}`,
+            );
+            console.log(
+              `   • Monitoring Enabled: ${implementationResult.monitoringEnabled ? 'Yes' : 'No'}`,
+            );
 
             // Simulate impact measurement (in real scenario, this would be after some time)
             setTimeout(async () => {
               try {
-                const impactMeasurement = await recommendationEngine.measureRecommendationImpact(
-                  firstRecommendation.id!
-                );
+                const impactMeasurement =
+                  await recommendationEngine.measureRecommendationImpact(
+                    firstRecommendation.id!,
+                  );
                 console.log('\n📊 Impact measurement completed:');
-                console.log(`   • Overall Improvement: ${impactMeasurement.impact.overallImprovement}%`);
-                console.log(`   • Measurement Confidence: ${(impactMeasurement.confidence * 100).toFixed(1)}%`);
-                console.log(`   • Success: ${impactMeasurement.impact.successful ? 'Yes' : 'No'}`);
+                console.log(
+                  `   • Overall Improvement: ${impactMeasurement.impact.overallImprovement}%`,
+                );
+                console.log(
+                  `   • Measurement Confidence: ${(impactMeasurement.confidence * 100).toFixed(1)}%`,
+                );
+                console.log(
+                  `   • Success: ${impactMeasurement.impact.successful ? 'Yes' : 'No'}`,
+                );
               } catch (error) {
-                console.log('   (Impact measurement will be available after sufficient data collection)');
+                console.log(
+                  '   (Impact measurement will be available after sufficient data collection)',
+                );
               }
             }, 1000);
           }
         }
       }
     } else {
-      console.log('❌ Optimization recommendations failed:', optimizationResponse.error);
+      console.log(
+        '❌ Optimization recommendations failed:',
+        optimizationResponse.error,
+      );
     }
 
     // Generate real-time recommendations
-    const realTimeRecs = await recommendationEngine.generateRealTimeRecommendations(
-      blogPostId,
-      3600000 // 1 hour
-    );
+    const realTimeRecs =
+      await recommendationEngine.generateRealTimeRecommendations(
+        blogPostId,
+        3600000, // 1 hour
+      );
 
     console.log(`\n✅ Real-time recommendations generated:`);
-    console.log(`   • Urgent Recommendations: ${realTimeRecs.urgentRecommendations.length}`);
+    console.log(
+      `   • Urgent Recommendations: ${realTimeRecs.urgentRecommendations.length}`,
+    );
     console.log(`   • Opportunities: ${realTimeRecs.opportunities.length}`);
     console.log(`   • Alerts: ${realTimeRecs.alerts.length}`);
 
@@ -378,34 +497,52 @@ async function demonstratePerformanceOptimization() {
     if (realTimeRecs.opportunities.length > 0) {
       console.log('\n   💡 Opportunities Identified:');
       realTimeRecs.opportunities.forEach((opp, index) => {
-        console.log(`   ${index + 1}. ${opp.title} - ${opp.potentialImpact} impact (${opp.estimatedImprovement}% improvement)`);
+        console.log(
+          `   ${index + 1}. ${opp.title} - ${opp.potentialImpact} impact (${opp.estimatedImprovement}% improvement)`,
+        );
       });
     }
 
     // Competitive benchmarking
-    const benchmarkingResult = await recommendationEngine.generateCompetitiveBenchmarking(
-      blogPostId,
-      ['competitor1.com', 'competitor2.com'] // Optional competitor domains
-    );
+    const benchmarkingResult =
+      await recommendationEngine.generateCompetitiveBenchmarking(
+        blogPostId,
+        ['competitor1.com', 'competitor2.com'], // Optional competitor domains
+      );
 
     console.log(`\n✅ Competitive benchmarking completed:`);
-    console.log(`   • Competitive Score: ${benchmarkingResult.competitiveScore}/100`);
-    console.log(`   • Performance Gaps: ${benchmarkingResult.performanceGaps.length} identified`);
-    console.log(`   • Opportunities: ${benchmarkingResult.opportunities.length} competitive opportunities`);
-    console.log(`   • Benchmark Recommendations: ${benchmarkingResult.recommendations.length}`);
-
-    // Auto-implement safe recommendations
-    const autoImplementResult = await recommendationEngine.autoImplementRecommendations(
-      blogPostId,
-      'low', // Only low-risk recommendations
-      ['technical_seo', 'performance'] // Safe categories
+    console.log(
+      `   • Competitive Score: ${benchmarkingResult.competitiveScore}/100`,
+    );
+    console.log(
+      `   • Performance Gaps: ${benchmarkingResult.performanceGaps.length} identified`,
+    );
+    console.log(
+      `   • Opportunities: ${benchmarkingResult.opportunities.length} competitive opportunities`,
+    );
+    console.log(
+      `   • Benchmark Recommendations: ${benchmarkingResult.recommendations.length}`,
     );
 
+    // Auto-implement safe recommendations
+    const autoImplementResult =
+      await recommendationEngine.autoImplementRecommendations(
+        blogPostId,
+        'low', // Only low-risk recommendations
+        ['technical_seo', 'performance'], // Safe categories
+      );
+
     console.log(`\n✅ Auto-implementation completed:`);
-    console.log(`   • Total Eligible: ${autoImplementResult.totalRecommendations}`);
-    console.log(`   • Successfully Implemented: ${autoImplementResult.implementedCount}`);
+    console.log(
+      `   • Total Eligible: ${autoImplementResult.totalRecommendations}`,
+    );
+    console.log(
+      `   • Successfully Implemented: ${autoImplementResult.implementedCount}`,
+    );
     console.log(`   • Failed: ${autoImplementResult.failedCount}`);
-    console.log(`   • Estimated Impact: ${autoImplementResult.estimatedImpact}%`);
+    console.log(
+      `   • Estimated Impact: ${autoImplementResult.estimatedImpact}%`,
+    );
 
     console.log('\n' + '='.repeat(50) + '\n');
 
@@ -443,7 +580,6 @@ async function demonstratePerformanceOptimization() {
     console.log('   • Automated optimization workflows');
     console.log('   • Advanced competitive intelligence');
     console.log('   • Cross-content optimization insights');
-
   } catch (error) {
     console.error('❌ Demo failed:', error);
   } finally {
@@ -469,11 +605,10 @@ if (require.main === module) {
       console.log('Demo completed successfully!');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Demo failed:', error);
       process.exit(1);
     });
 }
 
 export { demonstratePerformanceOptimization };
-

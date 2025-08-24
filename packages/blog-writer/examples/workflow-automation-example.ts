@@ -1,27 +1,25 @@
-
-
 /**
  * Workflow Automation Example
  * Demonstrates comprehensive workflow management with approvals and automation
  */
 
 import { PrismaClient } from '@prisma/client';
-import { 
-  WorkflowManager, 
+import {
+  WorkflowManager,
   ContentManagementService,
-  NotificationManager 
+  NotificationManager,
 } from '@ai-sdk/blog-writer';
 
 async function workflowAutomationExample() {
   const prisma = new PrismaClient();
-  
+
   // Configure comprehensive workflow
   const workflowConfig = {
     requireApproval: true,
     approvalMatrix: {
-      'technical': ['tech-lead-123', 'senior-dev-456'],
-      'marketing': ['marketing-manager-789', 'content-director-012'],
-      'general': ['editor-345']
+      technical: ['tech-lead-123', 'senior-dev-456'],
+      marketing: ['marketing-manager-789', 'content-director-012'],
+      general: ['editor-345'],
     },
     autoAssignment: true,
     notifications: {
@@ -29,13 +27,13 @@ async function workflowAutomationExample() {
       onApproval: true,
       onRejection: true,
       onPublish: true,
-      reminderDays: [1, 3, 7]
+      reminderDays: [1, 3, 7],
     },
     deadlines: {
       reviewDays: 2,
       approvalDays: 1,
-      escalationDays: 5
-    }
+      escalationDays: 5,
+    },
   };
 
   const workflowManager = new WorkflowManager(prisma, workflowConfig);
@@ -78,13 +76,14 @@ async function workflowAutomationExample() {
 
       Create custom hooks to encapsulate and reuse stateful logic across components.
     `,
-    excerpt: 'Master advanced React Hooks patterns for optimal performance in your applications.',
+    excerpt:
+      'Master advanced React Hooks patterns for optimal performance in your applications.',
     customMetadata: {
       content_type: 'technical',
       difficulty_level: 'Advanced',
-      estimated_read_time: '12'
+      estimated_read_time: '12',
     },
-    authorId: 'dev-author-123'
+    authorId: 'dev-author-123',
   });
 
   console.log('Created technical blog post:', techPost.blogPost.id);
@@ -105,8 +104,8 @@ async function workflowAutomationExample() {
         - Code example quality  
         - Performance recommendations
         - Clarity for advanced developers`,
-      attachments: ['performance-benchmarks.pdf', 'code-examples.zip']
-    }
+      attachments: ['performance-benchmarks.pdf', 'code-examples.zip'],
+    },
   );
 
   console.log('Submission Details:');
@@ -114,9 +113,12 @@ async function workflowAutomationExample() {
   console.log('- Total approval steps:', submissionResult.workflow.totalSteps);
   console.log('- Current step:', submissionResult.workflow.currentStep);
   console.log('- Due date:', submissionResult.workflow.dueDate?.toISOString());
-  
+
   if (submissionResult.seoAnalysis) {
-    console.log('- SEO Score:', submissionResult.seoAnalysis.overallScore.toFixed(1));
+    console.log(
+      '- SEO Score:',
+      submissionResult.seoAnalysis.overallScore.toFixed(1),
+    );
   }
 
   // ===== APPROVAL PROCESS SIMULATION =====
@@ -124,7 +126,7 @@ async function workflowAutomationExample() {
 
   // First reviewer: Tech Lead
   console.log('\n1. Tech Lead Review:');
-  
+
   const techLeadApproval = await workflowManager.processApproval(
     submissionResult.workflow.id,
     1,
@@ -141,14 +143,19 @@ async function workflowAutomationExample() {
         reviewTime: 45, // minutes
         technicalAccuracy: 9.5,
         codeQuality: 9.0,
-        clarity: 8.5
-      }
-    }
+        clarity: 8.5,
+      },
+    },
   );
 
-  console.log('Tech Lead approval status:', techLeadApproval.currentStep, 'of', techLeadApproval.totalSteps);
+  console.log(
+    'Tech Lead approval status:',
+    techLeadApproval.currentStep,
+    'of',
+    techLeadApproval.totalSteps,
+  );
 
-  // Second reviewer: Senior Developer  
+  // Second reviewer: Senior Developer
   console.log('\n2. Senior Developer Review:');
 
   const seniorDevApproval = await workflowManager.processApproval(
@@ -167,14 +174,20 @@ async function workflowAutomationExample() {
         reviewTime: 30,
         practicalValue: 9.0,
         completeness: 8.5,
-        readability: 9.0
-      }
-    }
+        readability: 9.0,
+      },
+    },
   );
 
   console.log('Senior Developer approval completed!');
-  console.log('Workflow status:', seniorDevApproval.isComplete ? 'Completed' : 'In Progress');
-  console.log('Final approval:', seniorDevApproval.isApproved ? 'Approved' : 'Pending');
+  console.log(
+    'Workflow status:',
+    seniorDevApproval.isComplete ? 'Completed' : 'In Progress',
+  );
+  console.log(
+    'Final approval:',
+    seniorDevApproval.isApproved ? 'Approved' : 'Pending',
+  );
 
   // ===== WORKFLOW WITH REJECTION EXAMPLE =====
   console.log('\n--- Workflow with Rejection Example ---');
@@ -192,9 +205,9 @@ async function workflowAutomationExample() {
     excerpt: 'A new approach to marketing.',
     customMetadata: {
       content_type: 'marketing',
-      difficulty_level: 'Beginner'
+      difficulty_level: 'Beginner',
     },
-    authorId: 'marketing-author-789'
+    authorId: 'marketing-author-789',
   });
 
   const rejectionSubmission = await contentManager.submitForReview(
@@ -204,8 +217,8 @@ async function workflowAutomationExample() {
       reviewers: ['marketing-manager-789'],
       dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
       priority: 'medium',
-      message: 'Please review this marketing strategy article.'
-    }
+      message: 'Please review this marketing strategy article.',
+    },
   );
 
   // Reject with detailed feedback
@@ -236,44 +249,49 @@ async function workflowAutomationExample() {
       metadata: {
         contentQuality: 3.0,
         marketingValue: 2.5,
-        completeness: 2.0
-      }
-    }
+        completeness: 2.0,
+      },
+    },
   );
 
-  console.log('Marketing post rejected - status:', rejection.isComplete ? 'Workflow Complete' : 'Returned for Changes');
+  console.log(
+    'Marketing post rejected - status:',
+    rejection.isComplete ? 'Workflow Complete' : 'Returned for Changes',
+  );
 
   // ===== SCHEDULING AND PUBLICATION =====
   console.log('\n--- Scheduling and Publication ---');
 
   // Schedule the approved technical post
-  await contentManager.publishBlogPost(
-    techPost.blogPost.id,
-    'dev-author-123',
-    {
-      scheduleOptions: {
-        scheduledFor: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Next week
-        timezone: 'America/New_York',
-        autoPromote: true,
-        promotionChannels: ['twitter', 'linkedin', 'dev.to', 'hackernews'],
-        notifySubscribers: true
-      },
-      createRelationships: true,
-      notifySubscribers: true
-    }
-  );
+  await contentManager.publishBlogPost(techPost.blogPost.id, 'dev-author-123', {
+    scheduleOptions: {
+      scheduledFor: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Next week
+      timezone: 'America/New_York',
+      autoPromote: true,
+      promotionChannels: ['twitter', 'linkedin', 'dev.to', 'hackernews'],
+      notifySubscribers: true,
+    },
+    createRelationships: true,
+    notifySubscribers: true,
+  });
 
-  console.log('Technical post scheduled for publication next week with multi-channel promotion');
+  console.log(
+    'Technical post scheduled for publication next week with multi-channel promotion',
+  );
 
   // ===== WORKFLOW ANALYTICS =====
   console.log('\n--- Workflow Analytics ---');
 
   // Get workflow history
-  const workflowHistory = await workflowManager.getWorkflowHistory(techPost.blogPost.id);
-  
+  const workflowHistory = await workflowManager.getWorkflowHistory(
+    techPost.blogPost.id,
+  );
+
   console.log('Workflow History for Technical Post:');
   workflowHistory.forEach((entry, index) => {
-    console.log(`${index + 1}. ${entry.action} - ${entry.fromStatus || 'N/A'} → ${entry.toStatus}`);
+    console.log(
+      `${index + 1}. ${entry.action} - ${entry.fromStatus || 'N/A'} → ${entry.toStatus}`,
+    );
     console.log(`   By: ${entry.performedBy || 'System'}`);
     console.log(`   Date: ${entry.performedAt.toISOString()}`);
     console.log(`   Comment: ${entry.comment || 'No comment'}`);
@@ -284,8 +302,10 @@ async function workflowAutomationExample() {
   });
 
   // Get pending approvals for reviewers
-  const techLeadPendingApprovals = await workflowManager.getPendingApprovals('tech-lead-123');
-  const seniorDevPendingApprovals = await workflowManager.getPendingApprovals('senior-dev-456');
+  const techLeadPendingApprovals =
+    await workflowManager.getPendingApprovals('tech-lead-123');
+  const seniorDevPendingApprovals =
+    await workflowManager.getPendingApprovals('senior-dev-456');
 
   console.log('Pending Approvals:');
   console.log('- Tech Lead:', techLeadPendingApprovals.length, 'pending');
@@ -297,27 +317,37 @@ async function workflowAutomationExample() {
   // Simulate cron job processing
   console.log('Processing scheduled publications...');
   await workflowManager.processScheduledPublications();
-  
+
   // ===== NOTIFICATION MANAGEMENT =====
   console.log('\n--- Notification System ---');
 
   // Get notifications for different users
-  const authorNotifications = await notificationManager.getUserNotifications('dev-author-123');
-  const reviewerNotifications = await notificationManager.getUserNotifications('tech-lead-123');
+  const authorNotifications =
+    await notificationManager.getUserNotifications('dev-author-123');
+  const reviewerNotifications =
+    await notificationManager.getUserNotifications('tech-lead-123');
 
   console.log('Author Notifications:');
   authorNotifications.slice(0, 3).forEach((notification, index) => {
-    console.log(`${index + 1}. [${notification.type.toUpperCase()}] ${notification.title}`);
+    console.log(
+      `${index + 1}. [${notification.type.toUpperCase()}] ${notification.title}`,
+    );
     console.log(`   ${notification.message}`);
-    console.log(`   Priority: ${notification.priority}, Read: ${notification.isRead ? 'Yes' : 'No'}`);
+    console.log(
+      `   Priority: ${notification.priority}, Read: ${notification.isRead ? 'Yes' : 'No'}`,
+    );
     console.log();
   });
 
   console.log('Reviewer Notifications:');
   reviewerNotifications.slice(0, 3).forEach((notification, index) => {
-    console.log(`${index + 1}. [${notification.type.toUpperCase()}] ${notification.title}`);
+    console.log(
+      `${index + 1}. [${notification.type.toUpperCase()}] ${notification.title}`,
+    );
     console.log(`   ${notification.message}`);
-    console.log(`   Priority: ${notification.priority}, Read: ${notification.isRead ? 'Yes' : 'No'}`);
+    console.log(
+      `   Priority: ${notification.priority}, Read: ${notification.isRead ? 'Yes' : 'No'}`,
+    );
     console.log();
   });
 
@@ -328,29 +358,42 @@ async function workflowAutomationExample() {
   const allWorkflows = await prisma.approvalWorkflow.findMany({
     include: {
       approvals: true,
-      blogPost: true
-    }
+      blogPost: true,
+    },
   });
 
   const completedWorkflows = allWorkflows.filter(w => w.isComplete);
-  const averageApprovalTime = completedWorkflows.length > 0 
-    ? completedWorkflows.reduce((sum, w) => {
-        const startTime = w.createdAt.getTime();
-        const endTime = w.completedAt?.getTime() || Date.now();
-        return sum + (endTime - startTime);
-      }, 0) / completedWorkflows.length / (1000 * 60 * 60) // Convert to hours
-    : 0;
+  const averageApprovalTime =
+    completedWorkflows.length > 0
+      ? completedWorkflows.reduce((sum, w) => {
+          const startTime = w.createdAt.getTime();
+          const endTime = w.completedAt?.getTime() || Date.now();
+          return sum + (endTime - startTime);
+        }, 0) /
+        completedWorkflows.length /
+        (1000 * 60 * 60) // Convert to hours
+      : 0;
 
-  const approvalRate = allWorkflows.length > 0
-    ? (completedWorkflows.filter(w => w.isApproved).length / allWorkflows.length) * 100
-    : 0;
+  const approvalRate =
+    allWorkflows.length > 0
+      ? (completedWorkflows.filter(w => w.isApproved).length /
+          allWorkflows.length) *
+        100
+      : 0;
 
   console.log('Workflow Metrics:');
   console.log('- Total workflows:', allWorkflows.length);
   console.log('- Completed workflows:', completedWorkflows.length);
-  console.log('- Average approval time:', averageApprovalTime.toFixed(2), 'hours');
+  console.log(
+    '- Average approval time:',
+    averageApprovalTime.toFixed(2),
+    'hours',
+  );
   console.log('- Approval rate:', approvalRate.toFixed(1), '%');
-  console.log('- Pending workflows:', allWorkflows.filter(w => !w.isComplete).length);
+  console.log(
+    '- Pending workflows:',
+    allWorkflows.filter(w => !w.isComplete).length,
+  );
 
   // ===== ADVANCED WORKFLOW AUTOMATION =====
   console.log('\n--- Advanced Automation Features ---');
@@ -360,7 +403,7 @@ async function workflowAutomationExample() {
     'tech-lead-123',
     techPost.blogPost.id,
     new Date(Date.now() + 24 * 60 * 60 * 1000),
-    'approaching'
+    'approaching',
   );
 
   console.log('Created deadline reminder notification');
@@ -371,10 +414,11 @@ async function workflowAutomationExample() {
     {
       type: 'system',
       title: 'New Workflow Guidelines',
-      message: 'Please review the updated content workflow guidelines in the team handbook.',
+      message:
+        'Please review the updated content workflow guidelines in the team handbook.',
       priority: 'medium',
-      actionUrl: '/guidelines/workflow'
-    }
+      actionUrl: '/guidelines/workflow',
+    },
   );
 
   console.log('Bulk notifications sent:');
@@ -383,7 +427,7 @@ async function workflowAutomationExample() {
 
   // ===== CLEANUP =====
   await prisma.$disconnect();
-  
+
   console.log('\n=== Workflow Automation Example Completed ===');
 }
 
@@ -394,11 +438,10 @@ if (require.main === module) {
       console.log('Workflow automation example completed successfully!');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Error running workflow automation example:', error);
       process.exit(1);
     });
 }
 
 export { workflowAutomationExample };
-

@@ -1,5 +1,3 @@
-
-
 // Re-export all types
 export * from './base-config';
 export * from './blog-config';
@@ -13,21 +11,21 @@ export {
   KeywordResearchData,
   ExpertProfile,
   ExpertQuote,
-  TopicResearchOptions
+  TopicResearchOptions,
 } from './research';
 
 // Export specific interfaces as requested in requirements
-export type { 
-  BlogAIConfig, 
+export type {
+  BlogAIConfig,
   ToneConfiguration,
-  ExtendedBlogAIConfig 
+  ExtendedBlogAIConfig,
 } from './blog-config';
-export type { 
+export type {
   RequiredBlogPost,
-  BlogPost, 
-  PostMetadata, 
+  BlogPost,
+  PostMetadata,
   ContentVersion,
-  BlogPostStatus 
+  BlogPostStatus,
 } from './blog-post';
 
 // Week 3-4 Content Management Foundation
@@ -71,10 +69,10 @@ export {
   ActivityType,
   CompetitorType,
   SearchIntent,
-  BriefStatus
+  BriefStatus,
 } from './strategy-engine';
 
-// Week 7-8 Advanced Writing Features  
+// Week 7-8 Advanced Writing Features
 export * from './advanced-writing';
 
 // Week 9-10 SEO Analysis Engine (selective exports to avoid conflicts)
@@ -155,10 +153,10 @@ export {
   SEORecommendationType,
   SEOAnalysisRequest,
   KeywordResearchResponse,
-  SchemaGenerationRequest
+  SchemaGenerationRequest,
 } from './seo-engine';
 
-// Week 11-12 Performance Optimization (selective exports to avoid conflicts)  
+// Week 11-12 Performance Optimization (selective exports to avoid conflicts)
 export {
   // Core Performance interfaces
   PerformanceMetrics,
@@ -249,7 +247,7 @@ export {
   ABTestRequest,
   ABTestResponse,
   PredictionRequest,
-  PredictionResponse
+  PredictionResponse,
 } from './performance-optimization';
 
 // Re-export database types for convenience (when generated)
@@ -309,7 +307,7 @@ export type {
   // Week 7-8 Advanced Writing Features - Main interfaces
   WritingConfig,
   StyleGuideSettings,
-  SEORequirements
+  SEORequirements,
 } from './advanced-writing';
 
 // Export requested specific interfaces
@@ -325,7 +323,7 @@ export type {
   CompetitorSEOData,
   ComparisonMetric,
   LinkOpportunity,
-  CompetitorBasedRecommendation
+  CompetitorBasedRecommendation,
 } from './seo-engine';
 
 export type {
@@ -355,7 +353,7 @@ export type {
   DataPoint,
   BenchmarkComparison,
   SuccessCaseData,
-  BestPracticeReference
+  BestPracticeReference,
 } from './performance-optimization';
 
 // Week 13-14 Platform Integration Framework

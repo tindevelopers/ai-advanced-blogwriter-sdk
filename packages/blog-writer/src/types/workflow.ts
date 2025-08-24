@@ -1,11 +1,9 @@
-
-
 /**
  * Workflow Management Types
  * Comprehensive draft/publish workflow with approvals and state tracking
  */
 
-export type WorkflowAction = 
+export type WorkflowAction =
   | 'CREATED'
   | 'SUBMITTED_FOR_REVIEW'
   | 'APPROVED'
@@ -93,7 +91,12 @@ export interface WorkflowCondition {
   type: 'field_value' | 'user_role' | 'custom_function';
   field?: string;
   value?: any;
-  operator?: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains';
+  operator?:
+    | 'equals'
+    | 'not_equals'
+    | 'greater_than'
+    | 'less_than'
+    | 'contains';
   customFunction?: (context: WorkflowContext) => boolean;
 }
 
@@ -153,4 +156,3 @@ export interface WorkflowMetrics {
 }
 
 import type { BlogPostStatus } from './versioning';
-
