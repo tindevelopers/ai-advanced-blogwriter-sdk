@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalEnv": ["CI", "PORT"],
+  "globalEnv": ["CI", "PORT", "LOG_LEVEL"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -69,7 +69,8 @@
       ]
     },
     "lint": {
-      "dependsOn": ["^lint"]
+      "dependsOn": ["^lint"],
+      "env": ["LOG_LEVEL"]
     },
     "type-check": {
       "dependsOn": ["^build", "build"]
