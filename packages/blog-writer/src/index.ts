@@ -1,6 +1,10 @@
 // Core exports
-export { validateBlogPost } from './core/blog-validation';
-export type { BlogValidationResult } from './core/blog-validation';
+export { validateBlogPost } from './core/validation';
+export type { BlogPostValidation as BlogValidationResult } from './core/validation';
+
+// Type exports
+export type { BlogPost } from './types/blog-post';
+export type { BlogTemplate } from './types/blog-config';
 
 // Platform Adapters (Individual exports)
 export { ShopifyAdapter } from './core/platform-adapters/shopify-adapter';

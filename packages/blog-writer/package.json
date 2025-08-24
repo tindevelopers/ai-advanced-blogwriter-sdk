@@ -20,7 +20,13 @@
     "prettier-check": "prettier --check \"./**/*.ts*\"",
     "test": "vitest --config vitest.config.js --run",
     "test:watch": "vitest --config vitest.config.js",
-    "test:update": "vitest --config vitest.config.js -u"
+    "test:update": "vitest --config vitest.config.js -u",
+    "test:unit": "vitest --config vitest.config.js --run test/unit",
+    "test:integration": "vitest --config vitest.config.js --run test/integration",
+    "test:performance": "vitest --config vitest.config.js --run test/performance",
+    "test:error-handling": "vitest --config vitest.config.js --run test/error-handling",
+    "test:coverage": "vitest --config vitest.config.js --run --coverage",
+    "test:all": "vitest --config vitest.config.js --run --coverage"
   },
   "exports": {
     "./package.json": "./package.json",
