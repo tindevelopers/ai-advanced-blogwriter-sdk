@@ -84,7 +84,8 @@ async function demonstrateCompleteWorkflow() {
       },
       seo: {
         focusKeyword: 'AI content marketing',
-        metaDescription: 'Discover how AI is transforming content marketing strategies',
+        metaDescription:
+          'Discover how AI is transforming content marketing strategies',
         includeToC: true,
       },
     });
@@ -92,7 +93,9 @@ async function demonstrateCompleteWorkflow() {
     console.log('✅ Basic blog generation completed');
     console.log(`   • Title: ${blogResult.blogPost.title}`);
     console.log(`   • Word count: ${blogResult.metadata.wordCount}`);
-    console.log(`   • Generation time: ${blogResult.metadata.generationTime}ms`);
+    console.log(
+      `   • Generation time: ${blogResult.metadata.generationTime}ms`,
+    );
     console.log(`   • Template: ${blogResult.metadata.template}`);
 
     const blogPostId = blogResult.blogPost.id;
@@ -124,25 +127,38 @@ async function demonstrateCompleteWorkflow() {
     });
 
     console.log('✅ Topic research completed');
-    console.log(`   • ${topicResearch.trends?.length || 0} trending topics found`);
-    console.log(`   • Competition level: ${topicResearch.competitionLevel || 'Medium'}`);
+    console.log(
+      `   • ${topicResearch.trends?.length || 0} trending topics found`,
+    );
+    console.log(
+      `   • Competition level: ${topicResearch.competitionLevel || 'Medium'}`,
+    );
 
     // Competitor analysis
-    const competitorAnalysis = await competitorAnalysisService.analyzeCompetitors({
-      topic: 'AI content marketing',
-      competitors: ['hubspot.com', 'marketo.com', 'salesforce.com'],
-      includeContentGaps: true,
-      includeTrendingTopics: true,
-    });
+    const competitorAnalysis =
+      await competitorAnalysisService.analyzeCompetitors({
+        topic: 'AI content marketing',
+        competitors: ['hubspot.com', 'marketo.com', 'salesforce.com'],
+        includeContentGaps: true,
+        includeTrendingTopics: true,
+      });
 
     console.log('✅ Competitor analysis completed');
-    console.log(`   • ${competitorAnalysis.competitors?.length || 0} competitors analyzed`);
-    console.log(`   • Content gaps: ${competitorAnalysis.contentGaps?.length || 0} opportunities`);
+    console.log(
+      `   • ${competitorAnalysis.competitors?.length || 0} competitors analyzed`,
+    );
+    console.log(
+      `   • Content gaps: ${competitorAnalysis.contentGaps?.length || 0} opportunities`,
+    );
 
     // Content strategy generation
     const contentStrategy = await contentStrategyService.generateStrategy({
       niche: 'AI in Content Marketing',
-      targetKeywords: ['AI content marketing', 'marketing automation', 'content strategy'],
+      targetKeywords: [
+        'AI content marketing',
+        'marketing automation',
+        'content strategy',
+      ],
       competitors: ['hubspot.com', 'marketo.com'],
       timeframe: {
         start: new Date(),
@@ -151,7 +167,11 @@ async function demonstrateCompleteWorkflow() {
       goals: {
         contentVolume: 12,
         targetAudience: ['marketing professionals', 'business owners'],
-        businessObjectives: ['increase brand awareness', 'generate leads', 'establish thought leadership'],
+        businessObjectives: [
+          'increase brand awareness',
+          'generate leads',
+          'establish thought leadership',
+        ],
       },
       constraints: {
         budget: 5000,
@@ -161,9 +181,15 @@ async function demonstrateCompleteWorkflow() {
     });
 
     console.log('✅ Content strategy generated');
-    console.log(`   • ${contentStrategy.topics?.length || 0} topics identified`);
-    console.log(`   • ${contentStrategy.calendar?.entries?.length || 0} calendar entries`);
-    console.log(`   • ${contentStrategy.recommendations?.length || 0} recommendations`);
+    console.log(
+      `   • ${contentStrategy.topics?.length || 0} topics identified`,
+    );
+    console.log(
+      `   • ${contentStrategy.calendar?.entries?.length || 0} calendar entries`,
+    );
+    console.log(
+      `   • ${contentStrategy.recommendations?.length || 0} recommendations`,
+    );
 
     // ===== PHASE 3: ADVANCED WRITING (Weeks 7-8) =====
     console.log('\n✍️ PHASE 3: Advanced Writing (Weeks 7-8)');
@@ -205,7 +231,11 @@ async function demonstrateCompleteWorkflow() {
           personalityTraits: ['confident', 'knowledgeable', 'trustworthy'],
         },
         vocabularyGuidelines: {
-          preferredTerms: ['artificial intelligence', 'machine learning', 'automation'],
+          preferredTerms: [
+            'artificial intelligence',
+            'machine learning',
+            'automation',
+          ],
           avoidTerms: ['AI', 'ML', 'bots'],
           complexityLevel: 'INTERMEDIATE',
         },
@@ -229,16 +259,24 @@ async function demonstrateCompleteWorkflow() {
       },
       factCheckingEnabled: true,
       optimizationEnabled: true,
-      streamingCallback: (progress) => {
-        console.log(`   • Progress: ${progress.overallProgress.toFixed(1)}% - ${progress.phase}`);
+      streamingCallback: progress => {
+        console.log(
+          `   • Progress: ${progress.overallProgress.toFixed(1)}% - ${progress.phase}`,
+        );
       },
     });
 
     console.log('✅ Advanced writing completed');
     console.log(`   • Sections generated: ${enhancedResult.sections.length}`);
-    console.log(`   • Total word count: ${enhancedResult.metrics.totalWordCount}`);
-    console.log(`   • Generation time: ${enhancedResult.metrics.totalGenerationTime}ms`);
-    console.log(`   • Quality score: ${enhancedResult.metrics.overallQualityScore}/100`);
+    console.log(
+      `   • Total word count: ${enhancedResult.metrics.totalWordCount}`,
+    );
+    console.log(
+      `   • Generation time: ${enhancedResult.metrics.totalGenerationTime}ms`,
+    );
+    console.log(
+      `   • Quality score: ${enhancedResult.metrics.overallQualityScore}/100`,
+    );
 
     // Multi-section generation
     const multiSectionResult = await multiSectionService.generateSection({
@@ -253,8 +291,12 @@ async function demonstrateCompleteWorkflow() {
     console.log('✅ Multi-section generation completed');
     console.log(`   • Section created: ${multiSectionResult.section.title}`);
     console.log(`   • Word count: ${multiSectionResult.section.wordCount}`);
-    console.log(`   • Content flow score: ${multiSectionResult.metrics.coherenceScore}/100`);
-    console.log(`   • Style consistency: ${multiSectionResult.metrics.consistencyScore || 85}/100`);
+    console.log(
+      `   • Content flow score: ${multiSectionResult.metrics.coherenceScore}/100`,
+    );
+    console.log(
+      `   • Style consistency: ${multiSectionResult.metrics.consistencyScore || 85}/100`,
+    );
 
     // Fact checking
     const factCheckResult = await factCheckingService.verifyFacts({
@@ -265,8 +307,12 @@ async function demonstrateCompleteWorkflow() {
 
     console.log('✅ Fact checking completed');
     console.log(`   • ${factCheckResult.length} claims verified`);
-    console.log(`   • Overall credibility score: ${factCheckResult.reduce((sum, check) => sum + (check.credibilityScore || 0), 0) / factCheckResult.length}/100`);
-    console.log(`   • Sources verified: ${factCheckResult.filter(check => check.isVerified).length}/${factCheckResult.length}`);
+    console.log(
+      `   • Overall credibility score: ${factCheckResult.reduce((sum, check) => sum + (check.credibilityScore || 0), 0) / factCheckResult.length}/100`,
+    );
+    console.log(
+      `   • Sources verified: ${factCheckResult.filter(check => check.isVerified).length}/${factCheckResult.length}`,
+    );
 
     // ===== PHASE 4: CONTENT MANAGEMENT (Weeks 3-4) =====
     console.log('\n📋 PHASE 4: Content Management (Weeks 3-4)');
@@ -293,7 +339,10 @@ async function demonstrateCompleteWorkflow() {
     console.log(`   • Change summary: ${version.changeSummary}`);
 
     // Submit for review
-    const workflow = await workflowManager.submitForReview(blogPostId, 'editorial-review');
+    const workflow = await workflowManager.submitForReview(
+      blogPostId,
+      'editorial-review',
+    );
 
     console.log('✅ Workflow management completed');
     console.log(`   • Review submitted: ${workflow.id}`);
@@ -303,11 +352,21 @@ async function demonstrateCompleteWorkflow() {
     console.log('\n🎉 WORKFLOW COMPLETED SUCCESSFULLY!');
     console.log('=====================================');
     console.log('📈 Performance Metrics:');
-    console.log(`   • Content Quality: ${factCheckResult.reduce((sum, check) => sum + (check.credibilityScore || 0), 0) / factCheckResult.length}/100`);
-    console.log(`   • SEO Optimization: ${blogResult.metadata.wordCount > 1000 ? 'Good' : 'Needs improvement'}`);
-    console.log(`   • Readability Score: ${blogResult.metadata.wordCount > 800 ? 'Excellent' : 'Good'}`);
-    console.log(`   • Target Keywords: ${contentStrategy.topics?.length || 0} identified`);
-    console.log(`   • Content Gaps: ${competitorAnalysis.contentGaps?.length || 0} opportunities`);
+    console.log(
+      `   • Content Quality: ${factCheckResult.reduce((sum, check) => sum + (check.credibilityScore || 0), 0) / factCheckResult.length}/100`,
+    );
+    console.log(
+      `   • SEO Optimization: ${blogResult.metadata.wordCount > 1000 ? 'Good' : 'Needs improvement'}`,
+    );
+    console.log(
+      `   • Readability Score: ${blogResult.metadata.wordCount > 800 ? 'Excellent' : 'Good'}`,
+    );
+    console.log(
+      `   • Target Keywords: ${contentStrategy.topics?.length || 0} identified`,
+    );
+    console.log(
+      `   • Content Gaps: ${competitorAnalysis.contentGaps?.length || 0} opportunities`,
+    );
     console.log(`   • Fact-Checked Claims: ${factCheckResult.length} verified`);
 
     console.log('\n🚀 Next Steps:');
@@ -317,9 +376,11 @@ async function demonstrateCompleteWorkflow() {
     console.log('   • Iterate based on performance data');
 
     return contentStrategy;
-
   } catch (error) {
-    console.error('❌ Workflow failed:', error instanceof Error ? error.message : String(error));
+    console.error(
+      '❌ Workflow failed:',
+      error instanceof Error ? error.message : String(error),
+    );
     console.error(error instanceof Error ? error.stack : '');
     throw error;
   } finally {
@@ -332,6 +393,4 @@ if (require.main === module) {
   demonstrateCompleteWorkflow().catch(console.error);
 }
 
-export {
-  demonstrateCompleteWorkflow,
-};
+export { demonstrateCompleteWorkflow };

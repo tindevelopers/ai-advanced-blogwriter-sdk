@@ -1,11 +1,10 @@
-
 import { generateText } from 'ai';
 import type { LanguageModelV1 } from '@ai-sdk/provider';
-import type { 
-  BlogAIConfig, 
-  BlogPost, 
-  EnhancedGenerateBlogResult, 
-  BlogTemplate 
+import type {
+  BlogAIConfig,
+  BlogPost,
+  EnhancedGenerateBlogResult,
+  BlogTemplate,
 } from '../types';
 import { blogProvider } from '../providers/blog-provider';
 import { contentRouter } from '../providers/content-router';
@@ -20,53 +19,66 @@ import { generateId } from '@ai-sdk/provider-utils';
 export interface EnhancedGenerateBlogOptions {
   /** Language model to use */
   model: LanguageModelV1;
-  
+
   /** Blog topic */
   topic: string;
-  
+
   /** Optional description for better content type detection */
   description?: string;
-  
+
   /** Target keywords */
   keywords?: string[];
-  
+
   /** Target audience */
   audience?: 'beginners' | 'intermediate' | 'experts' | 'general';
-  
+
   /** Business goals */
-  businessGoals?: ('lead-generation' | 'brand-awareness' | 'thought-leadership' | 'education' | 'product-promotion' | 'seo-ranking')[];
-  
+  businessGoals?: (
+    | 'lead-generation'
+    | 'brand-awareness'
+    | 'thought-leadership'
+    | 'education'
+    | 'product-promotion'
+    | 'seo-ranking'
+  )[];
+
   /** Industry context */
   industry?: string;
-  
+
   /** Specific template to use (optional - will auto-detect if not provided) */
   template?: BlogTemplate;
-  
+
   /** Target word count range */
   wordCount?: { min: number; max: number };
-  
+
   /** Writing tone */
-  tone?: 'professional' | 'casual' | 'authoritative' | 'friendly' | 'technical' | 'conversational';
-  
+  tone?:
+    | 'professional'
+    | 'casual'
+    | 'authoritative'
+    | 'friendly'
+    | 'technical'
+    | 'conversational';
+
   /** Configuration overrides */
   config?: Partial<BlogAIConfig>;
-  
+
   /** Whether to save to database */
   persistToDB?: boolean;
-  
+
   /** Author information */
   author?: {
     name: string;
     email?: string;
     bio?: string;
   };
-  
+
   /** Additional context for AI processing */
   additionalContext?: string;
-  
+
   /** Enable advanced content routing */
   useContentRouting?: boolean;
-  
+
   /** Configuration name to load from database */
   configurationName?: string;
 }
@@ -75,7 +87,7 @@ export interface EnhancedGenerateBlogOptions {
  * Enhanced blog generator implementing Week 1-2 core architecture
  */
 export async function generateEnhancedBlog(
-  options: EnhancedGenerateBlogOptions
+  options: EnhancedGenerateBlogOptions,
 ): Promise<EnhancedGenerateBlogResult> {
   const startTime = Date.now();
 
@@ -95,7 +107,9 @@ export async function generateEnhancedBlog(
       audience: options.audience,
       goals: options.businessGoals,
       keywords: options.keywords,
-      businessContext: options.industry ? `Industry: ${options.industry}` : undefined,
+      businessContext: options.industry
+        ? `Industry: ${options.industry}`
+        : undefined,
       model: options.model,
     });
 
@@ -103,7 +117,7 @@ export async function generateEnhancedBlog(
       options.topic,
       options.description,
       `${options.additionalContext || ''} Audience: ${options.audience || 'general'} Goals: ${options.businessGoals?.join(', ') || 'inform'}`,
-      options.model
+      options.model,
     );
   } else {
     // Simple content processing
@@ -111,7 +125,7 @@ export async function generateEnhancedBlog(
       options.topic,
       options.description,
       options.additionalContext,
-      options.model
+      options.model,
     );
   }
 
@@ -120,10 +134,14 @@ export async function generateEnhancedBlog(
     topic: options.topic,
     contentType: contentProcessingResult.contentType.contentType,
     audience: options.audience,
-    purpose: options.businessGoals?.includes('education') ? 'education' : 
-            options.businessGoals?.includes('lead-generation') ? 'marketing' : 'information',
+    purpose: options.businessGoals?.includes('education')
+      ? 'education'
+      : options.businessGoals?.includes('lead-generation')
+        ? 'marketing'
+        : 'information',
     tone: options.tone,
-    wordCountRange: options.wordCount || contentProcessingResult.routingConfig.wordCountRange,
+    wordCountRange:
+      options.wordCount || contentProcessingResult.routingConfig.wordCountRange,
     businessGoals: options.businessGoals,
     industry: options.industry,
   });
@@ -133,7 +151,7 @@ export async function generateEnhancedBlog(
     templateResult.selectedTemplate.promptTemplate,
     options,
     contentProcessingResult,
-    routingDecision
+    routingDecision,
   );
 
   // Step 4: Content Generation
@@ -149,7 +167,7 @@ export async function generateEnhancedBlog(
     generationResult.text,
     options,
     contentProcessingResult,
-    templateResult
+    templateResult,
   );
 
   // Step 6: SEO Analysis and Optimization
@@ -160,12 +178,12 @@ export async function generateEnhancedBlog(
   if (options.persistToDB !== false) {
     try {
       persistedPost = await blogPostRepository.create(blogPost);
-      
+
       // Save processing result for future reference
       await provider.saveProcessingResult(
         options.topic,
         contentProcessingResult,
-        persistedPost.id
+        persistedPost.id,
       );
     } catch (error) {
       console.warn('Failed to persist blog post:', error);
@@ -177,7 +195,7 @@ export async function generateEnhancedBlog(
     blogPost,
     contentProcessingResult,
     templateResult,
-    seoAnalysis
+    seoAnalysis,
   );
 
   const processingTime = Date.now() - startTime;
@@ -214,7 +232,7 @@ async function createEnhancedPrompt(
   basePrompt: string,
   options: EnhancedGenerateBlogOptions,
   contentResult: any,
-  routingResult?: any
+  routingResult?: any,
 ): Promise<string> {
   let enhancedPrompt = basePrompt;
 
@@ -225,7 +243,9 @@ async function createEnhancedPrompt(
     audience: options.audience || 'general',
     tone: options.tone || 'professional',
     industry: options.industry || '',
-    wordCount: options.wordCount ? `${options.wordCount.min}-${options.wordCount.max}` : 'flexible',
+    wordCount: options.wordCount
+      ? `${options.wordCount.min}-${options.wordCount.max}`
+      : 'flexible',
     contentType: contentResult.contentType.contentType.toLowerCase(),
     businessGoals: options.businessGoals?.join(', ') || '',
   };
@@ -234,7 +254,7 @@ async function createEnhancedPrompt(
   for (const [key, value] of Object.entries(variables)) {
     enhancedPrompt = enhancedPrompt.replace(
       new RegExp(`{{${key}}}`, 'gi'),
-      String(value)
+      String(value),
     );
   }
 
@@ -261,12 +281,18 @@ async function createEnhancedPrompt(
   // Add business goal alignment
   if (options.businessGoals?.length > 0) {
     const goalInstructions = {
-      'lead-generation': 'Include strategic call-to-action elements and value propositions that encourage reader engagement',
-      'brand-awareness': 'Emphasize brand values and unique positioning while providing valuable insights',
-      'thought-leadership': 'Demonstrate expertise with original insights, industry analysis, and forward-thinking perspectives',
-      'education': 'Focus on clear explanations, practical examples, and actionable takeaways for learning',
-      'product-promotion': 'Naturally integrate product benefits and use cases without being overly promotional',
-      'seo-ranking': 'Optimize for search engines with comprehensive keyword coverage and authoritative content structure',
+      'lead-generation':
+        'Include strategic call-to-action elements and value propositions that encourage reader engagement',
+      'brand-awareness':
+        'Emphasize brand values and unique positioning while providing valuable insights',
+      'thought-leadership':
+        'Demonstrate expertise with original insights, industry analysis, and forward-thinking perspectives',
+      education:
+        'Focus on clear explanations, practical examples, and actionable takeaways for learning',
+      'product-promotion':
+        'Naturally integrate product benefits and use cases without being overly promotional',
+      'seo-ranking':
+        'Optimize for search engines with comprehensive keyword coverage and authoritative content structure',
     };
 
     enhancedPrompt += `\n\nBusiness Goal Alignment:`;
@@ -296,11 +322,11 @@ async function parseGeneratedContent(
   generatedText: string,
   options: EnhancedGenerateBlogOptions,
   contentResult: any,
-  templateResult: any
+  templateResult: any,
 ): Promise<BlogPost> {
   // Simple parsing logic - in production, this could be more sophisticated
   const lines = generatedText.split('\n').filter(line => line.trim());
-  
+
   let title = '';
   let metaDescription = '';
   let content = '';
@@ -312,27 +338,27 @@ async function parseGeneratedContent(
 
   for (const line of lines) {
     const trimmedLine = line.trim();
-    
+
     if (trimmedLine.toLowerCase().startsWith('title:')) {
       title = trimmedLine.substring(6).trim();
       continue;
     }
-    
+
     if (trimmedLine.toLowerCase().startsWith('meta description:')) {
       metaDescription = trimmedLine.substring(17).trim();
       continue;
     }
-    
+
     if (trimmedLine.toLowerCase().startsWith('content:')) {
       currentSection = 'content';
       continue;
     }
-    
+
     if (trimmedLine.toLowerCase().startsWith('key takeaways:')) {
       currentSection = 'takeaways';
       continue;
     }
-    
+
     if (trimmedLine.toLowerCase().startsWith('suggested tags:')) {
       currentSection = 'tags';
       continue;
@@ -340,7 +366,11 @@ async function parseGeneratedContent(
 
     // Process content based on current section
     if (currentSection === 'content') {
-      if (trimmedLine && !trimmedLine.toLowerCase().includes('takeaways') && !trimmedLine.toLowerCase().includes('tags')) {
+      if (
+        trimmedLine &&
+        !trimmedLine.toLowerCase().includes('takeaways') &&
+        !trimmedLine.toLowerCase().includes('tags')
+      ) {
         contentLines.push(line);
       }
     } else if (currentSection === 'takeaways') {
@@ -350,7 +380,10 @@ async function parseGeneratedContent(
     } else if (currentSection === 'tags') {
       if (trimmedLine) {
         // Parse comma-separated tags
-        const tags = trimmedLine.split(',').map(tag => tag.trim()).filter(tag => tag);
+        const tags = trimmedLine
+          .split(',')
+          .map(tag => tag.trim())
+          .filter(tag => tag);
         suggestedTags.push(...tags);
       }
     }
@@ -405,7 +438,11 @@ async function parseGeneratedContent(
     },
     content: {
       content,
-      excerpt: content.split('\n').find(line => line.trim().length > 50)?.substring(0, 200) + '...',
+      excerpt:
+        content
+          .split('\n')
+          .find(line => line.trim().length > 50)
+          ?.substring(0, 200) + '...',
     },
     status: 'draft',
   };
@@ -418,22 +455,27 @@ async function parseGeneratedContent(
  */
 async function performSEOAnalysis(
   blogPost: BlogPost,
-  keywords?: string[]
+  keywords?: string[],
 ): Promise<{ score: number; recommendations: string[] }> {
   const recommendations: string[] = [];
   let score = 0;
 
   // Title optimization
-  if (blogPost.metadata.title.length >= 30 && blogPost.metadata.title.length <= 60) {
+  if (
+    blogPost.metadata.title.length >= 30 &&
+    blogPost.metadata.title.length <= 60
+  ) {
     score += 15;
   } else {
     recommendations.push('Optimize title length (30-60 characters)');
   }
 
   // Meta description
-  if (blogPost.metadata.metaDescription && 
-      blogPost.metadata.metaDescription.length >= 150 && 
-      blogPost.metadata.metaDescription.length <= 160) {
+  if (
+    blogPost.metadata.metaDescription &&
+    blogPost.metadata.metaDescription.length >= 150 &&
+    blogPost.metadata.metaDescription.length <= 160
+  ) {
     score += 15;
   } else {
     recommendations.push('Add meta description (150-160 characters)');
@@ -460,9 +502,10 @@ async function performSEOAnalysis(
     }
 
     // Simple keyword density check
-    const keywordCount = (content.match(new RegExp(primaryKeyword, 'g')) || []).length;
+    const keywordCount = (content.match(new RegExp(primaryKeyword, 'g')) || [])
+      .length;
     const density = keywordCount / wordCount;
-    
+
     if (density >= 0.01 && density <= 0.025) {
       score += 15;
     } else if (density < 0.01) {
@@ -473,7 +516,8 @@ async function performSEOAnalysis(
   }
 
   // Headings structure
-  const headingMatches = blogPost.content.content.match(/^#{1,6}\s+.+$/gm) || [];
+  const headingMatches =
+    blogPost.content.content.match(/^#{1,6}\s+.+$/gm) || [];
   if (headingMatches.length >= 3) {
     score += 10;
   } else {
@@ -497,21 +541,25 @@ function generateSuggestions(
   blogPost: BlogPost,
   contentResult: any,
   templateResult: any,
-  seoAnalysis: { score: number; recommendations: string[] }
+  seoAnalysis: { score: number; recommendations: string[] },
 ): { improvements: string[]; nextSteps: string[] } {
   const improvements: string[] = [...seoAnalysis.recommendations];
   const nextSteps: string[] = [];
 
   // Content type specific improvements
   if (contentResult.contentType.confidence < 0.8) {
-    improvements.push('Consider refining topic focus for better content type detection');
+    improvements.push(
+      'Consider refining topic focus for better content type detection',
+    );
   }
 
   // Template optimization suggestions
   if (templateResult.alternatives.length > 0) {
     const topAlternative = templateResult.alternatives[0];
     if (topAlternative.score > 80) {
-      improvements.push(`Consider using ${topAlternative.name} template for potentially better results`);
+      improvements.push(
+        `Consider using ${topAlternative.name} template for potentially better results`,
+      );
     }
   }
 
@@ -527,11 +575,11 @@ function generateSuggestions(
   nextSteps.push('Review and edit for clarity and flow');
   nextSteps.push('Add relevant images and optimize alt text');
   nextSteps.push('Set up internal linking to related content');
-  
+
   if (seoAnalysis.score < 80) {
     nextSteps.push('Implement SEO recommendations before publishing');
   }
-  
+
   nextSteps.push('Schedule social media promotion');
   nextSteps.push('Monitor performance and update based on analytics');
 

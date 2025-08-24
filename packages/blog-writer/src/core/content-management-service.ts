@@ -1,5 +1,3 @@
-
-
 import { PrismaClient } from '../generated/prisma-client';
 import { VersionManager } from './version-manager';
 import { WorkflowManager } from './workflow-manager';
@@ -15,21 +13,21 @@ import type {
   CreateVersionOptions,
   MergeVersionOptions,
   VersionRollbackOptions,
-  
+
   // Workflow types
   ApprovalWorkflow,
   SubmitForReviewOptions,
   ApprovalDecision,
   SchedulePublishingOptions,
   WorkflowConfig,
-  
+
   // Metadata types
   MetadataField,
   SeoMetadata,
   UpdateMetadataOptions,
   SeoAnalysisResult,
   CreateMetadataFieldOptions,
-  
+
   // Categorization types
   Category,
   Tag,
@@ -38,9 +36,9 @@ import type {
   CreateTagOptions,
   ContentSearchOptions,
   ContentClassification,
-  
+
   // Notification types
-  CreateNotificationOptions
+  CreateNotificationOptions,
 } from '../types';
 
 /**
@@ -56,7 +54,7 @@ export class ContentManagementService {
 
   constructor(
     private prisma: PrismaClient,
-    workflowConfig: WorkflowConfig = {}
+    workflowConfig: WorkflowConfig = {},
   ) {
     this.versionManager = new VersionManager(prisma);
     this.workflowManager = new WorkflowManager(prisma, workflowConfig);
@@ -75,20 +73,20 @@ export class ContentManagementService {
     content: string;
     excerpt?: string;
     metaDescription?: string;
-    
+
     // Classification
     categories?: string[];
     tags?: string[];
     primaryCategory?: string;
-    
+
     // SEO
     seoMetadata?: Partial<SeoMetadata>;
     customMetadata?: Record<string, any>;
-    
+
     // Publishing
     status?: string;
     scheduledFor?: Date;
-    
+
     // Author info
     authorId?: string;
   }): Promise<{
@@ -109,8 +107,8 @@ export class ContentManagementService {
         authorId: data.authorId,
         wordCount: this.countWords(data.content),
         readingTime: Math.ceil(this.countWords(data.content) / 200),
-        scheduledAt: data.scheduledFor
-      }
+        scheduledAt: data.scheduledFor,
+      },
     });
 
     // Create initial version
@@ -120,9 +118,9 @@ export class ContentManagementService {
         title: data.title,
         content: data.content,
         metaDescription: data.metaDescription,
-        excerpt: data.excerpt
+        excerpt: data.excerpt,
       },
-      { changeSummary: 'Initial version' }
+      { changeSummary: 'Initial version' },
     );
 
     // Handle categories
@@ -131,7 +129,7 @@ export class ContentManagementService {
         await this.categorizationManager.assignCategory(
           blogPost.id,
           categoryId,
-          categoryId === data.primaryCategory
+          categoryId === data.primaryCategory,
         );
       }
     }
@@ -145,21 +143,26 @@ export class ContentManagementService {
 
     // Set metadata
     if (data.seoMetadata) {
-      await this.metadataManager.updateSeoMetadata(blogPost.id, data.seoMetadata);
+      await this.metadataManager.updateSeoMetadata(
+        blogPost.id,
+        data.seoMetadata,
+      );
     }
 
     if (data.customMetadata) {
       await this.metadataManager.updateBlogPostMetadata(blogPost.id, {
-        customFields: data.customMetadata
+        customFields: data.customMetadata,
       });
     }
 
     // Auto-classify content
-    const classification = await this.categorizationManager.autoClassifyContent({
-      title: data.title,
-      content: data.content,
-      excerpt: data.excerpt
-    });
+    const classification = await this.categorizationManager.autoClassifyContent(
+      {
+        title: data.title,
+        content: data.content,
+        excerpt: data.excerpt,
+      },
+    );
 
     // Analyze SEO
     const seoAnalysis = await this.metadataManager.analyzeSeo(blogPost.id);
@@ -170,7 +173,7 @@ export class ContentManagementService {
         data.authorId,
         blogPost.id,
         'low_score',
-        seoAnalysis.overallScore
+        seoAnalysis.overallScore,
       );
     }
 
@@ -178,7 +181,7 @@ export class ContentManagementService {
       blogPost,
       version,
       classification,
-      seoAnalysis
+      seoAnalysis,
     };
   }
 
@@ -198,14 +201,14 @@ export class ContentManagementService {
       tags?: string[];
       changeSummary?: string;
     },
-    userId?: string
+    userId?: string,
   ): Promise<{
     blogPost: any;
     version: VersionWithMetadata;
     seoAnalysis?: SeoAnalysisResult;
   }> {
     const blogPost = await this.prisma.blogPost.findUnique({
-      where: { id: blogPostId }
+      where: { id: blogPostId },
     });
 
     if (!blogPost) {
@@ -225,7 +228,7 @@ export class ContentManagementService {
 
     const updatedBlogPost = await this.prisma.blogPost.update({
       where: { id: blogPostId },
-      data: updateData
+      data: updateData,
     });
 
     // Create new version
@@ -234,10 +237,11 @@ export class ContentManagementService {
       {
         title: data.title ?? blogPost.title,
         content: data.content ?? blogPost.content,
-        metaDescription: data.metaDescription ?? blogPost.metaDescription ?? undefined,
-        excerpt: data.excerpt ?? blogPost.excerpt ?? undefined
+        metaDescription:
+          data.metaDescription ?? blogPost.metaDescription ?? undefined,
+        excerpt: data.excerpt ?? blogPost.excerpt ?? undefined,
       },
-      { changeSummary: data.changeSummary || 'Content updated' }
+      { changeSummary: data.changeSummary || 'Content updated' },
     );
 
     // Update metadata
@@ -245,7 +249,7 @@ export class ContentManagementService {
     if (data.seoMetadata || data.customMetadata) {
       await this.metadataManager.updateBlogPostMetadata(blogPostId, {
         seoMetadata: data.seoMetadata,
-        customFields: data.customMetadata
+        customFields: data.customMetadata,
       });
 
       // Re-analyze SEO if content changed
@@ -258,7 +262,7 @@ export class ContentManagementService {
     if (data.categories) {
       // Remove existing categories
       await this.prisma.blogPostCategory.deleteMany({
-        where: { blogPostId }
+        where: { blogPostId },
       });
 
       // Add new categories
@@ -271,11 +275,14 @@ export class ContentManagementService {
     if (data.tags) {
       // Remove existing tags
       const existingTags = await this.prisma.blogPostTag.findMany({
-        where: { blogPostId }
+        where: { blogPostId },
       });
 
       for (const existingTag of existingTags) {
-        await this.categorizationManager.removeTag(blogPostId, existingTag.tagId);
+        await this.categorizationManager.removeTag(
+          blogPostId,
+          existingTag.tagId,
+        );
       }
 
       // Add new tags
@@ -287,7 +294,7 @@ export class ContentManagementService {
     return {
       blogPost: updatedBlogPost,
       version,
-      seoAnalysis
+      seoAnalysis,
     };
   }
 
@@ -300,7 +307,7 @@ export class ContentManagementService {
     options: SubmitForReviewOptions & {
       performSeoCheck?: boolean;
       performMetadataValidation?: boolean;
-    } = {}
+    } = {},
   ): Promise<{
     workflow: ApprovalWorkflow;
     seoAnalysis?: SeoAnalysisResult;
@@ -311,25 +318,30 @@ export class ContentManagementService {
     // Perform SEO analysis if requested
     if (options.performSeoCheck !== false) {
       result.seoAnalysis = await this.metadataManager.analyzeSeo(blogPostId);
-      
+
       // Create notification for low SEO score
       if (result.seoAnalysis.overallScore < 60) {
         await this.notificationManager.createSeoNotification(
           userId,
           blogPostId,
           'low_score',
-          result.seoAnalysis.overallScore
+          result.seoAnalysis.overallScore,
         );
       }
     }
 
     // Perform metadata validation if requested
     if (options.performMetadataValidation !== false) {
-      result.validationResults = await this.metadataManager.validateBlogPostMetadata(blogPostId);
+      result.validationResults =
+        await this.metadataManager.validateBlogPostMetadata(blogPostId);
     }
 
     // Submit for review
-    result.workflow = await this.workflowManager.submitForReview(blogPostId, userId, options);
+    result.workflow = await this.workflowManager.submitForReview(
+      blogPostId,
+      userId,
+      options,
+    );
 
     return result;
   }
@@ -344,13 +356,13 @@ export class ContentManagementService {
       scheduleOptions?: SchedulePublishingOptions;
       createRelationships?: boolean;
       notifySubscribers?: boolean;
-    } = {}
+    } = {},
   ): Promise<void> {
     // Publish the blog post
     await this.workflowManager.publishBlogPost(
       blogPostId,
       userId,
-      options.scheduleOptions
+      options.scheduleOptions,
     );
 
     // Create automatic content relationships
@@ -363,7 +375,7 @@ export class ContentManagementService {
       await this.notificationManager.createWorkflowNotification(
         userId,
         blogPostId,
-        options.scheduleOptions ? 'scheduled' : 'published'
+        options.scheduleOptions ? 'scheduled' : 'published',
       );
     }
   }
@@ -373,7 +385,10 @@ export class ContentManagementService {
   /**
    * Get versions with metadata
    */
-  async getVersions(blogPostId: string, branchName?: string): Promise<VersionWithMetadata[]> {
+  async getVersions(
+    blogPostId: string,
+    branchName?: string,
+  ): Promise<VersionWithMetadata[]> {
     return this.versionManager.getVersions(blogPostId, branchName);
   }
 
@@ -390,16 +405,28 @@ export class ContentManagementService {
   async rollbackToVersion(
     blogPostId: string,
     targetVersionId: string,
-    options: VersionRollbackOptions
+    options: VersionRollbackOptions,
   ) {
-    return this.versionManager.rollbackToVersion(blogPostId, targetVersionId, options);
+    return this.versionManager.rollbackToVersion(
+      blogPostId,
+      targetVersionId,
+      options,
+    );
   }
 
   /**
    * Create version branch
    */
-  async createBranch(blogPostId: string, branchName: string, fromVersion?: string) {
-    return this.versionManager['getOrCreateBranch'](blogPostId, branchName, fromVersion);
+  async createBranch(
+    blogPostId: string,
+    branchName: string,
+    fromVersion?: string,
+  ) {
+    return this.versionManager['getOrCreateBranch'](
+      blogPostId,
+      branchName,
+      fromVersion,
+    );
   }
 
   /**
@@ -418,9 +445,14 @@ export class ContentManagementService {
     workflowId: string,
     stepNumber: number,
     approverId: string,
-    decision: ApprovalDecision
+    decision: ApprovalDecision,
   ) {
-    return this.workflowManager.processApproval(workflowId, stepNumber, approverId, decision);
+    return this.workflowManager.processApproval(
+      workflowId,
+      stepNumber,
+      approverId,
+      decision,
+    );
   }
 
   /**
@@ -493,7 +525,11 @@ export class ContentManagementService {
   /**
    * Auto-classify content
    */
-  async autoClassifyContent(content: { title: string; content: string; excerpt?: string }) {
+  async autoClassifyContent(content: {
+    title: string;
+    content: string;
+    excerpt?: string;
+  }) {
     return this.categorizationManager.autoClassifyContent(content);
   }
 
@@ -546,14 +582,14 @@ export class ContentManagementService {
       this.getOverviewStats(),
       this.getWorkflowStats(),
       this.getSeoStats(),
-      this.categorizationManager.getCategorizationMetrics()
+      this.categorizationManager.getCategorizationMetrics(),
     ]);
 
     return {
       overview,
       workflow,
       seo,
-      categorization
+      categorization,
     };
   }
 
@@ -564,8 +600,9 @@ export class ContentManagementService {
    */
   private async createAutoRelationships(blogPostId: string): Promise<void> {
     try {
-      const analysis = await this.categorizationManager.analyzeRelationships(blogPostId);
-      
+      const analysis =
+        await this.categorizationManager.analyzeRelationships(blogPostId);
+
       for (const suggestion of analysis.suggestedRelationships) {
         if (suggestion.confidence > 0.7) {
           await this.categorizationManager.createRelationship(
@@ -573,7 +610,7 @@ export class ContentManagementService {
             suggestion.post.id,
             suggestion.type,
             suggestion.confidence,
-            true // isAuto
+            true, // isAuto
           );
         }
       }
@@ -607,14 +644,14 @@ export class ContentManagementService {
       this.prisma.blogPost.count(),
       this.prisma.blogPost.count({ where: { status: 'PUBLISHED' } }),
       this.prisma.blogPost.count({ where: { status: 'DRAFT' } }),
-      this.prisma.blogPost.count({ where: { status: 'SCHEDULED' } })
+      this.prisma.blogPost.count({ where: { status: 'SCHEDULED' } }),
     ]);
 
     return {
       totalPosts: total,
       publishedPosts: published,
       draftPosts: draft,
-      scheduledPosts: scheduled
+      scheduledPosts: scheduled,
     };
   }
 
@@ -623,12 +660,12 @@ export class ContentManagementService {
    */
   private async getWorkflowStats() {
     const pendingApprovals = await this.prisma.approvalWorkflow.count({
-      where: { isComplete: false }
+      where: { isComplete: false },
     });
 
     return {
       pendingApprovals,
-      averageApprovalTime: 0 // Would calculate from workflow history
+      averageApprovalTime: 0, // Would calculate from workflow history
     };
   }
 
@@ -638,19 +675,22 @@ export class ContentManagementService {
   private async getSeoStats() {
     const recentAnalyses = await this.prisma.sEOAnalysis.findMany({
       orderBy: { analyzedAt: 'desc' },
-      take: 100
+      take: 100,
     });
 
-    const averageScore = recentAnalyses.length > 0
-      ? recentAnalyses.reduce((sum, analysis) => sum + analysis.score, 0) / recentAnalyses.length
-      : 0;
+    const averageScore =
+      recentAnalyses.length > 0
+        ? recentAnalyses.reduce((sum, analysis) => sum + analysis.score, 0) /
+          recentAnalyses.length
+        : 0;
 
-    const postsNeedingSeoWork = recentAnalyses.filter(analysis => analysis.score < 70).length;
+    const postsNeedingSeoWork = recentAnalyses.filter(
+      analysis => analysis.score < 70,
+    ).length;
 
     return {
       averageSeoScore: averageScore,
-      postsNeedingSeoWork
+      postsNeedingSeoWork,
     };
   }
 }
-

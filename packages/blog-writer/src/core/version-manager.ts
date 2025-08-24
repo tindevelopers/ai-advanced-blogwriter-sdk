@@ -1,5 +1,3 @@
-
-
 import { PrismaClient } from '../generated/prisma-client';
 import type {
   VersionBranch,
@@ -11,7 +9,7 @@ import type {
   VersionRollbackOptions,
   VersioningOptions,
   ContentChange,
-  BlogPostStatus
+  BlogPostStatus,
 } from '../types/versioning';
 
 /**
@@ -35,11 +33,11 @@ export class VersionManager {
       focusKeyword?: string;
       keywords?: string[];
     },
-    options: CreateVersionOptions = {}
+    options: CreateVersionOptions = {},
   ): Promise<VersionWithMetadata> {
     const blogPost = await this.prisma.blogPost.findUnique({
       where: { id: blogPostId },
-      include: { versions: { orderBy: { createdAt: 'desc' }, take: 1 } }
+      include: { versions: { orderBy: { createdAt: 'desc' }, take: 1 } },
     });
 
     if (!blogPost) {
@@ -48,7 +46,7 @@ export class VersionManager {
 
     // Generate version number
     const versionCount = await this.prisma.blogPostVersion.count({
-      where: { blogPostId }
+      where: { blogPostId },
     });
     const versionNumber = `v${versionCount + 1}.0`;
 
@@ -56,7 +54,11 @@ export class VersionManager {
     let branch: VersionBranch | null = null;
     if (options.branchName || options.createBranch) {
       const branchName = options.branchName || `version-${versionNumber}`;
-      branch = await this.getOrCreateBranch(blogPostId, branchName, options.fromVersion);
+      branch = await this.getOrCreateBranch(
+        blogPostId,
+        branchName,
+        options.fromVersion,
+      );
     }
 
     // Create the version
@@ -74,13 +76,13 @@ export class VersionManager {
         focusKeyword: versionData.focusKeyword,
         keywords: versionData.keywords || [],
         keywordDensity: this.calculateKeywordDensity(
-          versionData.content, 
-          versionData.focusKeyword
+          versionData.content,
+          versionData.focusKeyword,
         ),
         wordCount: this.countWords(versionData.content),
         seoScore: await this.calculateSeoScore(versionData),
-        readabilityScore: this.calculateReadabilityScore(versionData.content)
-      }
+        readabilityScore: this.calculateReadabilityScore(versionData.content),
+      },
     });
 
     return version as VersionWithMetadata;
@@ -91,26 +93,26 @@ export class VersionManager {
    */
   async getVersions(
     blogPostId: string,
-    branchName?: string
+    branchName?: string,
   ): Promise<VersionWithMetadata[]> {
     const where: any = { blogPostId };
-    
+
     if (branchName) {
       const branch = await this.prisma.versionBranch.findUnique({
-        where: { 
-          blogPostId_name: { blogPostId, name: branchName } 
-        }
+        where: {
+          blogPostId_name: { blogPostId, name: branchName },
+        },
       });
-      
+
       if (branch) {
         where.branchId = branch.id;
       }
     }
 
-    return await this.prisma.blogPostVersion.findMany({
+    return (await this.prisma.blogPostVersion.findMany({
       where,
-      orderBy: { createdAt: 'desc' }
-    }) as VersionWithMetadata[];
+      orderBy: { createdAt: 'desc' },
+    })) as VersionWithMetadata[];
   }
 
   /**
@@ -118,13 +120,13 @@ export class VersionManager {
    */
   async compareVersions(
     fromVersionId: string,
-    toVersionId: string
+    toVersionId: string,
   ): Promise<VersionComparison> {
     // Check if comparison already exists
     const existingComparison = await this.prisma.versionComparison.findUnique({
-      where: { 
-        fromVersionId_toVersionId: { fromVersionId, toVersionId } 
-      }
+      where: {
+        fromVersionId_toVersionId: { fromVersionId, toVersionId },
+      },
     });
 
     if (existingComparison) {
@@ -133,7 +135,7 @@ export class VersionManager {
 
     const [fromVersion, toVersion] = await Promise.all([
       this.prisma.blogPostVersion.findUnique({ where: { id: fromVersionId } }),
-      this.prisma.blogPostVersion.findUnique({ where: { id: toVersionId } })
+      this.prisma.blogPostVersion.findUnique({ where: { id: toVersionId } }),
     ]);
 
     if (!fromVersion || !toVersion) {
@@ -142,8 +144,14 @@ export class VersionManager {
 
     // Generate diff
     const diffSummary = this.generateDiff(fromVersion, toVersion);
-    const wordStats = this.calculateWordChanges(fromVersion.content, toVersion.content);
-    const similarity = this.calculateSimilarity(fromVersion.content, toVersion.content);
+    const wordStats = this.calculateWordChanges(
+      fromVersion.content,
+      toVersion.content,
+    );
+    const similarity = this.calculateSimilarity(
+      fromVersion.content,
+      toVersion.content,
+    );
 
     const comparison = await this.prisma.versionComparison.create({
       data: {
@@ -154,8 +162,8 @@ export class VersionManager {
         addedWords: wordStats.added,
         removedWords: wordStats.removed,
         modifiedWords: wordStats.modified,
-        similarityScore: similarity
-      }
+        similarityScore: similarity,
+      },
     });
 
     return comparison as VersionComparison;
@@ -167,14 +175,16 @@ export class VersionManager {
   async rollbackToVersion(
     blogPostId: string,
     targetVersionId: string,
-    options: VersionRollbackOptions
+    options: VersionRollbackOptions,
   ): Promise<VersionWithMetadata> {
     const targetVersion = await this.prisma.blogPostVersion.findUnique({
-      where: { id: targetVersionId }
+      where: { id: targetVersionId },
     });
 
     if (!targetVersion || targetVersion.blogPostId !== blogPostId) {
-      throw new Error('Target version not found or does not belong to this blog post');
+      throw new Error(
+        'Target version not found or does not belong to this blog post',
+      );
     }
 
     let newVersion: VersionWithMetadata;
@@ -190,13 +200,13 @@ export class VersionManager {
           metaDescription: targetVersion.metaDescription || undefined,
           excerpt: targetVersion.excerpt || undefined,
           focusKeyword: targetVersion.focusKeyword || undefined,
-          keywords: targetVersion.keywords
+          keywords: targetVersion.keywords,
         },
         {
           branchName,
           createBranch: true,
-          changeSummary: `Rollback to version ${targetVersion.version}`
-        }
+          changeSummary: `Rollback to version ${targetVersion.version}`,
+        },
       );
     } else {
       // Create new version on main branch
@@ -208,11 +218,11 @@ export class VersionManager {
           metaDescription: targetVersion.metaDescription || undefined,
           excerpt: targetVersion.excerpt || undefined,
           focusKeyword: targetVersion.focusKeyword || undefined,
-          keywords: targetVersion.keywords
+          keywords: targetVersion.keywords,
         },
         {
-          changeSummary: `Rollback to version ${targetVersion.version}`
-        }
+          changeSummary: `Rollback to version ${targetVersion.version}`,
+        },
       );
 
       // Update the main blog post if not preserving current
@@ -225,8 +235,8 @@ export class VersionManager {
             metaDescription: targetVersion.metaDescription,
             excerpt: targetVersion.excerpt,
             focusKeyword: targetVersion.focusKeyword,
-            keywords: targetVersion.keywords
-          }
+            keywords: targetVersion.keywords,
+          },
         });
       }
     }
@@ -240,41 +250,43 @@ export class VersionManager {
   private async getOrCreateBranch(
     blogPostId: string,
     branchName: string,
-    fromVersion?: string
+    fromVersion?: string,
   ): Promise<VersionBranch> {
     const existingBranch = await this.prisma.versionBranch.findUnique({
-      where: { 
-        blogPostId_name: { blogPostId, name: branchName } 
-      }
+      where: {
+        blogPostId_name: { blogPostId, name: branchName },
+      },
     });
 
     if (existingBranch) {
       return existingBranch as VersionBranch;
     }
 
-    return await this.prisma.versionBranch.create({
+    return (await this.prisma.versionBranch.create({
       data: {
         blogPostId,
         name: branchName,
         createdFrom: fromVersion,
         isMain: branchName === 'main',
-        isActive: true
-      }
-    }) as VersionBranch;
+        isActive: true,
+      },
+    })) as VersionBranch;
   }
 
   /**
    * Merge branches
    */
-  async mergeBranches(options: MergeVersionOptions): Promise<VersionWithMetadata> {
+  async mergeBranches(
+    options: MergeVersionOptions,
+  ): Promise<VersionWithMetadata> {
     const [sourceBranch, targetBranch] = await Promise.all([
       this.prisma.versionBranch.findUnique({
         where: { id: options.sourceBranch },
-        include: { versions: { orderBy: { createdAt: 'desc' }, take: 1 } }
+        include: { versions: { orderBy: { createdAt: 'desc' }, take: 1 } },
       }),
       this.prisma.versionBranch.findUnique({
-        where: { id: options.targetBranch }
-      })
+        where: { id: options.targetBranch },
+      }),
     ]);
 
     if (!sourceBranch || !targetBranch) {
@@ -296,12 +308,14 @@ export class VersionManager {
         excerpt: latestSourceVersion.excerpt || undefined,
         status: latestSourceVersion.status as BlogPostStatus,
         focusKeyword: latestSourceVersion.focusKeyword || undefined,
-        keywords: latestSourceVersion.keywords
+        keywords: latestSourceVersion.keywords,
       },
       {
         branchName: targetBranch.name,
-        changeSummary: options.message || `Merge ${sourceBranch.name} into ${targetBranch.name}`
-      }
+        changeSummary:
+          options.message ||
+          `Merge ${sourceBranch.name} into ${targetBranch.name}`,
+      },
     );
 
     // Mark source branch as merged
@@ -310,8 +324,8 @@ export class VersionManager {
       data: {
         mergedAt: new Date(),
         mergedInto: targetBranch.id,
-        isActive: false
-      }
+        isActive: false,
+      },
     });
 
     return mergeVersion;
@@ -327,19 +341,22 @@ export class VersionManager {
       diff.title = {
         type: 'modified',
         oldValue: fromVersion.title,
-        newValue: toVersion.title
+        newValue: toVersion.title,
       };
     }
 
     if (fromVersion.content !== toVersion.content) {
-      diff.content = this.generateContentDiff(fromVersion.content, toVersion.content);
+      diff.content = this.generateContentDiff(
+        fromVersion.content,
+        toVersion.content,
+      );
     }
 
     if (fromVersion.metaDescription !== toVersion.metaDescription) {
       diff.metaDescription = {
         type: 'modified',
         oldValue: fromVersion.metaDescription,
-        newValue: toVersion.metaDescription
+        newValue: toVersion.metaDescription,
       };
     }
 
@@ -347,7 +364,7 @@ export class VersionManager {
       diff.excerpt = {
         type: 'modified',
         oldValue: fromVersion.excerpt,
-        newValue: toVersion.excerpt
+        newValue: toVersion.excerpt,
       };
     }
 
@@ -357,16 +374,19 @@ export class VersionManager {
   /**
    * Generate content-specific diff
    */
-  private generateContentDiff(oldContent: string, newContent: string): ContentChange {
+  private generateContentDiff(
+    oldContent: string,
+    newContent: string,
+  ): ContentChange {
     // This is a simplified diff - in production, you'd use a proper diff algorithm
     const oldWords = oldContent.split(/\s+/);
     const newWords = newContent.split(/\s+/);
-    
+
     return {
       type: oldContent === newContent ? 'unchanged' : 'modified',
       oldValue: oldContent,
       newValue: newContent,
-      length: Math.abs(newWords.length - oldWords.length)
+      length: Math.abs(newWords.length - oldWords.length),
     };
   }
 
@@ -376,12 +396,12 @@ export class VersionManager {
   private calculateWordChanges(oldContent: string, newContent: string) {
     const oldWords = oldContent.split(/\s+/);
     const newWords = newContent.split(/\s+/);
-    
+
     // Simplified calculation - in production, use proper diff algorithm
     const added = Math.max(0, newWords.length - oldWords.length);
     const removed = Math.max(0, oldWords.length - newWords.length);
     const modified = Math.min(oldWords.length, newWords.length);
-    
+
     return { added, removed, modified };
   }
 
@@ -392,10 +412,10 @@ export class VersionManager {
     // Simplified Jaccard similarity
     const words1 = new Set(content1.toLowerCase().split(/\s+/));
     const words2 = new Set(content2.toLowerCase().split(/\s+/));
-    
+
     const intersection = new Set([...words1].filter(x => words2.has(x)));
     const union = new Set([...words1, ...words2]);
-    
+
     return union.size > 0 ? intersection.size / union.size : 0;
   }
 
@@ -403,15 +423,22 @@ export class VersionManager {
    * Get changed fields between versions
    */
   private getChangedFields(fromVersion: any, toVersion: any): string[] {
-    const fields = ['title', 'content', 'metaDescription', 'excerpt', 'focusKeyword', 'keywords'];
+    const fields = [
+      'title',
+      'content',
+      'metaDescription',
+      'excerpt',
+      'focusKeyword',
+      'keywords',
+    ];
     return fields.filter(field => {
       const oldValue = fromVersion[field];
       const newValue = toVersion[field];
-      
+
       if (Array.isArray(oldValue) && Array.isArray(newValue)) {
         return JSON.stringify(oldValue) !== JSON.stringify(newValue);
       }
-      
+
       return oldValue !== newValue;
     });
   }
@@ -419,15 +446,18 @@ export class VersionManager {
   /**
    * Calculate keyword density
    */
-  private calculateKeywordDensity(content: string, keyword?: string): number | null {
+  private calculateKeywordDensity(
+    content: string,
+    keyword?: string,
+  ): number | null {
     if (!keyword) return null;
-    
+
     const words = content.toLowerCase().split(/\s+/);
     const keywordWords = keyword.toLowerCase().split(/\s+/);
     const totalWords = words.length;
-    
+
     if (totalWords === 0) return 0;
-    
+
     let matches = 0;
     for (let i = 0; i <= words.length - keywordWords.length; i++) {
       const phrase = words.slice(i, i + keywordWords.length).join(' ');
@@ -435,7 +465,7 @@ export class VersionManager {
         matches++;
       }
     }
-    
+
     return matches / totalWords;
   }
 
@@ -456,7 +486,11 @@ export class VersionManager {
 
     // Title length check
     maxScore += 20;
-    if (versionData.title && versionData.title.length >= 30 && versionData.title.length <= 60) {
+    if (
+      versionData.title &&
+      versionData.title.length >= 30 &&
+      versionData.title.length <= 60
+    ) {
       score += 20;
     } else if (versionData.title && versionData.title.length > 0) {
       score += 10;
@@ -464,9 +498,16 @@ export class VersionManager {
 
     // Meta description check
     maxScore += 20;
-    if (versionData.metaDescription && versionData.metaDescription.length >= 120 && versionData.metaDescription.length <= 160) {
+    if (
+      versionData.metaDescription &&
+      versionData.metaDescription.length >= 120 &&
+      versionData.metaDescription.length <= 160
+    ) {
       score += 20;
-    } else if (versionData.metaDescription && versionData.metaDescription.length > 0) {
+    } else if (
+      versionData.metaDescription &&
+      versionData.metaDescription.length > 0
+    ) {
       score += 10;
     }
 
@@ -482,7 +523,10 @@ export class VersionManager {
     // Focus keyword check
     maxScore += 20;
     if (versionData.focusKeyword) {
-      const density = this.calculateKeywordDensity(versionData.content, versionData.focusKeyword);
+      const density = this.calculateKeywordDensity(
+        versionData.content,
+        versionData.focusKeyword,
+      );
       if (density && density > 0.005 && density < 0.03) {
         score += 20;
       } else if (density && density > 0) {
@@ -505,7 +549,10 @@ export class VersionManager {
   private calculateReadabilityScore(content: string): number {
     const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
     const words = content.split(/\s+/).filter(w => w.length > 0);
-    const syllables = words.reduce((total, word) => total + this.countSyllables(word), 0);
+    const syllables = words.reduce(
+      (total, word) => total + this.countSyllables(word),
+      0,
+    );
 
     if (sentences.length === 0 || words.length === 0) return 0;
 
@@ -513,7 +560,10 @@ export class VersionManager {
     const avgSyllablesPerWord = syllables / words.length;
 
     // Simplified Flesch Reading Ease formula
-    return Math.max(0, 206.835 - (1.015 * avgSentenceLength) - (84.6 * avgSyllablesPerWord));
+    return Math.max(
+      0,
+      206.835 - 1.015 * avgSentenceLength - 84.6 * avgSyllablesPerWord,
+    );
   }
 
   /**
@@ -522,15 +572,14 @@ export class VersionManager {
   private countSyllables(word: string): number {
     word = word.toLowerCase();
     if (word.length <= 3) return 1;
-    
+
     const vowels = word.match(/[aeiouy]+/g);
     let syllableCount = vowels ? vowels.length : 1;
-    
+
     if (word.endsWith('e')) {
       syllableCount--;
     }
-    
+
     return Math.max(1, syllableCount);
   }
 }
-

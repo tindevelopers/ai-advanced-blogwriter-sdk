@@ -1,4 +1,3 @@
-
 # @ai-sdk/blog-writer Changelog
 
 ## v0.1.0 (2024-08-23)
@@ -35,7 +34,7 @@
 #### 🎯 Templates Included
 
 1. **How-To Guide** - Step-by-step instructional content (800-2500 words)
-2. **Listicle** - List-based articles (1000-3000 words)  
+2. **Listicle** - List-based articles (1000-3000 words)
 3. **Comparison** - Product/service comparisons (1200-2500 words)
 4. **Tutorial** - In-depth educational content (1500-3500 words)
 5. **News** - News articles and announcements (600-2000 words)
@@ -82,9 +81,10 @@
 #### 🚀 Next Phase Preview
 
 This release establishes the foundation for:
+
 - Phase 2: Advanced content workflows and automation
 - Phase 3: Multi-language support and localization
-- Phase 4: Advanced analytics and performance tracking  
+- Phase 4: Advanced analytics and performance tracking
 - Phase 5: Integration with content management systems
 - Phase 6: AI-powered content optimization and A/B testing
 

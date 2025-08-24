@@ -1,5 +1,3 @@
-
-
 /**
  * Fact-Checking & Source Verification Service
  * AI-powered fact verification, source credibility analysis, and citation management
@@ -15,7 +13,7 @@ import {
   SourceType,
   BiasRating,
   ExpertiseLevel,
-  FactCheckRequest
+  FactCheckRequest,
 } from '../types/advanced-writing';
 
 export interface FactCheckConfig {
@@ -33,41 +31,70 @@ export interface FactCheckConfig {
 
 // Zod schemas for structured AI responses
 const ClaimExtractionSchema = z.object({
-  claims: z.array(z.object({
-    text: z.string(),
-    type: z.enum(['factual', 'statistical', 'historical', 'scientific', 'opinion']),
-    confidence: z.number().min(0).max(1),
-    importance: z.enum(['low', 'medium', 'high', 'critical']),
-    startPosition: z.number().optional(),
-    endPosition: z.number().optional(),
-    context: z.string().optional()
-  }))
+  claims: z.array(
+    z.object({
+      text: z.string(),
+      type: z.enum([
+        'factual',
+        'statistical',
+        'historical',
+        'scientific',
+        'opinion',
+      ]),
+      confidence: z.number().min(0).max(1),
+      importance: z.enum(['low', 'medium', 'high', 'critical']),
+      startPosition: z.number().optional(),
+      endPosition: z.number().optional(),
+      context: z.string().optional(),
+    }),
+  ),
 });
 
 const FactVerificationSchema = z.object({
-  verificationStatus: z.enum(['VERIFIED', 'DISPUTED', 'FALSE', 'PARTIALLY_TRUE', 'UNVERIFIABLE']),
+  verificationStatus: z.enum([
+    'VERIFIED',
+    'DISPUTED',
+    'FALSE',
+    'PARTIALLY_TRUE',
+    'UNVERIFIABLE',
+  ]),
   confidence: z.number().min(0).max(1),
   evidenceQuality: z.number().min(0).max(1),
   reasoning: z.string(),
   supportingEvidence: z.array(z.string()),
   contradictingEvidence: z.array(z.string()),
-  caveats: z.array(z.string()).optional()
+  caveats: z.array(z.string()).optional(),
 });
 
 const SourceCredibilitySchema = z.object({
   credibilityScore: z.number().min(0).max(1),
   authorityScore: z.number().min(0).max(1),
-  biasRating: z.enum(['LEFT', 'LEAN_LEFT', 'CENTER', 'LEAN_RIGHT', 'RIGHT', 'MIXED', 'UNKNOWN']),
-  expertiseLevel: z.enum(['EXPERT', 'PRACTITIONER', 'ACADEMIC', 'JOURNALIST', 'GENERAL_PUBLIC', 'UNKNOWN']),
+  biasRating: z.enum([
+    'LEFT',
+    'LEAN_LEFT',
+    'CENTER',
+    'LEAN_RIGHT',
+    'RIGHT',
+    'MIXED',
+    'UNKNOWN',
+  ]),
+  expertiseLevel: z.enum([
+    'EXPERT',
+    'PRACTITIONER',
+    'ACADEMIC',
+    'JOURNALIST',
+    'GENERAL_PUBLIC',
+    'UNKNOWN',
+  ]),
   qualityIndicators: z.object({
     isPeerReviewed: z.boolean(),
     isGovernment: z.boolean(),
     isAcademic: z.boolean(),
     isRecent: z.boolean(),
     hasAuthor: z.boolean(),
-    hasReferences: z.boolean()
+    hasReferences: z.boolean(),
   }),
-  concerns: z.array(z.string()).optional()
+  concerns: z.array(z.string()).optional(),
 });
 
 export class FactCheckingService {
@@ -78,21 +105,23 @@ export class FactCheckingService {
    */
   async performFactCheck(request: FactCheckRequest): Promise<FactCheck[]> {
     const content = await this.getContentForAnalysis(request.blogPostId);
-    
+
     // Extract claims from content
-    const claims = request.claims || await this.extractClaims(content, request.autoDetectClaims !== false);
-    
+    const claims =
+      request.claims ||
+      (await this.extractClaims(content, request.autoDetectClaims !== false));
+
     const factChecks: FactCheck[] = [];
-    
+
     for (const claim of claims) {
       const factCheck = await this.verifyClaim(
         claim,
         request.blogPostId,
         request.verificationThreshold || 0.7,
         request.includeSourceAnalysis !== false,
-        request.requireReliableSources !== false
+        request.requireReliableSources !== false,
       );
-      
+
       factChecks.push(factCheck);
     }
 
@@ -119,13 +148,13 @@ export class FactCheckingService {
     blogPostId: string,
     confidenceThreshold: number = 0.7,
     includeSourceAnalysis: boolean = true,
-    requireReliableSources: boolean = true
+    requireReliableSources: boolean = true,
   ): Promise<FactCheck> {
     // Search for relevant sources
     const sources = await this.findRelevantSources(claim);
-    
+
     // Analyze source credibility
-    const citationsWithCredibility = includeSourceAnalysis 
+    const citationsWithCredibility = includeSourceAnalysis
       ? await this.analyzeSourceCredibility(sources)
       : sources.map(s => ({ ...s, credibilityScore: 0.5 }));
 
@@ -135,8 +164,11 @@ export class FactCheckingService {
       : citationsWithCredibility;
 
     // Verify claim using AI analysis
-    const verification = await this.performAIVerification(claim, reliableSources);
-    
+    const verification = await this.performAIVerification(
+      claim,
+      reliableSources,
+    );
+
     const factCheck: FactCheck = {
       id: `fact_check_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       blogPostId,
@@ -146,16 +178,23 @@ export class FactCheckingService {
       evidenceQuality: verification.evidenceQuality,
       sourceUrls: reliableSources.map(s => s.url),
       sourcesVerified: reliableSources.length,
-      sourcesReliable: reliableSources.filter(s => (s.credibilityScore || 0) >= 0.7).length,
+      sourcesReliable: reliableSources.filter(
+        s => (s.credibilityScore || 0) >= 0.7,
+      ).length,
       sourceCredibility: this.calculateAverageCredibility(reliableSources),
       verificationMethod: 'AI + Source Analysis',
       verificationNotes: verification.reasoning,
       verifiedAt: new Date(),
-      requiresAttention: verification.confidence < confidenceThreshold || verification.status === VerificationStatus.DISPUTED,
-      flagReason: verification.confidence < confidenceThreshold ? 'Low confidence verification' : undefined,
+      requiresAttention:
+        verification.confidence < confidenceThreshold ||
+        verification.status === VerificationStatus.DISPUTED,
+      flagReason:
+        verification.confidence < confidenceThreshold
+          ? 'Low confidence verification'
+          : undefined,
       createdAt: new Date(),
       updatedAt: new Date(),
-      citations: reliableSources
+      citations: reliableSources,
     };
 
     return factCheck;
@@ -164,14 +203,19 @@ export class FactCheckingService {
   /**
    * Analyze credibility of a source URL
    */
-  async analyzeSourceCredibility(sources: Partial<SourceCitation>[]): Promise<SourceCitation[]> {
+  async analyzeSourceCredibility(
+    sources: Partial<SourceCitation>[],
+  ): Promise<SourceCitation[]> {
     const analyzedSources: SourceCitation[] = [];
 
     for (const source of sources) {
       if (!source.url || !source.title) continue;
 
-      const credibilityAnalysis = await this.performCredibilityAnalysis(source.url, source.title);
-      
+      const credibilityAnalysis = await this.performCredibilityAnalysis(
+        source.url,
+        source.title,
+      );
+
       const citation: SourceCitation = {
         id: `citation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         blogPostId: source.blogPostId || '',
@@ -196,7 +240,7 @@ export class FactCheckingService {
         isAcademic: credibilityAnalysis.qualityIndicators.isAcademic,
         isRecent: credibilityAnalysis.qualityIndicators.isRecent,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       analyzedSources.push(citation);
@@ -210,10 +254,18 @@ export class FactCheckingService {
    */
   async recommendSources(
     topic: string,
-    sourceTypes: SourceType[] = [SourceType.ACADEMIC_PAPER, SourceType.GOVERNMENT_DOCUMENT, SourceType.OFFICIAL_WEBSITE],
-    maxSources: number = 10
+    sourceTypes: SourceType[] = [
+      SourceType.ACADEMIC_PAPER,
+      SourceType.GOVERNMENT_DOCUMENT,
+      SourceType.OFFICIAL_WEBSITE,
+    ],
+    maxSources: number = 10,
   ): Promise<SourceCitation[]> {
-    const searchResults = await this.searchReliableSources(topic, sourceTypes, maxSources);
+    const searchResults = await this.searchReliableSources(
+      topic,
+      sourceTypes,
+      maxSources,
+    );
     return this.analyzeSourceCredibility(searchResults);
   }
 
@@ -234,27 +286,34 @@ export class FactCheckingService {
     };
   }> {
     const validCitations: SourceCitation[] = [];
-    const invalidCitations: Array<{ citation: SourceCitation; issues: string[] }> = [];
+    const invalidCitations: Array<{
+      citation: SourceCitation;
+      issues: string[];
+    }> = [];
 
     for (const citation of citations) {
       const validation = await this.validateSingleCitation(citation);
-      
+
       if (validation.isValid) {
         validCitations.push({
           ...citation,
-          credibilityScore: validation.updatedCredibility
+          credibilityScore: validation.updatedCredibility,
         });
       } else {
         invalidCitations.push({
           citation,
-          issues: validation.issues
+          issues: validation.issues,
         });
       }
     }
 
-    const averageCredibility = validCitations.length > 0
-      ? validCitations.reduce((sum, c) => sum + (c.credibilityScore || 0), 0) / validCitations.length
-      : 0;
+    const averageCredibility =
+      validCitations.length > 0
+        ? validCitations.reduce(
+            (sum, c) => sum + (c.credibilityScore || 0),
+            0,
+          ) / validCitations.length
+        : 0;
 
     return {
       validCitations,
@@ -263,8 +322,8 @@ export class FactCheckingService {
         total: citations.length,
         valid: validCitations.length,
         invalid: invalidCitations.length,
-        averageCredibility
-      }
+        averageCredibility,
+      },
     };
   }
 
@@ -273,7 +332,7 @@ export class FactCheckingService {
    */
   async checkOriginality(
     content: string,
-    excludeDomains: string[] = []
+    excludeDomains: string[] = [],
   ): Promise<{
     originalityScore: number; // 0-1, where 1 = completely original
     matches: Array<{
@@ -291,11 +350,19 @@ export class FactCheckingService {
   }> {
     // In a real implementation, this would use specialized plagiarism detection APIs
     // For now, return mock results based on content analysis
-    
-    const mockMatches = await this.performMockPlagiarismCheck(content, excludeDomains);
-    
+
+    const mockMatches = await this.performMockPlagiarismCheck(
+      content,
+      excludeDomains,
+    );
+
     const highSimilarityMatches = mockMatches.filter(m => m.similarity > 0.8);
-    const originalityScore = Math.max(0, 1 - (mockMatches.reduce((sum, m) => sum + m.similarity, 0) / Math.max(mockMatches.length, 1)));
+    const originalityScore = Math.max(
+      0,
+      1 -
+        mockMatches.reduce((sum, m) => sum + m.similarity, 0) /
+          Math.max(mockMatches.length, 1),
+    );
 
     return {
       originalityScore,
@@ -303,8 +370,11 @@ export class FactCheckingService {
       summary: {
         totalMatches: mockMatches.length,
         highSimilarityMatches: highSimilarityMatches.length,
-        suspiciousPatterns: highSimilarityMatches.length > 3 ? ['Multiple high-similarity matches found'] : []
-      }
+        suspiciousPatterns:
+          highSimilarityMatches.length > 3
+            ? ['Multiple high-similarity matches found']
+            : [],
+      },
     };
   }
 
@@ -324,19 +394,37 @@ export class FactCheckingService {
     recommendations: string[];
   }> {
     const factChecks = await this.getFactChecksByBlogPost(blogPostId);
-    
+
     const totalClaims = factChecks.length;
-    const verifiedClaims = factChecks.filter(fc => fc.verificationStatus === VerificationStatus.VERIFIED).length;
-    const disputedClaims = factChecks.filter(fc => fc.verificationStatus === VerificationStatus.DISPUTED || fc.verificationStatus === VerificationStatus.FALSE).length;
-    const unverifiableClaims = factChecks.filter(fc => fc.verificationStatus === VerificationStatus.UNVERIFIABLE).length;
-    
-    const sourcesUsed = factChecks.reduce((sum, fc) => sum + fc.sourcesVerified, 0);
-    const reliableSources = factChecks.reduce((sum, fc) => sum + fc.sourcesReliable, 0);
+    const verifiedClaims = factChecks.filter(
+      fc => fc.verificationStatus === VerificationStatus.VERIFIED,
+    ).length;
+    const disputedClaims = factChecks.filter(
+      fc =>
+        fc.verificationStatus === VerificationStatus.DISPUTED ||
+        fc.verificationStatus === VerificationStatus.FALSE,
+    ).length;
+    const unverifiableClaims = factChecks.filter(
+      fc => fc.verificationStatus === VerificationStatus.UNVERIFIABLE,
+    ).length;
+
+    const sourcesUsed = factChecks.reduce(
+      (sum, fc) => sum + fc.sourcesVerified,
+      0,
+    );
+    const reliableSources = factChecks.reduce(
+      (sum, fc) => sum + fc.sourcesReliable,
+      0,
+    );
     const averageCredibility = this.calculateOverallCredibility(factChecks);
-    
-    const overallScore = totalClaims > 0 
-      ? (verifiedClaims * 1.0 + unverifiableClaims * 0.5 - disputedClaims * 0.5) / totalClaims 
-      : 1.0;
+
+    const overallScore =
+      totalClaims > 0
+        ? (verifiedClaims * 1.0 +
+            unverifiableClaims * 0.5 -
+            disputedClaims * 0.5) /
+          totalClaims
+        : 1.0;
 
     const recommendations = this.generateRecommendations(factChecks);
 
@@ -350,13 +438,16 @@ export class FactCheckingService {
       reliableSources,
       averageCredibility,
       factChecks,
-      recommendations
+      recommendations,
     };
   }
 
   // Private helper methods
 
-  private async extractClaims(content: string, autoDetect: boolean): Promise<string[]> {
+  private async extractClaims(
+    content: string,
+    autoDetect: boolean,
+  ): Promise<string[]> {
     if (!autoDetect) return [];
 
     const prompt = `Extract factual claims from the following content that can be fact-checked:
@@ -382,7 +473,7 @@ Return the claims analysis:`;
       const result = await generateObject({
         model: this.config.model,
         schema: ClaimExtractionSchema,
-        prompt
+        prompt,
       });
 
       return result.object.claims
@@ -394,28 +485,33 @@ Return the claims analysis:`;
     }
   }
 
-  private async findRelevantSources(claim: string): Promise<Partial<SourceCitation>[]> {
+  private async findRelevantSources(
+    claim: string,
+  ): Promise<Partial<SourceCitation>[]> {
     // In a real implementation, this would use search APIs (Google, Bing, specialized fact-checking APIs)
     // For now, return mock sources based on claim analysis
-    
+
     const searchKeywords = this.extractKeywords(claim);
     const mockSources = await this.generateMockSources(claim, searchKeywords);
-    
+
     return mockSources;
   }
 
   private async performAIVerification(
     claim: string,
-    sources: SourceCitation[]
+    sources: SourceCitation[],
   ): Promise<{
     status: VerificationStatus;
     confidence: number;
     evidenceQuality: number;
     reasoning: string;
   }> {
-    const sourceContext = sources.map(s => 
-      `Source: ${s.title} (${s.url})\nCredibility: ${s.credibilityScore || 'Unknown'}\nType: ${s.sourceType}`
-    ).join('\n\n');
+    const sourceContext = sources
+      .map(
+        s =>
+          `Source: ${s.title} (${s.url})\nCredibility: ${s.credibilityScore || 'Unknown'}\nType: ${s.sourceType}`,
+      )
+      .join('\n\n');
 
     const prompt = `Verify the following claim against the provided sources:
 
@@ -442,14 +538,14 @@ Provide objective, evidence-based analysis:`;
       const result = await generateObject({
         model: this.config.model,
         schema: FactVerificationSchema,
-        prompt
+        prompt,
       });
 
       return {
         status: result.object.verificationStatus as VerificationStatus,
         confidence: result.object.confidence,
         evidenceQuality: result.object.evidenceQuality,
-        reasoning: result.object.reasoning
+        reasoning: result.object.reasoning,
       };
     } catch (error) {
       console.error('Failed to perform AI verification:', error);
@@ -457,14 +553,17 @@ Provide objective, evidence-based analysis:`;
         status: VerificationStatus.UNVERIFIABLE,
         confidence: 0.3,
         evidenceQuality: 0.3,
-        reasoning: 'Unable to complete verification analysis'
+        reasoning: 'Unable to complete verification analysis',
       };
     }
   }
 
-  private async performCredibilityAnalysis(url: string, title: string): Promise<any> {
+  private async performCredibilityAnalysis(
+    url: string,
+    title: string,
+  ): Promise<any> {
     const domain = this.extractDomain(url);
-    
+
     const prompt = `Analyze the credibility of this source:
 
 URL: ${url}
@@ -493,7 +592,7 @@ Provide objective assessment:`;
       const result = await generateObject({
         model: this.config.model,
         schema: SourceCredibilitySchema,
-        prompt
+        prompt,
       });
 
       return result.object;
@@ -511,24 +610,45 @@ Provide objective assessment:`;
           isAcademic: domain.includes('.edu'),
           isRecent: true,
           hasAuthor: true,
-          hasReferences: false
+          hasReferences: false,
         },
-        concerns: []
+        concerns: [],
       };
     }
   }
 
   private determineSourceType(url: string): SourceType {
     const domain = this.extractDomain(url).toLowerCase();
-    
+
     if (domain.includes('.gov')) return SourceType.GOVERNMENT_DOCUMENT;
     if (domain.includes('.edu')) return SourceType.ACADEMIC_PAPER;
-    if (domain.includes('arxiv') || domain.includes('pubmed') || domain.includes('scholar')) return SourceType.ACADEMIC_PAPER;
-    if (domain.includes('reuters') || domain.includes('ap.org') || domain.includes('bbc')) return SourceType.NEWS_ARTICLE;
-    if (domain.includes('youtube') || domain.includes('vimeo')) return SourceType.VIDEO;
-    if (domain.includes('twitter') || domain.includes('facebook') || domain.includes('linkedin')) return SourceType.SOCIAL_MEDIA;
-    if (domain.includes('podcast') || domain.includes('spotify') || domain.includes('apple.com/podcasts')) return SourceType.PODCAST;
-    
+    if (
+      domain.includes('arxiv') ||
+      domain.includes('pubmed') ||
+      domain.includes('scholar')
+    )
+      return SourceType.ACADEMIC_PAPER;
+    if (
+      domain.includes('reuters') ||
+      domain.includes('ap.org') ||
+      domain.includes('bbc')
+    )
+      return SourceType.NEWS_ARTICLE;
+    if (domain.includes('youtube') || domain.includes('vimeo'))
+      return SourceType.VIDEO;
+    if (
+      domain.includes('twitter') ||
+      domain.includes('facebook') ||
+      domain.includes('linkedin')
+    )
+      return SourceType.SOCIAL_MEDIA;
+    if (
+      domain.includes('podcast') ||
+      domain.includes('spotify') ||
+      domain.includes('apple.com/podcasts')
+    )
+      return SourceType.PODCAST;
+
     return SourceType.OFFICIAL_WEBSITE;
   }
 
@@ -545,11 +665,28 @@ Provide objective assessment:`;
     return claim
       .toLowerCase()
       .split(/\s+/)
-      .filter(word => word.length > 3 && !['that', 'this', 'with', 'from', 'they', 'were', 'been', 'have', 'said'].includes(word))
+      .filter(
+        word =>
+          word.length > 3 &&
+          ![
+            'that',
+            'this',
+            'with',
+            'from',
+            'they',
+            'were',
+            'been',
+            'have',
+            'said',
+          ].includes(word),
+      )
       .slice(0, 10);
   }
 
-  private async generateMockSources(claim: string, keywords: string[]): Promise<Partial<SourceCitation>[]> {
+  private async generateMockSources(
+    claim: string,
+    keywords: string[],
+  ): Promise<Partial<SourceCitation>[]> {
     // Mock source generation for development
     return [
       {
@@ -557,43 +694,43 @@ Provide objective assessment:`;
         url: `https://example-academic.edu/study/${keywords[0] || 'research'}`,
         author: 'Dr. Jane Smith',
         sourceType: SourceType.ACADEMIC_PAPER,
-        publishedDate: new Date(Date.now() - 86400000 * 30) // 30 days ago
+        publishedDate: new Date(Date.now() - 86400000 * 30), // 30 days ago
       },
       {
         title: `Government Report: ${keywords[1] || 'findings'}`,
         url: `https://example.gov/reports/${keywords[1] || 'data'}`,
         sourceType: SourceType.GOVERNMENT_DOCUMENT,
-        publishedDate: new Date(Date.now() - 86400000 * 7) // 7 days ago
+        publishedDate: new Date(Date.now() - 86400000 * 7), // 7 days ago
       },
       {
         title: `News Article: ${keywords[0] || 'topic'} Analysis`,
         url: `https://example-news.com/articles/${keywords[0] || 'story'}`,
         author: 'John Reporter',
         sourceType: SourceType.NEWS_ARTICLE,
-        publishedDate: new Date(Date.now() - 86400000 * 2) // 2 days ago
-      }
+        publishedDate: new Date(Date.now() - 86400000 * 2), // 2 days ago
+      },
     ];
   }
 
   private async searchReliableSources(
     topic: string,
     sourceTypes: SourceType[],
-    maxSources: number
+    maxSources: number,
   ): Promise<Partial<SourceCitation>[]> {
     // Mock implementation - in practice, integrate with search APIs
     const mockSources: Partial<SourceCitation>[] = [];
-    
+
     for (const sourceType of sourceTypes) {
       for (let i = 0; i < Math.min(maxSources / sourceTypes.length, 3); i++) {
         mockSources.push({
           title: `${sourceType} source about ${topic} - ${i + 1}`,
           url: `https://example-${sourceType.toLowerCase()}.com/article-${i + 1}`,
           sourceType,
-          publishedDate: new Date(Date.now() - Math.random() * 86400000 * 365) // Random date within last year
+          publishedDate: new Date(Date.now() - Math.random() * 86400000 * 365), // Random date within last year
         });
       }
     }
-    
+
     return mockSources.slice(0, maxSources);
   }
 
@@ -611,7 +748,10 @@ Provide objective assessment:`;
     }
 
     // Check for recent publication
-    if (citation.publishedDate && citation.publishedDate < new Date(Date.now() - 86400000 * 365 * 3)) {
+    if (
+      citation.publishedDate &&
+      citation.publishedDate < new Date(Date.now() - 86400000 * 365 * 3)
+    ) {
       issues.push('Source is older than 3 years');
       updatedCredibility *= 0.9;
     }
@@ -625,20 +765,22 @@ Provide objective assessment:`;
     return {
       isValid: issues.length === 0,
       issues,
-      updatedCredibility
+      updatedCredibility,
     };
   }
 
   private async performMockPlagiarismCheck(
     content: string,
-    excludeDomains: string[]
-  ): Promise<Array<{
-    text: string;
-    source: string;
-    similarity: number;
-    startPosition: number;
-    endPosition: number;
-  }>> {
+    excludeDomains: string[],
+  ): Promise<
+    Array<{
+      text: string;
+      source: string;
+      similarity: number;
+      startPosition: number;
+      endPosition: number;
+    }>
+  > {
     // Mock plagiarism detection
     const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 50);
     const matches: Array<any> = [];
@@ -650,7 +792,7 @@ Provide objective assessment:`;
         source: 'https://example-source.com/article1',
         similarity: 0.85,
         startPosition: content.indexOf(sentences[1]),
-        endPosition: content.indexOf(sentences[1]) + sentences[1].length
+        endPosition: content.indexOf(sentences[1]) + sentences[1].length,
       });
     }
 
@@ -659,44 +801,68 @@ Provide objective assessment:`;
 
   private calculateAverageCredibility(sources: SourceCitation[]): number {
     if (sources.length === 0) return 0;
-    
-    const totalCredibility = sources.reduce((sum, source) => sum + (source.credibilityScore || 0), 0);
+
+    const totalCredibility = sources.reduce(
+      (sum, source) => sum + (source.credibilityScore || 0),
+      0,
+    );
     return totalCredibility / sources.length;
   }
 
   private calculateOverallCredibility(factChecks: FactCheck[]): number {
     if (factChecks.length === 0) return 0;
-    
-    const totalCredibility = factChecks.reduce((sum, fc) => sum + (fc.sourceCredibility || 0), 0);
+
+    const totalCredibility = factChecks.reduce(
+      (sum, fc) => sum + (fc.sourceCredibility || 0),
+      0,
+    );
     return totalCredibility / factChecks.length;
   }
 
   private generateRecommendations(factChecks: FactCheck[]): string[] {
     const recommendations: string[] = [];
-    
-    const disputedChecks = factChecks.filter(fc => fc.verificationStatus === VerificationStatus.DISPUTED || fc.verificationStatus === VerificationStatus.FALSE);
-    const unverifiableChecks = factChecks.filter(fc => fc.verificationStatus === VerificationStatus.UNVERIFIABLE);
-    const lowConfidenceChecks = factChecks.filter(fc => (fc.confidenceScore || 0) < 0.6);
+
+    const disputedChecks = factChecks.filter(
+      fc =>
+        fc.verificationStatus === VerificationStatus.DISPUTED ||
+        fc.verificationStatus === VerificationStatus.FALSE,
+    );
+    const unverifiableChecks = factChecks.filter(
+      fc => fc.verificationStatus === VerificationStatus.UNVERIFIABLE,
+    );
+    const lowConfidenceChecks = factChecks.filter(
+      fc => (fc.confidenceScore || 0) < 0.6,
+    );
 
     if (disputedChecks.length > 0) {
-      recommendations.push(`Review and correct ${disputedChecks.length} disputed or false claims`);
+      recommendations.push(
+        `Review and correct ${disputedChecks.length} disputed or false claims`,
+      );
     }
 
     if (unverifiableChecks.length > 0) {
-      recommendations.push(`Find additional sources for ${unverifiableChecks.length} unverifiable claims`);
+      recommendations.push(
+        `Find additional sources for ${unverifiableChecks.length} unverifiable claims`,
+      );
     }
 
     if (lowConfidenceChecks.length > 0) {
-      recommendations.push(`Strengthen evidence for ${lowConfidenceChecks.length} low-confidence claims`);
+      recommendations.push(
+        `Strengthen evidence for ${lowConfidenceChecks.length} low-confidence claims`,
+      );
     }
 
     const avgCredibility = this.calculateOverallCredibility(factChecks);
     if (avgCredibility < 0.6) {
-      recommendations.push('Consider using more authoritative and credible sources');
+      recommendations.push(
+        'Consider using more authoritative and credible sources',
+      );
     }
 
     if (factChecks.length === 0) {
-      recommendations.push('Consider adding fact-checking for key claims in the content');
+      recommendations.push(
+        'Consider adding fact-checking for key claims in the content',
+      );
     }
 
     return recommendations;
@@ -710,7 +876,7 @@ Provide objective assessment:`;
     }
 
     const blogPost = await this.config.prisma.blogPost.findUnique({
-      where: { id: blogPostId }
+      where: { id: blogPostId },
     });
 
     if (!blogPost) {
@@ -720,14 +886,16 @@ Provide objective assessment:`;
     return blogPost.content;
   }
 
-  private async getFactChecksByBlogPost(blogPostId: string): Promise<FactCheck[]> {
+  private async getFactChecksByBlogPost(
+    blogPostId: string,
+  ): Promise<FactCheck[]> {
     if (!this.config.prisma) return [];
 
     const factChecks = await this.config.prisma.factCheck.findMany({
       where: { blogPostId },
       include: {
-        citations: true
-      }
+        citations: true,
+      },
     });
 
     return factChecks.map(fc => ({
@@ -776,12 +944,14 @@ Provide objective assessment:`;
         isAcademic: c.isAcademic,
         isRecent: c.isRecent,
         createdAt: c.createdAt,
-        updatedAt: c.updatedAt
-      }))
+        updatedAt: c.updatedAt,
+      })),
     }));
   }
 
-  private async saveFactChecksToDatabase(factChecks: FactCheck[]): Promise<void> {
+  private async saveFactChecksToDatabase(
+    factChecks: FactCheck[],
+  ): Promise<void> {
     if (!this.config.prisma) return;
 
     for (const factCheck of factChecks) {
@@ -806,8 +976,8 @@ Provide objective assessment:`;
             verifiedAt: factCheck.verifiedAt,
             verifiedBy: factCheck.verifiedBy,
             requiresAttention: factCheck.requiresAttention,
-            flagReason: factCheck.flagReason
-          }
+            flagReason: factCheck.flagReason,
+          },
         });
 
         // Save citations
@@ -834,8 +1004,8 @@ Provide objective assessment:`;
               isPeerReviewed: citation.isPeerReviewed,
               isGovernment: citation.isGovernment,
               isAcademic: citation.isAcademic,
-              isRecent: citation.isRecent
-            }
+              isRecent: citation.isRecent,
+            },
           });
         }
       } catch (error) {
@@ -844,4 +1014,3 @@ Provide objective assessment:`;
     }
   }
 }
-

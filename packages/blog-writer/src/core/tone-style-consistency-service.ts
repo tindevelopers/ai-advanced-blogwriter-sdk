@@ -1,5 +1,3 @@
-
-
 /**
  * Tone & Style Consistency Service
  * Comprehensive tone analysis, style guide compliance, and brand voice consistency
@@ -20,7 +18,7 @@ import {
   ToneAnalysisRequest,
   StyleCheckRequest,
   StyleCheckType,
-  StyleSeverity
+  StyleSeverity,
 } from '../types/advanced-writing';
 
 export interface ToneStyleConfig {
@@ -33,24 +31,56 @@ export interface ToneStyleConfig {
 // Zod schemas for structured AI responses
 const ToneAnalysisSchema = z.object({
   primaryTone: z.enum([
-    'PROFESSIONAL', 'CASUAL', 'AUTHORITATIVE', 'FRIENDLY', 'TECHNICAL', 
-    'CONVERSATIONAL', 'ACADEMIC', 'PERSUASIVE', 'INFORMATIVE', 'ENTERTAINING',
-    'EMPATHETIC', 'URGENT', 'CONFIDENT', 'HUMBLE'
+    'PROFESSIONAL',
+    'CASUAL',
+    'AUTHORITATIVE',
+    'FRIENDLY',
+    'TECHNICAL',
+    'CONVERSATIONAL',
+    'ACADEMIC',
+    'PERSUASIVE',
+    'INFORMATIVE',
+    'ENTERTAINING',
+    'EMPATHETIC',
+    'URGENT',
+    'CONFIDENT',
+    'HUMBLE',
   ]),
-  secondaryTones: z.array(z.enum([
-    'PROFESSIONAL', 'CASUAL', 'AUTHORITATIVE', 'FRIENDLY', 'TECHNICAL', 
-    'CONVERSATIONAL', 'ACADEMIC', 'PERSUASIVE', 'INFORMATIVE', 'ENTERTAINING',
-    'EMPATHETIC', 'URGENT', 'CONFIDENT', 'HUMBLE'
-  ])),
+  secondaryTones: z.array(
+    z.enum([
+      'PROFESSIONAL',
+      'CASUAL',
+      'AUTHORITATIVE',
+      'FRIENDLY',
+      'TECHNICAL',
+      'CONVERSATIONAL',
+      'ACADEMIC',
+      'PERSUASIVE',
+      'INFORMATIVE',
+      'ENTERTAINING',
+      'EMPATHETIC',
+      'URGENT',
+      'CONFIDENT',
+      'HUMBLE',
+    ]),
+  ),
   confidence: z.number().min(0).max(1),
   formalityScore: z.number().min(0).max(1),
   emotionalTone: z.enum([
-    'NEUTRAL', 'POSITIVE', 'NEGATIVE', 'EXCITED', 'CONCERNED', 
-    'OPTIMISTIC', 'CAUTIOUS', 'PASSIONATE', 'ANALYTICAL', 'INSPIRING'
+    'NEUTRAL',
+    'POSITIVE',
+    'NEGATIVE',
+    'EXCITED',
+    'CONCERNED',
+    'OPTIMISTIC',
+    'CAUTIOUS',
+    'PASSIONATE',
+    'ANALYTICAL',
+    'INSPIRING',
   ]),
   emotionIntensity: z.number().min(0).max(1),
   authorityLevel: z.number().min(0).max(1),
-  personalityTraits: z.record(z.number().min(0).max(1))
+  personalityTraits: z.record(z.number().min(0).max(1)),
 });
 
 const StyleAnalysisSchema = z.object({
@@ -61,13 +91,15 @@ const StyleAnalysisSchema = z.object({
   vocabularyLevel: z.enum(['basic', 'intermediate', 'advanced']),
   jargonUsage: z.number().min(0).max(1),
   repetitiveness: z.number().min(0).max(1),
-  violations: z.array(z.object({
-    type: z.string(),
-    position: z.number(),
-    message: z.string(),
-    severity: z.enum(['low', 'medium', 'high']),
-    suggestion: z.string().optional()
-  }))
+  violations: z.array(
+    z.object({
+      type: z.string(),
+      position: z.number(),
+      message: z.string(),
+      severity: z.enum(['low', 'medium', 'high']),
+      suggestion: z.string().optional(),
+    }),
+  ),
 });
 
 export class ToneStyleConsistencyService {
@@ -77,19 +109,29 @@ export class ToneStyleConsistencyService {
    * Perform comprehensive tone analysis on content
    */
   async analyzeTone(request: ToneAnalysisRequest): Promise<ToneAnalysis> {
-    const content = await this.getContentForAnalysis(request.blogPostId, request.content);
-    
+    const content = await this.getContentForAnalysis(
+      request.blogPostId,
+      request.content,
+    );
+
     if (request.sectionsToAnalyze && request.sectionsToAnalyze.length > 0) {
-      return this.analyzeSectionTones(request.blogPostId, request.sectionsToAnalyze, request);
+      return this.analyzeSectionTones(
+        request.blogPostId,
+        request.sectionsToAnalyze,
+        request,
+      );
     }
 
-    const analysis = await this.performToneAnalysis(content, request.brandVoice);
-    
+    const analysis = await this.performToneAnalysis(
+      content,
+      request.brandVoice,
+    );
+
     // Save to database if Prisma is available
     if (this.config.prisma) {
       await this.saveToneAnalysisToDatabase(request.blogPostId, analysis);
     }
-    
+
     return analysis;
   }
 
@@ -99,17 +141,17 @@ export class ToneStyleConsistencyService {
   async analyzeSectionTones(
     blogPostId: string,
     sectionIds: string[],
-    request: ToneAnalysisRequest
+    request: ToneAnalysisRequest,
   ): Promise<ToneAnalysis> {
     const sectionAnalyses: ToneAnalysis[] = [];
-    
+
     for (const sectionId of sectionIds) {
       const sectionContent = await this.getSectionContent(sectionId);
       if (sectionContent) {
         const sectionAnalysis = await this.performToneAnalysis(
           sectionContent,
           request.brandVoice,
-          sectionId
+          sectionId,
         );
         sectionAnalyses.push(sectionAnalysis);
       }
@@ -125,17 +167,36 @@ export class ToneStyleConsistencyService {
       blogPostId,
       primaryTone: this.determineDominantTone(sectionAnalyses),
       secondaryTones: this.extractSecondaryTones(sectionAnalyses),
-      confidence: sectionAnalyses.reduce((sum, analysis) => sum + analysis.confidence, 0) / sectionAnalyses.length,
-      formalityScore: sectionAnalyses.reduce((sum, analysis) => sum + analysis.formalityScore, 0) / sectionAnalyses.length,
+      confidence:
+        sectionAnalyses.reduce(
+          (sum, analysis) => sum + analysis.confidence,
+          0,
+        ) / sectionAnalyses.length,
+      formalityScore:
+        sectionAnalyses.reduce(
+          (sum, analysis) => sum + analysis.formalityScore,
+          0,
+        ) / sectionAnalyses.length,
       emotionalTone: this.determineDominantEmotion(sectionAnalyses),
-      emotionIntensity: sectionAnalyses.reduce((sum, analysis) => sum + analysis.emotionIntensity, 0) / sectionAnalyses.length,
-      authorityLevel: sectionAnalyses.reduce((sum, analysis) => sum + analysis.authorityLevel, 0) / sectionAnalyses.length,
+      emotionIntensity:
+        sectionAnalyses.reduce(
+          (sum, analysis) => sum + analysis.emotionIntensity,
+          0,
+        ) / sectionAnalyses.length,
+      authorityLevel:
+        sectionAnalyses.reduce(
+          (sum, analysis) => sum + analysis.authorityLevel,
+          0,
+        ) / sectionAnalyses.length,
       personalityTraits: this.mergePersonalityTraits(sectionAnalyses),
-      brandVoiceScore: request.brandVoice ? this.calculateBrandVoiceAlignment(sectionAnalyses, request.brandVoice) : undefined,
+      brandVoiceScore: request.brandVoice
+        ? this.calculateBrandVoiceAlignment(sectionAnalyses, request.brandVoice)
+        : undefined,
       consistencyScore,
       deviations,
       analyzedAt: new Date(),
-      modelUsed: typeof this.config.model === 'string' ? this.config.model : 'unknown'
+      modelUsed:
+        typeof this.config.model === 'string' ? this.config.model : 'unknown',
     };
 
     return combinedAnalysis;
@@ -146,23 +207,30 @@ export class ToneStyleConsistencyService {
    */
   async performStyleCheck(request: StyleCheckRequest): Promise<StyleCheck> {
     const content = await this.getContentForAnalysis(request.blogPostId);
-    
+
     // Get tone analysis if available or perform new one
     let toneAnalysis: ToneAnalysis | undefined;
     if (this.config.prisma) {
       toneAnalysis = await this.getLatestToneAnalysis(request.blogPostId);
     }
-    
+
     if (!toneAnalysis) {
-      toneAnalysis = await this.performToneAnalysis(content, request.brandVoice);
+      toneAnalysis = await this.performToneAnalysis(
+        content,
+        request.brandVoice,
+      );
     }
 
     const styleAnalysis = await this.performStyleAnalysis(content);
-    const complianceCheck = request.styleGuideId 
+    const complianceCheck = request.styleGuideId
       ? await this.checkStyleGuideCompliance(content, request.styleGuideId)
       : { score: 0.8, violations: [] };
 
-    const suggestions = await this.generateStyleSuggestions(content, styleAnalysis, request.brandVoice);
+    const suggestions = await this.generateStyleSuggestions(
+      content,
+      styleAnalysis,
+      request.brandVoice,
+    );
 
     const styleCheck: StyleCheck = {
       id: `style_check_${Date.now()}`,
@@ -183,12 +251,18 @@ export class ToneStyleConsistencyService {
       vocabularyLevel: styleAnalysis.vocabularyLevel,
       jargonUsage: styleAnalysis.jargonUsage,
       repetitiveness: styleAnalysis.repetitiveness,
-      brandVoiceMatch: request.brandVoice ? this.calculateBrandVoiceMatch(toneAnalysis, request.brandVoice) : undefined,
+      brandVoiceMatch: request.brandVoice
+        ? this.calculateBrandVoiceMatch(toneAnalysis, request.brandVoice)
+        : undefined,
       voicePersonality: toneAnalysis.personalityTraits,
       suggestions,
-      criticalIssues: this.identifyCriticalIssues(styleAnalysis, complianceCheck.violations),
+      criticalIssues: this.identifyCriticalIssues(
+        styleAnalysis,
+        complianceCheck.violations,
+      ),
       checkedAt: new Date(),
-      modelUsed: typeof this.config.model === 'string' ? this.config.model : 'unknown'
+      modelUsed:
+        typeof this.config.model === 'string' ? this.config.model : 'unknown',
     };
 
     // Save to database
@@ -202,7 +276,10 @@ export class ToneStyleConsistencyService {
   /**
    * Generate brand voice profile from example content
    */
-  async createBrandVoiceProfile(examples: string[], profileName: string): Promise<BrandVoiceProfile> {
+  async createBrandVoiceProfile(
+    examples: string[],
+    profileName: string,
+  ): Promise<BrandVoiceProfile> {
     const prompt = `Analyze the following content examples to create a brand voice profile:
 
 ${examples.map((example, i) => `Example ${i + 1}:\n${example}\n`).join('\n')}
@@ -236,16 +313,32 @@ Return the analysis in JSON format:
     const result = await generateObject({
       model: this.config.model,
       schema: z.object({
-        primaryTone: z.enum(['PROFESSIONAL', 'CASUAL', 'AUTHORITATIVE', 'FRIENDLY', 'TECHNICAL', 'CONVERSATIONAL']),
-        secondaryTones: z.array(z.enum(['PROFESSIONAL', 'CASUAL', 'AUTHORITATIVE', 'FRIENDLY', 'TECHNICAL', 'CONVERSATIONAL'])),
+        primaryTone: z.enum([
+          'PROFESSIONAL',
+          'CASUAL',
+          'AUTHORITATIVE',
+          'FRIENDLY',
+          'TECHNICAL',
+          'CONVERSATIONAL',
+        ]),
+        secondaryTones: z.array(
+          z.enum([
+            'PROFESSIONAL',
+            'CASUAL',
+            'AUTHORITATIVE',
+            'FRIENDLY',
+            'TECHNICAL',
+            'CONVERSATIONAL',
+          ]),
+        ),
         personalityTraits: z.record(z.number().min(0).max(1)),
         vocabularyLevel: z.enum(['basic', 'intermediate', 'advanced']),
         formalityLevel: z.number().min(0).max(1),
         examples: z.array(z.string()),
         prohibited: z.array(z.string()),
-        guidelines: z.array(z.string())
+        guidelines: z.array(z.string()),
       }),
-      prompt
+      prompt,
     });
 
     const profile: BrandVoiceProfile = {
@@ -259,7 +352,7 @@ Return the analysis in JSON format:
       formalityLevel: result.object.formalityLevel,
       examples: result.object.examples,
       prohibited: result.object.prohibited,
-      guidelines: result.object.guidelines
+      guidelines: result.object.guidelines,
     };
 
     return profile;
@@ -271,7 +364,7 @@ Return the analysis in JSON format:
   async adjustContentToBrandVoice(
     content: string,
     brandVoice: BrandVoiceProfile,
-    preserveStructure: boolean = true
+    preserveStructure: boolean = true,
   ): Promise<{
     adjustedContent: string;
     changes: Array<{
@@ -283,13 +376,16 @@ Return the analysis in JSON format:
     alignmentScore: number;
   }> {
     const currentAnalysis = await this.performToneAnalysis(content, brandVoice);
-    const alignmentScore = this.calculateBrandVoiceAlignment([currentAnalysis], brandVoice);
+    const alignmentScore = this.calculateBrandVoiceAlignment(
+      [currentAnalysis],
+      brandVoice,
+    );
 
     if (alignmentScore > 0.8) {
       return {
         adjustedContent: content,
         changes: [],
-        alignmentScore
+        alignmentScore,
       };
     }
 
@@ -303,7 +399,11 @@ Brand Voice Guidelines:
 - Secondary Tones: ${brandVoice.toneCharacteristics.secondary?.join(', ') || 'None'}
 - Vocabulary Level: ${brandVoice.vocabularyGuidelines.preferredTerms.join(', ')}
 - Formality Level: ${brandVoice.toneCharacteristics.formality}
-- Personality Traits: ${Object.entries(brandVoice.toneCharacteristics.personality).map(([k, v]) => `${k}: ${v}`).join(', ')}
+- Personality Traits: ${Object.entries(
+      brandVoice.toneCharacteristics.personality,
+    )
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ')}
 
 Guidelines:
 ${brandVoice.consistencyRules.map(g => `- ${g.description}`).join('\n')}
@@ -332,24 +432,32 @@ Provide the adjusted content and list the changes made:
       model: this.config.model,
       schema: z.object({
         adjustedContent: z.string(),
-        changes: z.array(z.object({
-          type: z.string(),
-          original: z.string(),
-          adjusted: z.string(),
-          reason: z.string()
-        }))
+        changes: z.array(
+          z.object({
+            type: z.string(),
+            original: z.string(),
+            adjusted: z.string(),
+            reason: z.string(),
+          }),
+        ),
       }),
-      prompt
+      prompt,
     });
 
     // Calculate new alignment score
-    const newAnalysis = await this.performToneAnalysis(result.object.adjustedContent, brandVoice);
-    const newAlignmentScore = this.calculateBrandVoiceAlignment([newAnalysis], brandVoice);
+    const newAnalysis = await this.performToneAnalysis(
+      result.object.adjustedContent,
+      brandVoice,
+    );
+    const newAlignmentScore = this.calculateBrandVoiceAlignment(
+      [newAnalysis],
+      brandVoice,
+    );
 
     return {
       adjustedContent: result.object.adjustedContent,
       changes: result.object.changes,
-      alignmentScore: newAlignmentScore
+      alignmentScore: newAlignmentScore,
     };
   }
 
@@ -373,13 +481,16 @@ Provide the adjusted content and list the changes made:
 
     const overallConsistency = this.calculateConsistencyScore(sectionAnalyses);
     const deviations = this.identifyToneDeviations(sectionAnalyses);
-    const recommendations = await this.generateConsistencyRecommendations(sectionAnalyses, deviations);
+    const recommendations = await this.generateConsistencyRecommendations(
+      sectionAnalyses,
+      deviations,
+    );
 
     return {
       overallConsistency,
       sectionAnalyses,
       deviations,
-      recommendations
+      recommendations,
     };
   }
 
@@ -388,17 +499,21 @@ Provide the adjusted content and list the changes made:
   private async performToneAnalysis(
     content: string,
     brandVoice?: BrandVoiceProfile,
-    sectionId?: string
+    sectionId?: string,
   ): Promise<ToneAnalysis> {
     const prompt = `Perform a comprehensive tone analysis of the following content:
 
 "${content}"
 
-${brandVoice ? `Compare against this brand voice profile:
+${
+  brandVoice
+    ? `Compare against this brand voice profile:
 - Primary Tone: ${brandVoice.primaryTone}
 - Secondary Tones: ${brandVoice.secondaryTones.join(', ')}
 - Vocabulary Level: ${brandVoice.vocabularyLevel}
-- Formality Level: ${brandVoice.formalityLevel}` : ''}
+- Formality Level: ${brandVoice.formalityLevel}`
+    : ''
+}
 
 Analyze and provide:
 1. Primary tone category
@@ -416,7 +531,7 @@ Provide analysis in the specified JSON format.`;
       const result = await generateObject({
         model: this.config.model,
         schema: ToneAnalysisSchema,
-        prompt
+        prompt,
       });
 
       const analysis: ToneAnalysis = {
@@ -424,18 +539,26 @@ Provide analysis in the specified JSON format.`;
         blogPostId: '', // Will be set by caller
         sectionId,
         primaryTone: this.mapToneFromAI(result.object.primaryTone),
-        secondaryTones: result.object.secondaryTones.map(tone => this.mapToneFromAI(tone)),
+        secondaryTones: result.object.secondaryTones.map(tone =>
+          this.mapToneFromAI(tone),
+        ),
         confidence: result.object.confidence,
         formalityScore: result.object.formalityScore,
         emotionalTone: result.object.emotionalTone as EmotionalTone,
         emotionIntensity: result.object.emotionIntensity,
         authorityLevel: result.object.authorityLevel,
         personalityTraits: result.object.personalityTraits,
-        brandVoiceScore: brandVoice ? this.calculateBrandVoiceAlignment([{...result.object, id: '', blogPostId: ''}] as any, brandVoice) : undefined,
+        brandVoiceScore: brandVoice
+          ? this.calculateBrandVoiceAlignment(
+              [{ ...result.object, id: '', blogPostId: '' }] as any,
+              brandVoice,
+            )
+          : undefined,
         consistencyScore: 0.8, // Default value - would be calculated based on document consistency
         deviations: [],
         analyzedAt: new Date(),
-        modelUsed: typeof this.config.model === 'string' ? this.config.model : 'unknown'
+        modelUsed:
+          typeof this.config.model === 'string' ? this.config.model : 'unknown',
       };
 
       return analysis;
@@ -457,14 +580,17 @@ Provide analysis in the specified JSON format.`;
         consistencyScore: 0.8, // Default value
         deviations: [],
         analyzedAt: new Date(),
-        modelUsed: typeof this.config.model === 'string' ? this.config.model : 'unknown'
+        modelUsed:
+          typeof this.config.model === 'string' ? this.config.model : 'unknown',
       };
     }
   }
 
   private async performStyleAnalysis(content: string): Promise<any> {
     const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+    const paragraphs = content
+      .split(/\n\s*\n/)
+      .filter(p => p.trim().length > 0);
     const words = content.split(/\s+/).filter(w => w.length > 0);
 
     const avgSentenceLength = words.length / sentences.length;
@@ -489,7 +615,7 @@ Focus on objective metrics and specific issues.`;
       const result = await generateObject({
         model: this.config.model,
         schema: StyleAnalysisSchema,
-        prompt
+        prompt,
       });
 
       return {
@@ -500,7 +626,7 @@ Focus on objective metrics and specific issues.`;
         vocabularyLevel: result.object.vocabularyLevel,
         jargonUsage: result.object.jargonUsage,
         repetitiveness: result.object.repetitiveness,
-        violations: result.object.violations
+        violations: result.object.violations,
       };
     } catch (error) {
       console.error('Failed to perform style analysis:', error);
@@ -512,7 +638,7 @@ Focus on objective metrics and specific issues.`;
         vocabularyLevel: 'intermediate',
         jargonUsage: 0.3,
         repetitiveness: 0.2,
-        violations: []
+        violations: [],
       };
     }
   }
@@ -520,22 +646,22 @@ Focus on objective metrics and specific issues.`;
   private mapToneFromAI(aiTone: string): ToneCategory {
     // Map AI uppercase values to our enum values
     const toneMap: Record<string, ToneCategory> = {
-      'PROFESSIONAL': ToneCategory.PROFESSIONAL,
-      'CASUAL': ToneCategory.CASUAL,
-      'AUTHORITATIVE': ToneCategory.AUTHORITATIVE,
-      'FRIENDLY': ToneCategory.FRIENDLY,
-      'TECHNICAL': ToneCategory.TECHNICAL,
-      'CONVERSATIONAL': ToneCategory.CONVERSATIONAL,
-      'ACADEMIC': ToneCategory.ACADEMIC,
-      'PERSUASIVE': ToneCategory.PERSUASIVE,
-      'INFORMATIVE': ToneCategory.INFORMATIVE,
-      'ENTERTAINING': ToneCategory.ENTERTAINING,
-      'EMPATHETIC': ToneCategory.EMPATHETIC,
-      'URGENT': ToneCategory.URGENT,
-      'CONFIDENT': ToneCategory.CONFIDENT,
-      'HUMBLE': ToneCategory.HUMBLE
+      PROFESSIONAL: ToneCategory.PROFESSIONAL,
+      CASUAL: ToneCategory.CASUAL,
+      AUTHORITATIVE: ToneCategory.AUTHORITATIVE,
+      FRIENDLY: ToneCategory.FRIENDLY,
+      TECHNICAL: ToneCategory.TECHNICAL,
+      CONVERSATIONAL: ToneCategory.CONVERSATIONAL,
+      ACADEMIC: ToneCategory.ACADEMIC,
+      PERSUASIVE: ToneCategory.PERSUASIVE,
+      INFORMATIVE: ToneCategory.INFORMATIVE,
+      ENTERTAINING: ToneCategory.ENTERTAINING,
+      EMPATHETIC: ToneCategory.EMPATHETIC,
+      URGENT: ToneCategory.URGENT,
+      CONFIDENT: ToneCategory.CONFIDENT,
+      HUMBLE: ToneCategory.HUMBLE,
     };
-    
+
     return toneMap[aiTone] || ToneCategory.PROFESSIONAL;
   }
 
@@ -547,15 +673,27 @@ Focus on objective metrics and specific issues.`;
 
     for (let i = 1; i < analyses.length; i++) {
       const current = analyses[i];
-      
+
       // Compare key metrics
-      const formalityVariance = Math.abs(reference.formalityScore - current.formalityScore);
-      const emotionVariance = Math.abs(reference.emotionIntensity - current.emotionIntensity);
-      const authorityVariance = Math.abs(reference.authorityLevel - current.authorityLevel);
-      
-      const toneConsistency = reference.primaryTone === current.primaryTone ? 0 : 0.3;
-      
-      totalVariance += (formalityVariance + emotionVariance + authorityVariance + toneConsistency) / 4;
+      const formalityVariance = Math.abs(
+        reference.formalityScore - current.formalityScore,
+      );
+      const emotionVariance = Math.abs(
+        reference.emotionIntensity - current.emotionIntensity,
+      );
+      const authorityVariance = Math.abs(
+        reference.authorityLevel - current.authorityLevel,
+      );
+
+      const toneConsistency =
+        reference.primaryTone === current.primaryTone ? 0 : 0.3;
+
+      totalVariance +=
+        (formalityVariance +
+          emotionVariance +
+          authorityVariance +
+          toneConsistency) /
+        4;
     }
 
     const avgVariance = totalVariance / (analyses.length - 1);
@@ -570,7 +708,7 @@ Focus on objective metrics and specific issues.`;
 
     for (let i = 1; i < analyses.length; i++) {
       const current = analyses[i];
-      
+
       if (reference.primaryTone !== current.primaryTone) {
         deviations.push({
           sectionId: current.sectionId,
@@ -578,12 +716,14 @@ Focus on objective metrics and specific issues.`;
           expectedTone: reference.primaryTone,
           actualTone: current.primaryTone,
           severity: 'high',
-          suggestion: `Consider adjusting tone to match ${reference.primaryTone.toLowerCase()} style`
+          suggestion: `Consider adjusting tone to match ${reference.primaryTone.toLowerCase()} style`,
         });
       }
 
       // Check formality deviation
-      const formalityDiff = Math.abs(reference.formalityScore - current.formalityScore);
+      const formalityDiff = Math.abs(
+        reference.formalityScore - current.formalityScore,
+      );
       if (formalityDiff > 0.3) {
         deviations.push({
           sectionId: current.sectionId,
@@ -591,7 +731,7 @@ Focus on objective metrics and specific issues.`;
           expectedTone: reference.primaryTone,
           actualTone: current.primaryTone,
           severity: formalityDiff > 0.5 ? 'high' : 'medium',
-          suggestion: `Adjust formality level to maintain consistency`
+          suggestion: `Adjust formality level to maintain consistency`,
         });
       }
     }
@@ -601,13 +741,14 @@ Focus on objective metrics and specific issues.`;
 
   private determineDominantTone(analyses: ToneAnalysis[]): ToneCategory {
     const toneCounts: Record<string, number> = {};
-    
+
     analyses.forEach(analysis => {
-      toneCounts[analysis.primaryTone] = (toneCounts[analysis.primaryTone] || 0) + 1;
+      toneCounts[analysis.primaryTone] =
+        (toneCounts[analysis.primaryTone] || 0) + 1;
     });
 
-    const dominant = Object.entries(toneCounts).reduce((a, b) => 
-      toneCounts[a[0]] > toneCounts[b[0]] ? a : b
+    const dominant = Object.entries(toneCounts).reduce((a, b) =>
+      toneCounts[a[0]] > toneCounts[b[0]] ? a : b,
     );
 
     return dominant[0] as ToneCategory;
@@ -615,7 +756,7 @@ Focus on objective metrics and specific issues.`;
 
   private extractSecondaryTones(analyses: ToneAnalysis[]): ToneCategory[] {
     const toneSet = new Set<ToneCategory>();
-    
+
     analyses.forEach(analysis => {
       analysis.secondaryTones?.forEach(tone => toneSet.add(tone));
     });
@@ -625,25 +766,30 @@ Focus on objective metrics and specific issues.`;
 
   private determineDominantEmotion(analyses: ToneAnalysis[]): EmotionalTone {
     const emotionCounts: Record<string, number> = {};
-    
+
     analyses.forEach(analysis => {
-      emotionCounts[analysis.emotionalTone] = (emotionCounts[analysis.emotionalTone] || 0) + 1;
+      emotionCounts[analysis.emotionalTone] =
+        (emotionCounts[analysis.emotionalTone] || 0) + 1;
     });
 
-    const dominant = Object.entries(emotionCounts).reduce((a, b) => 
-      emotionCounts[a[0]] > emotionCounts[b[0]] ? a : b
+    const dominant = Object.entries(emotionCounts).reduce((a, b) =>
+      emotionCounts[a[0]] > emotionCounts[b[0]] ? a : b,
     );
 
     return dominant[0] as EmotionalTone;
   }
 
-  private mergePersonalityTraits(analyses: ToneAnalysis[]): Record<string, number> {
+  private mergePersonalityTraits(
+    analyses: ToneAnalysis[],
+  ): Record<string, number> {
     const merged: Record<string, number> = {};
     const allTraits = new Set<string>();
 
     // Collect all trait names
     analyses.forEach(analysis => {
-      Object.keys(analysis.personalityTraits).forEach(trait => allTraits.add(trait));
+      Object.keys(analysis.personalityTraits).forEach(trait =>
+        allTraits.add(trait),
+      );
     });
 
     // Average each trait
@@ -651,16 +797,20 @@ Focus on objective metrics and specific issues.`;
       const values = analyses
         .map(analysis => analysis.personalityTraits[trait])
         .filter(value => value !== undefined);
-      
+
       if (values.length > 0) {
-        merged[trait] = values.reduce((sum, value) => sum + value, 0) / values.length;
+        merged[trait] =
+          values.reduce((sum, value) => sum + value, 0) / values.length;
       }
     });
 
     return merged;
   }
 
-  private calculateBrandVoiceAlignment(analyses: ToneAnalysis[], brandVoice: BrandVoiceProfile): number {
+  private calculateBrandVoiceAlignment(
+    analyses: ToneAnalysis[],
+    brandVoice: BrandVoiceProfile,
+  ): number {
     let alignmentScore = 0;
     let totalChecks = 0;
 
@@ -668,23 +818,29 @@ Focus on objective metrics and specific issues.`;
       // Primary tone alignment
       if (analysis.primaryTone === brandVoice.toneCharacteristics.primary) {
         alignmentScore += 0.4;
-      } else if (brandVoice.toneCharacteristics.secondary?.includes(analysis.primaryTone)) {
+      } else if (
+        brandVoice.toneCharacteristics.secondary?.includes(analysis.primaryTone)
+      ) {
         alignmentScore += 0.2;
       }
       totalChecks += 0.4;
 
       // Personality traits alignment
-      Object.entries(brandVoice.personalityTraits).forEach(([trait, expectedValue]) => {
-        const actualValue = analysis.personalityTraits[trait];
-        if (actualValue !== undefined) {
-          const diff = Math.abs(expectedValue - actualValue);
-          alignmentScore += Math.max(0, (1 - diff) * 0.1);
-          totalChecks += 0.1;
-        }
-      });
+      Object.entries(brandVoice.personalityTraits).forEach(
+        ([trait, expectedValue]) => {
+          const actualValue = analysis.personalityTraits[trait];
+          if (actualValue !== undefined) {
+            const diff = Math.abs(expectedValue - actualValue);
+            alignmentScore += Math.max(0, (1 - diff) * 0.1);
+            totalChecks += 0.1;
+          }
+        },
+      );
 
       // Formality alignment
-      const formalityDiff = Math.abs(analysis.formalityScore - brandVoice.formalityLevel);
+      const formalityDiff = Math.abs(
+        analysis.formalityScore - brandVoice.formalityLevel,
+      );
       alignmentScore += Math.max(0, (1 - formalityDiff) * 0.2);
       totalChecks += 0.2;
     });
@@ -692,11 +848,17 @@ Focus on objective metrics and specific issues.`;
     return totalChecks > 0 ? alignmentScore / totalChecks : 0;
   }
 
-  private calculateBrandVoiceMatch(analysis: ToneAnalysis, brandVoice: BrandVoiceProfile): number {
+  private calculateBrandVoiceMatch(
+    analysis: ToneAnalysis,
+    brandVoice: BrandVoiceProfile,
+  ): number {
     return this.calculateBrandVoiceAlignment([analysis], brandVoice);
   }
 
-  private async checkStyleGuideCompliance(content: string, styleGuideId: string): Promise<{
+  private async checkStyleGuideCompliance(
+    content: string,
+    styleGuideId: string,
+  ): Promise<{
     score: number;
     violations: StyleViolation[];
   }> {
@@ -710,16 +872,16 @@ Focus on objective metrics and specific issues.`;
           position: 150,
           message: 'Sentence exceeds recommended length of 20 words',
           severity: 'medium',
-          suggestion: 'Consider breaking into shorter sentences'
-        }
-      ]
+          suggestion: 'Consider breaking into shorter sentences',
+        },
+      ],
     };
   }
 
   private async generateStyleSuggestions(
     content: string,
     styleAnalysis: any,
-    brandVoice?: BrandVoiceProfile
+    brandVoice?: BrandVoiceProfile,
   ): Promise<StyleSuggestion[]> {
     const suggestions: StyleSuggestion[] = [];
 
@@ -727,8 +889,9 @@ Focus on objective metrics and specific issues.`;
     if (styleAnalysis.readingLevel > 12) {
       suggestions.push({
         type: 'readability',
-        message: 'Content reading level is quite high. Consider simplifying language.',
-        impact: 'medium'
+        message:
+          'Content reading level is quite high. Consider simplifying language.',
+        impact: 'medium',
       });
     }
 
@@ -736,8 +899,9 @@ Focus on objective metrics and specific issues.`;
     if (styleAnalysis.passiveVoiceScore > 0.25) {
       suggestions.push({
         type: 'voice',
-        message: 'High passive voice usage detected. Use more active voice for engagement.',
-        impact: 'medium'
+        message:
+          'High passive voice usage detected. Use more active voice for engagement.',
+        impact: 'medium',
       });
     }
 
@@ -745,15 +909,19 @@ Focus on objective metrics and specific issues.`;
     if (styleAnalysis.sentenceLength > 25) {
       suggestions.push({
         type: 'sentence_length',
-        message: 'Average sentence length is quite long. Consider shorter sentences.',
-        impact: 'high'
+        message:
+          'Average sentence length is quite long. Consider shorter sentences.',
+        impact: 'high',
       });
     }
 
     return suggestions;
   }
 
-  private identifyCriticalIssues(styleAnalysis: any, violations: StyleViolation[]): string[] {
+  private identifyCriticalIssues(
+    styleAnalysis: any,
+    violations: StyleViolation[],
+  ): string[] {
     const critical: string[] = [];
 
     // Check for critical style issues
@@ -775,22 +943,28 @@ Focus on objective metrics and specific issues.`;
 
   private async generateConsistencyRecommendations(
     analyses: ToneAnalysis[],
-    deviations: ToneDeviation[]
+    deviations: ToneDeviation[],
   ): Promise<string[]> {
     const recommendations: string[] = [];
 
     if (deviations.length > 0) {
       recommendations.push('Maintain consistent tone throughout all sections');
-      
-      const highSeverityDeviations = deviations.filter(d => d.severity === 'high');
+
+      const highSeverityDeviations = deviations.filter(
+        d => d.severity === 'high',
+      );
       if (highSeverityDeviations.length > 0) {
-        recommendations.push(`Address ${highSeverityDeviations.length} critical tone inconsistencies`);
+        recommendations.push(
+          `Address ${highSeverityDeviations.length} critical tone inconsistencies`,
+        );
       }
     }
 
     const consistencyScore = this.calculateConsistencyScore(analyses);
     if (consistencyScore < 0.7) {
-      recommendations.push('Review content for better flow and voice consistency');
+      recommendations.push(
+        'Review content for better flow and voice consistency',
+      );
     }
 
     return recommendations;
@@ -798,15 +972,18 @@ Focus on objective metrics and specific issues.`;
 
   // Database helper methods
 
-  private async getContentForAnalysis(blogPostId: string, content?: string): Promise<string> {
+  private async getContentForAnalysis(
+    blogPostId: string,
+    content?: string,
+  ): Promise<string> {
     if (content) return content;
-    
+
     if (!this.config.prisma) {
       throw new Error('Content not provided and Prisma not available');
     }
 
     const blogPost = await this.config.prisma.blogPost.findUnique({
-      where: { id: blogPostId }
+      where: { id: blogPostId },
     });
 
     if (!blogPost) {
@@ -820,29 +997,33 @@ Focus on objective metrics and specific issues.`;
     if (!this.config.prisma) return null;
 
     const section = await this.config.prisma.contentSection.findUnique({
-      where: { id: sectionId }
+      where: { id: sectionId },
     });
 
     return section?.content || null;
   }
 
-  private async getAllSections(blogPostId: string): Promise<Array<{id: string; content: string}>> {
+  private async getAllSections(
+    blogPostId: string,
+  ): Promise<Array<{ id: string; content: string }>> {
     if (!this.config.prisma) return [];
 
     const sections = await this.config.prisma.contentSection.findMany({
       where: { blogPostId },
-      orderBy: { order: 'asc' }
+      orderBy: { order: 'asc' },
     });
 
     return sections.map(s => ({ id: s.id, content: s.content }));
   }
 
-  private async getLatestToneAnalysis(blogPostId: string): Promise<ToneAnalysis | null> {
+  private async getLatestToneAnalysis(
+    blogPostId: string,
+  ): Promise<ToneAnalysis | null> {
     if (!this.config.prisma) return null;
 
     const analysis = await this.config.prisma.toneAnalysis.findFirst({
       where: { blogPostId },
-      orderBy: { analyzedAt: 'desc' }
+      orderBy: { analyzedAt: 'desc' },
     });
 
     if (!analysis) return null;
@@ -852,22 +1033,32 @@ Focus on objective metrics and specific issues.`;
       blogPostId: analysis.blogPostId,
       sectionId: analysis.sectionId || undefined,
       primaryTone: this.mapPrismaToneToCustom(analysis.primaryTone),
-      secondaryTones: analysis.secondaryTones?.map(tone => this.mapPrismaToneToCustom(tone)) || [],
+      secondaryTones:
+        analysis.secondaryTones?.map(tone =>
+          this.mapPrismaToneToCustom(tone),
+        ) || [],
       confidence: analysis.confidence,
       formalityScore: analysis.formalityScore,
-      emotionalTone: this.mapPrismaEmotionalToneToCustom(analysis.emotionalTone),
+      emotionalTone: this.mapPrismaEmotionalToneToCustom(
+        analysis.emotionalTone,
+      ),
       emotionIntensity: analysis.emotionIntensity,
       authorityLevel: analysis.authorityLevel,
       personalityTraits: analysis.personalityTraits as Record<string, number>,
       brandVoiceScore: analysis.brandVoiceScore || 0,
       consistencyScore: analysis.consistencyScore || 0,
-      deviations: analysis.deviations ? JSON.parse(JSON.stringify(analysis.deviations)) : [],
+      deviations: analysis.deviations
+        ? JSON.parse(JSON.stringify(analysis.deviations))
+        : [],
       analyzedAt: analysis.analyzedAt,
-      modelUsed: analysis.modelUsed || 'unknown'
+      modelUsed: analysis.modelUsed || 'unknown',
     };
   }
 
-  private async saveToneAnalysisToDatabase(blogPostId: string, analysis: ToneAnalysis): Promise<void> {
+  private async saveToneAnalysisToDatabase(
+    blogPostId: string,
+    analysis: ToneAnalysis,
+  ): Promise<void> {
     if (!this.config.prisma) return;
 
     try {
@@ -887,15 +1078,17 @@ Focus on objective metrics and specific issues.`;
           consistencyScore: analysis.consistencyScore,
           deviations: analysis.deviations as any,
           analyzedAt: analysis.analyzedAt,
-          modelUsed: analysis.modelUsed
-        }
+          modelUsed: analysis.modelUsed,
+        },
       });
     } catch (error) {
       console.error('Failed to save tone analysis:', error);
     }
   }
 
-  private async saveStyleCheckToDatabase(styleCheck: StyleCheck): Promise<void> {
+  private async saveStyleCheckToDatabase(
+    styleCheck: StyleCheck,
+  ): Promise<void> {
     if (!this.config.prisma) return;
 
     try {
@@ -917,8 +1110,8 @@ Focus on objective metrics and specific issues.`;
           voicePersonality: styleCheck.voicePersonality as any,
           suggestions: styleCheck.suggestions as any,
           criticalIssues: styleCheck.criticalIssues,
-          checkedAt: styleCheck.checkedAt
-        }
+          checkedAt: styleCheck.checkedAt,
+        },
       });
     } catch (error) {
       console.error('Failed to save style check:', error);
@@ -930,22 +1123,22 @@ Focus on objective metrics and specific issues.`;
    */
   private mapPrismaToneToCustom(prismaTone: any): ToneCategory {
     const toneMap: Record<string, ToneCategory> = {
-      'PROFESSIONAL': ToneCategory.PROFESSIONAL,
-      'CASUAL': ToneCategory.CASUAL,
-      'AUTHORITATIVE': ToneCategory.AUTHORITATIVE,
-      'FRIENDLY': ToneCategory.FRIENDLY,
-      'TECHNICAL': ToneCategory.TECHNICAL,
-      'CONVERSATIONAL': ToneCategory.CONVERSATIONAL,
-      'ACADEMIC': ToneCategory.ACADEMIC,
-      'PERSUASIVE': ToneCategory.PERSUASIVE,
-      'INFORMATIVE': ToneCategory.INFORMATIVE,
-      'ENTERTAINING': ToneCategory.ENTERTAINING,
-      'EMPATHETIC': ToneCategory.EMPATHETIC,
-      'URGENT': ToneCategory.URGENT,
-      'CONFIDENT': ToneCategory.CONFIDENT,
-      'HUMBLE': ToneCategory.HUMBLE
+      PROFESSIONAL: ToneCategory.PROFESSIONAL,
+      CASUAL: ToneCategory.CASUAL,
+      AUTHORITATIVE: ToneCategory.AUTHORITATIVE,
+      FRIENDLY: ToneCategory.FRIENDLY,
+      TECHNICAL: ToneCategory.TECHNICAL,
+      CONVERSATIONAL: ToneCategory.CONVERSATIONAL,
+      ACADEMIC: ToneCategory.ACADEMIC,
+      PERSUASIVE: ToneCategory.PERSUASIVE,
+      INFORMATIVE: ToneCategory.INFORMATIVE,
+      ENTERTAINING: ToneCategory.ENTERTAINING,
+      EMPATHETIC: ToneCategory.EMPATHETIC,
+      URGENT: ToneCategory.URGENT,
+      CONFIDENT: ToneCategory.CONFIDENT,
+      HUMBLE: ToneCategory.HUMBLE,
     };
-    
+
     return toneMap[prismaTone] || ToneCategory.PROFESSIONAL;
   }
 
@@ -954,17 +1147,16 @@ Focus on objective metrics and specific issues.`;
    */
   private mapPrismaEmotionalToneToCustom(prismaTone: any): EmotionalTone {
     const toneMap: Record<string, EmotionalTone> = {
-      'NEUTRAL': EmotionalTone.NEUTRAL,
-      'POSITIVE': EmotionalTone.POSITIVE,
-      'NEGATIVE': EmotionalTone.NEGATIVE,
-      'EXCITED': EmotionalTone.EXCITED,
-      'CALM': EmotionalTone.CALM,
-      'ANXIOUS': EmotionalTone.ANXIOUS,
-      'CONFIDENT': EmotionalTone.CONFIDENT,
-      'UNCERTAIN': EmotionalTone.UNCERTAIN
+      NEUTRAL: EmotionalTone.NEUTRAL,
+      POSITIVE: EmotionalTone.POSITIVE,
+      NEGATIVE: EmotionalTone.NEGATIVE,
+      EXCITED: EmotionalTone.EXCITED,
+      CALM: EmotionalTone.CALM,
+      ANXIOUS: EmotionalTone.ANXIOUS,
+      CONFIDENT: EmotionalTone.CONFIDENT,
+      UNCERTAIN: EmotionalTone.UNCERTAIN,
     };
-    
+
     return toneMap[prismaTone] || EmotionalTone.NEUTRAL;
   }
 }
-

@@ -1,5 +1,10 @@
 // Core type exports
-export type { BlogPost, BlogPostMetadata, BlogPostContent, BlogPostVersion } from './blog-post';
+export type {
+  BlogPost,
+  BlogPostMetadata,
+  BlogPostContent,
+  BlogPostVersion,
+} from './blog-post';
 export type { BlogTemplate } from './blog-config';
 export type { AIConfig as BlogAIConfig } from './base-config';
 
@@ -19,7 +24,12 @@ export type {
   StyleCheckRequest,
 } from './advanced-writing';
 
-export { ToneCategory, SectionType, StyleCheckType, StyleSeverity } from './advanced-writing';
+export {
+  ToneCategory,
+  SectionType,
+  StyleCheckType,
+  StyleSeverity,
+} from './advanced-writing';
 
 // Strategy Engine Types
 export type {

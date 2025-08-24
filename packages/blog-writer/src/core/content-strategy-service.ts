@@ -1,4 +1,3 @@
-
 /**
  * Unified Content Strategy Service
  * Orchestrates all content strategy engine components for comprehensive content planning
@@ -14,7 +13,7 @@ import {
   ReportSummary,
   Recommendation,
   Opportunity,
-  Priority
+  Priority,
 } from '../types/strategy-engine';
 
 import type { LanguageModelV2 } from '@ai-sdk/provider';
@@ -93,7 +92,12 @@ export interface ImplementationPhase {
 }
 
 export interface ResourceRequirement {
-  type: 'content_writer' | 'seo_specialist' | 'designer' | 'developer' | 'tools';
+  type:
+    | 'content_writer'
+    | 'seo_specialist'
+    | 'designer'
+    | 'developer'
+    | 'tools';
   quantity: number;
   duration: string;
   skills: string[];
@@ -136,43 +140,46 @@ export class ContentStrategyService {
       model: this.model,
       prisma: this.prisma,
       cacheResults: this.cacheResults,
-      cacheTTL: this.cacheTTL
+      cacheTTL: this.cacheTTL,
     });
 
     this.calendarService = new EditorialCalendarService({
       model: this.model,
       prisma: this.prisma,
-      autoAssignment: true
+      autoAssignment: true,
     });
 
     this.competitorAnalysisService = new CompetitorAnalysisService({
       model: this.model,
       prisma: this.prisma,
       cacheResults: this.cacheResults,
-      cacheTTL: this.cacheTTL
+      cacheTTL: this.cacheTTL,
     });
 
     this.briefService = new ContentBriefService({
       model: this.model,
       prisma: this.prisma,
       topicResearchService: this.topicResearchService,
-      competitorAnalysisService: this.competitorAnalysisService
+      competitorAnalysisService: this.competitorAnalysisService,
     });
   }
 
   /**
    * Generate comprehensive content strategy
    */
-  async generateStrategy(request: StrategyAnalysisRequest): Promise<ComprehensiveStrategyResponse> {
+  async generateStrategy(
+    request: StrategyAnalysisRequest,
+  ): Promise<ComprehensiveStrategyResponse> {
     try {
       console.log('Starting comprehensive content strategy generation...');
 
       // Phase 1: Topic Research & Discovery
       console.log('Phase 1: Discovering trending topics...');
-      const trendingTopics = await this.topicResearchService.discoverTrendingTopics(
-        request.niche, 
-        request.goals.contentVolume || 20
-      );
+      const trendingTopics =
+        await this.topicResearchService.discoverTrendingTopics(
+          request.niche,
+          request.goals.contentVolume || 20,
+        );
 
       // Research additional topics based on target keywords
       let additionalTopics: TopicResearch[] = [];
@@ -180,14 +187,16 @@ export class ContentStrategyService {
         console.log('Phase 1b: Researching target keywords...');
         additionalTopics = await Promise.all(
           request.targetKeywords.slice(0, 5).map(keyword =>
-            this.topicResearchService.researchTopic({
-              query: keyword,
-              includeKeywords: true,
-              includeTrends: true,
-              includeCompetitors: true,
-              depth: 'detailed'
-            }).then(response => response.topic)
-          )
+            this.topicResearchService
+              .researchTopic({
+                query: keyword,
+                includeKeywords: true,
+                includeTrends: true,
+                includeCompetitors: true,
+                depth: 'detailed',
+              })
+              .then(response => response.topic),
+          ),
         );
       }
 
@@ -197,14 +206,15 @@ export class ContentStrategyService {
       console.log('Phase 2: Analyzing competitors...');
       let competitorAnalyses: CompetitorAnalysis[] = [];
       if (request.competitors?.length) {
-        const competitorResponse = await this.competitorAnalysisService.analyzeCompetitors({
-          competitors: request.competitors,
-          keywords: request.targetKeywords,
-          includeContent: true,
-          includeKeywords: true,
-          includeTopics: true,
-          depth: 'detailed'
-        });
+        const competitorResponse =
+          await this.competitorAnalysisService.analyzeCompetitors({
+            competitors: request.competitors,
+            keywords: request.targetKeywords,
+            includeContent: true,
+            includeKeywords: true,
+            includeTopics: true,
+            depth: 'detailed',
+          });
         competitorAnalyses = competitorResponse.analysis;
       }
 
@@ -214,15 +224,15 @@ export class ContentStrategyService {
         startDate: request.timeframe.start,
         endDate: request.timeframe.end,
         topics: allTopics.slice(0, 10).map(t => t.title),
-        priority: 'medium'
+        priority: 'medium',
       });
 
       // Phase 4: Content Brief Generation
       console.log('Phase 4: Generating content briefs...');
       const contentBriefs = await Promise.all(
-        allTopics.slice(0, 8).map(topic =>
-          this.briefService.createBriefFromTopic(topic.id)
-        )
+        allTopics
+          .slice(0, 8)
+          .map(topic => this.briefService.createBriefFromTopic(topic.id)),
       );
 
       // Phase 5: Strategic Analysis & Recommendations
@@ -232,27 +242,38 @@ export class ContentStrategyService {
         allTopics,
         competitorAnalyses,
         calendarResponse.entries,
-        contentBriefs
+        contentBriefs,
       );
 
       // Phase 6: Implementation Plan
       console.log('Phase 6: Creating implementation plan...');
       const implementationPlan = await this.createImplementationPlan(
         request,
-        strategicAnalysis
+        strategicAnalysis,
       );
 
       // Compile comprehensive response
       const response: ComprehensiveStrategyResponse = {
         overview: {
           totalTopicsIdentified: allTopics.length,
-          highPriorityTopics: allTopics.filter(t => t.priority === 'high' || t.priority === 'urgent').length,
+          highPriorityTopics: allTopics.filter(
+            t => t.priority === 'high' || t.priority === 'urgent',
+          ).length,
           calendarEntries: calendarResponse.entries.length,
           competitorsAnalyzed: competitorAnalyses.length,
-          contentGapsFound: competitorAnalyses.reduce((sum, c) => sum + c.contentGaps.length, 0),
-          overallOpportunityScore: allTopics.reduce((sum, t) => sum + t.opportunityScore, 0) / allTopics.length,
-          estimatedTimeToImplement: this.calculateImplementationTime(implementationPlan),
-          confidenceScore: this.calculateConfidenceScore(allTopics, competitorAnalyses)
+          contentGapsFound: competitorAnalyses.reduce(
+            (sum, c) => sum + c.contentGaps.length,
+            0,
+          ),
+          overallOpportunityScore:
+            allTopics.reduce((sum, t) => sum + t.opportunityScore, 0) /
+            allTopics.length,
+          estimatedTimeToImplement:
+            this.calculateImplementationTime(implementationPlan),
+          confidenceScore: this.calculateConfidenceScore(
+            allTopics,
+            competitorAnalyses,
+          ),
         },
         topics: allTopics,
         calendar: calendarResponse.calendar,
@@ -261,15 +282,16 @@ export class ContentStrategyService {
         recommendations: strategicAnalysis.recommendations,
         opportunities: strategicAnalysis.opportunities,
         report: await this.generateStrategyReport(request, strategicAnalysis),
-        implementation: implementationPlan
+        implementation: implementationPlan,
       };
 
       console.log('Content strategy generation completed successfully');
       return response;
-
     } catch (error) {
       console.error('Error generating content strategy:', error);
-      throw new Error(`Content strategy generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Content strategy generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -282,7 +304,7 @@ export class ContentStrategyService {
       traffic?: boolean;
       rankings?: boolean;
       engagement?: boolean;
-    }
+    },
   ): Promise<{
     performance: ContentPerformanceAnalysis;
     optimizations: ContentOptimization[];
@@ -310,24 +332,27 @@ export class ContentStrategyService {
       // For now, return a mock response since the AI SDK methods are not available
       // In a real implementation, this would call the appropriate AI model
       console.log('AI model call would happen here with prompt:', prompt);
-      
+
       return {
         performance: {
           topPerformers: [
             {
               title: 'Sample Top Performer',
               metrics: { views: 1000, engagement: 0.05 },
-              successFactors: ['Compelling headline', 'Relevant content']
-            }
+              successFactors: ['Compelling headline', 'Relevant content'],
+            },
           ],
           underperformers: [
             {
               title: 'Sample Underperformer',
               issues: ['Poor SEO', 'Weak content'],
-              optimizationPotential: 0.7
-            }
+              optimizationPotential: 0.7,
+            },
           ],
-          overallTrends: ['Content quality improving', 'SEO optimization needed']
+          overallTrends: [
+            'Content quality improving',
+            'SEO optimization needed',
+          ],
         },
         optimizations: [
           {
@@ -337,19 +362,20 @@ export class ContentStrategyService {
             priority: 'high',
             estimatedImpact: 0.8,
             effort: 0.6,
-            timeline: '2-3 weeks'
-          }
+            timeline: '2-3 weeks',
+          },
         ],
         nextActions: [
           'Review top performing content',
           'Implement SEO best practices',
-          'Create content calendar'
-        ]
+          'Create content calendar',
+        ],
       };
-
     } catch (error) {
       console.error('Error analyzing content performance:', error);
-      throw new Error(`Content performance analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Content performance analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -358,7 +384,7 @@ export class ContentStrategyService {
    */
   async generateStrategyReport(
     request: StrategyAnalysisRequest,
-    analysis: any
+    analysis: any,
   ): Promise<StrategyReport> {
     try {
       const prompt = `
@@ -395,11 +421,14 @@ export class ContentStrategyService {
           title: 'Competitor Analysis Report',
           type: 'competitor_analysis',
           summary: {
-            keyFindings: ['Competitor A has strong content in this area', 'Opportunity for differentiation'],
+            keyFindings: [
+              'Competitor A has strong content in this area',
+              'Opportunity for differentiation',
+            ],
             opportunities: 3,
             threats: 1,
             overallScore: 0.8,
-            confidence: 0.9
+            confidence: 0.9,
           },
           data: analysis,
           recommendations: [
@@ -409,11 +438,15 @@ export class ContentStrategyService {
               title: 'Create differentiated content',
               description: 'Focus on unique angles not covered by competitors',
               estimatedImpact: 0.8,
-              estimatedEffort: 0.6
-            }
+              estimatedEffort: 0.6,
+            },
           ],
-          nextSteps: ['Research unique angles', 'Create content calendar', 'Assign writers']
-        }
+          nextSteps: [
+            'Research unique angles',
+            'Create content calendar',
+            'Assign writers',
+          ],
+        },
       };
 
       const report: StrategyReport = {
@@ -424,14 +457,15 @@ export class ContentStrategyService {
         summary: result.object.summary as ReportSummary,
         data: analysis,
         recommendations: result.object.recommendations as Recommendation[],
-        nextSteps: result.object.nextSteps
+        nextSteps: result.object.nextSteps,
       };
 
       return report;
-
     } catch (error) {
       console.error('Error generating strategy report:', error);
-      throw new Error(`Strategy report generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Strategy report generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -444,18 +478,28 @@ export class ContentStrategyService {
       postsPerWeek?: number;
       preferredDays?: string[];
       authorAssignments?: Record<string, string[]>;
-    }
+    },
   ): Promise<EditorialCalendar> {
     try {
       // Prioritize topics based on opportunity score and difficulty
       const prioritizedTopics = strategy.topics
-        .sort((a, b) => (b.opportunityScore - b.contentGapScore) - (a.opportunityScore - a.contentGapScore))
-        .slice(0, preferences?.postsPerWeek ? preferences.postsPerWeek * 4 : 16); // 4 weeks worth
+        .sort(
+          (a, b) =>
+            b.opportunityScore -
+            b.contentGapScore -
+            (a.opportunityScore - a.contentGapScore),
+        )
+        .slice(
+          0,
+          preferences?.postsPerWeek ? preferences.postsPerWeek * 4 : 16,
+        ); // 4 weeks worth
 
       const calendarEntries = await Promise.all(
         prioritizedTopics.map(async (topic, index) => {
           const startDate = new Date();
-          const plannedDate = new Date(startDate.getTime() + (index * 3 * 24 * 60 * 60 * 1000)); // Every 3 days
+          const plannedDate = new Date(
+            startDate.getTime() + index * 3 * 24 * 60 * 60 * 1000,
+          ); // Every 3 days
 
           return this.calendarService.addEntry({
             title: topic.title,
@@ -465,16 +509,17 @@ export class ContentStrategyService {
             contentType: 'BLOG',
             priority: topic.priority as Priority,
             topicId: topic.id,
-            targetWordCount: topic.estimatedEffort ? topic.estimatedEffort * 200 : 1500, // 200 words per hour estimate
+            targetWordCount: topic.estimatedEffort
+              ? topic.estimatedEffort * 200
+              : 1500, // 200 words per hour estimate
             estimatedHours: topic.estimatedEffort,
             tags: topic.tags,
-            categories: topic.clusterId ? [topic.clusterId] : []
+            categories: topic.clusterId ? [topic.clusterId] : [],
           });
-        })
+        }),
       );
 
       return strategy.calendar;
-
     } catch (error) {
       console.error('Error creating content calendar from strategy:', error);
       throw error;
@@ -488,8 +533,11 @@ export class ContentStrategyService {
     topics: TopicResearch[],
     competitors: CompetitorAnalysis[],
     calendarEntries: EditorialCalendarEntry[],
-    briefs: ContentBrief[]
-  ): Promise<{ recommendations: Recommendation[]; opportunities: Opportunity[] }> {
+    briefs: ContentBrief[],
+  ): Promise<{
+    recommendations: Recommendation[];
+    opportunities: Opportunity[];
+  }> {
     try {
       const prompt = `
         Analyze the comprehensive content strategy data and provide strategic recommendations:
@@ -504,7 +552,10 @@ export class ContentStrategyService {
         
         Topic Insights:
         - Average Opportunity Score: ${(topics.reduce((sum, t) => sum + t.opportunityScore, 0) / topics.length).toFixed(2)}
-        - High-Priority Topics: ${topics.filter(t => t.priority === 'high' || t.priority === 'urgent').map(t => t.title).join(', ')}
+        - High-Priority Topics: ${topics
+          .filter(t => t.priority === 'high' || t.priority === 'urgent')
+          .map(t => t.title)
+          .join(', ')}
         
         Competitor Insights:
         - Average Competitor Strength: ${competitors.length ? (competitors.reduce((sum, c) => sum + c.overallScore, 0) / competitors.length).toFixed(2) : 'N/A'}
@@ -533,8 +584,12 @@ export class ContentStrategyService {
               estimatedEffort: 0.7,
               resources: ['Content strategist', 'SEO specialist'],
               timeline: '2-3 weeks',
-              successMetrics: ['Content engagement', 'SEO rankings', 'Lead generation']
-            }
+              successMetrics: [
+                'Content engagement',
+                'SEO rankings',
+                'Lead generation',
+              ],
+            },
           ],
           opportunities: [
             {
@@ -544,14 +599,16 @@ export class ContentStrategyService {
               potential: 0.8,
               difficulty: 0.4,
               timeline: '1-2 months',
-              keywords: ['primary keyword', 'secondary keyword']
-            }
-          ]
-        }
+              keywords: ['primary keyword', 'secondary keyword'],
+            },
+          ],
+        },
       };
 
-      return result.object as { recommendations: Recommendation[]; opportunities: Opportunity[] };
-
+      return result.object as {
+        recommendations: Recommendation[];
+        opportunities: Opportunity[];
+      };
     } catch (error) {
       console.error('Error generating strategic analysis:', error);
       return { recommendations: [], opportunities: [] };
@@ -560,7 +617,7 @@ export class ContentStrategyService {
 
   private async createImplementationPlan(
     request: StrategyAnalysisRequest,
-    analysis: any
+    analysis: any,
   ): Promise<ImplementationPlan> {
     try {
       const prompt = `
@@ -595,18 +652,34 @@ export class ContentStrategyService {
               name: 'Phase 1: Foundation',
               description: 'Set up content strategy and infrastructure',
               duration: '2 weeks',
-              activities: ['Content audit', 'Strategy development', 'Team setup'],
-              deliverables: ['Content strategy document', 'Editorial calendar', 'Style guide'],
-              dependencies: []
+              activities: [
+                'Content audit',
+                'Strategy development',
+                'Team setup',
+              ],
+              deliverables: [
+                'Content strategy document',
+                'Editorial calendar',
+                'Style guide',
+              ],
+              dependencies: [],
             },
             {
               name: 'Phase 2: Content Creation',
               description: 'Begin content production',
               duration: '4 weeks',
-              activities: ['Content writing', 'SEO optimization', 'Review process'],
-              deliverables: ['First batch of content', 'SEO improvements', 'Performance tracking'],
-              dependencies: ['Phase 1 completion']
-            }
+              activities: [
+                'Content writing',
+                'SEO optimization',
+                'Review process',
+              ],
+              deliverables: [
+                'First batch of content',
+                'SEO improvements',
+                'Performance tracking',
+              ],
+              dependencies: ['Phase 1 completion'],
+            },
           ],
           timeline: '6 weeks total',
           resources: [
@@ -614,8 +687,8 @@ export class ContentStrategyService {
               type: 'content_writer',
               quantity: 2,
               duration: '6 weeks',
-              skills: ['Content writing', 'SEO', 'Research']
-            }
+              skills: ['Content writing', 'SEO', 'Research'],
+            },
           ],
           milestones: [
             {
@@ -623,8 +696,8 @@ export class ContentStrategyService {
               description: 'Content strategy finalized and approved',
               targetDate: '2024-02-15',
               success_criteria: ['Strategy document approved', 'Team assigned'],
-              dependencies: []
-            }
+              dependencies: [],
+            },
           ],
           riskAssessment: [
             {
@@ -632,26 +705,27 @@ export class ContentStrategyService {
               description: 'Competitors may respond to our content strategy',
               impact: 'medium',
               probability: 'medium',
-              mitigation: 'Monitor competitor activity and adjust strategy'
-            }
-          ]
-        }
+              mitigation: 'Monitor competitor activity and adjust strategy',
+            },
+          ],
+        },
       };
 
       // Convert string dates to Date objects
       const milestones = result.object.milestones.map(m => ({
         ...m,
-        targetDate: new Date(m.targetDate)
+        targetDate: new Date(m.targetDate),
       }));
 
       return {
         ...result.object,
-        milestones
+        milestones,
       } as ImplementationPlan;
-
     } catch (error) {
       console.error('Error creating implementation plan:', error);
-      throw new Error(`Implementation plan creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Implementation plan creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -670,9 +744,14 @@ export class ContentStrategyService {
     return Math.max(totalDuration, 4); // Minimum 4 weeks
   }
 
-  private calculateConfidenceScore(topics: TopicResearch[], competitors: CompetitorAnalysis[]): number {
-    const topicConfidence = topics.length > 10 ? 0.8 : topics.length / 10 * 0.8;
-    const competitorConfidence = competitors.length > 3 ? 0.2 : competitors.length / 3 * 0.2;
+  private calculateConfidenceScore(
+    topics: TopicResearch[],
+    competitors: CompetitorAnalysis[],
+  ): number {
+    const topicConfidence =
+      topics.length > 10 ? 0.8 : (topics.length / 10) * 0.8;
+    const competitorConfidence =
+      competitors.length > 3 ? 0.2 : (competitors.length / 3) * 0.2;
     return Math.min(topicConfidence + competitorConfidence, 1.0);
   }
 
@@ -684,7 +763,7 @@ export class ContentStrategyService {
       topicResearch: this.topicResearchService,
       calendar: this.calendarService,
       competitorAnalysis: this.competitorAnalysisService,
-      contentBrief: this.briefService
+      contentBrief: this.briefService,
     };
   }
 

@@ -9,26 +9,40 @@ export type { OptimizationRequest } from './types/performance-optimization';
 export type { WritingConfig } from './types/advanced-writing';
 export type { StyleGuideSettings } from './types/advanced-writing';
 export type { SEORequirements } from './types/advanced-writing';
-export type { SourceCitation, SourceType, BiasRating, ExpertiseLevel, FactCheckRequest } from './types/advanced-writing';
-export type { SectionGenerationContext, ContentFlowMap, ContentConnection, ConnectionType } from './types/advanced-writing';
-export type { MultiSectionGenerationRequest, SectionGenerationOptions } from './types/advanced-writing';
+export type {
+  SourceCitation,
+  SourceType,
+  BiasRating,
+  ExpertiseLevel,
+  FactCheckRequest,
+} from './types/advanced-writing';
+export type {
+  SectionGenerationContext,
+  ContentFlowMap,
+  ContentConnection,
+  ConnectionType,
+} from './types/advanced-writing';
+export type {
+  MultiSectionGenerationRequest,
+  SectionGenerationOptions,
+} from './types/advanced-writing';
 
 // Additional type exports for examples
-export type { 
+export type {
   CompetitorInsight,
   TrendingTopic,
-  ContentStructure
+  ContentStructure,
 } from './types/strategy-engine';
 
 // Export missing types from advanced-writing
-export type { 
+export type {
   ContentSection as AdvancedContentSection,
-  SectionType as AdvancedSectionType
+  SectionType as AdvancedSectionType,
 } from './types/advanced-writing';
 
-export type { 
+export type {
   BlogTemplateConfig,
-  BlogTemplateContext 
+  BlogTemplateContext,
 } from './types/templates';
 
 // Architecture exports - use explicit exports to avoid conflicts
@@ -77,9 +91,7 @@ export type {
   ValidationResult as ContainerValidationResult,
 } from './core/container/service-container';
 
-export {
-  BlogGeneratorService,
-} from './core/services/blog-generator-service';
+export { BlogGeneratorService } from './core/services/blog-generator-service';
 
 export type {
   BlogGenerationOptions,
@@ -136,7 +148,11 @@ export { PlatformAdapterFactory as PlatformAdapterRegistry } from './core/platfo
 // Type exports from existing types
 export type { AIConfig as BlogAIConfig } from './types/base-config';
 export type { ContentStrategy } from './types/strategy-engine';
-export type { ComprehensiveWritingRequest, BrandVoiceProfile, ContentOutline } from './types/advanced-writing';
+export type {
+  ComprehensiveWritingRequest,
+  BrandVoiceProfile,
+  ContentOutline,
+} from './types/advanced-writing';
 export { ToneCategory } from './types/advanced-writing';
 export type { Priority } from './types/strategy-engine';
 
@@ -174,7 +190,7 @@ export type {
   ApprovalDecision,
   PublishingSchedule,
   SchedulePublishingOptions,
-  WorkflowMetrics
+  WorkflowMetrics,
 } from './types/workflow';
 
 export type {
@@ -186,7 +202,7 @@ export type {
   VersioningOptions,
   CreateVersionOptions,
   MergeVersionOptions,
-  VersionRollbackOptions
+  VersionRollbackOptions,
 } from './types/versioning';
 
 // Utility Functions
@@ -289,7 +305,11 @@ export const BLOG_TEMPLATES = {
     structure: [
       { id: 'intro', title: 'Introduction', required: true },
       { id: 'background', title: 'Interviewee Background', required: true },
-      { id: 'questions', title: 'Interview Questions and Answers', required: true },
+      {
+        id: 'questions',
+        title: 'Interview Questions and Answers',
+        required: true,
+      },
       { id: 'insights', title: 'Key Insights', required: true },
       { id: 'conclusion', title: 'Conclusion', required: true },
     ],

@@ -37,7 +37,7 @@ export class BlogPostRepository {
       // Content classification
       category: data.metadata.category,
       tags: {
-        create: (data.metadata.tags || []).map(tag => ({ name: tag }))
+        create: (data.metadata.tags || []).map(tag => ({ name: tag })),
       },
 
       // SEO data
@@ -168,10 +168,10 @@ export class BlogPostRepository {
       if (data.metadata.tags) {
         // Delete existing tags and create new ones
         await prisma.blogPostTag.deleteMany({
-          where: { blogPostId: id }
+          where: { blogPostId: id },
         });
         updateData.tags = {
-          create: data.metadata.tags.map(tag => ({ name: tag }))
+          create: data.metadata.tags.map(tag => ({ name: tag })),
         };
       }
 

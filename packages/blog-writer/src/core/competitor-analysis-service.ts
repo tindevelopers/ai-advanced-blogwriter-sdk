@@ -1,4 +1,3 @@
-
 /**
  * Competitor Analysis & Gap Identification Service
  * Comprehensive competitor content analysis and opportunity identification
@@ -18,7 +17,7 @@ import {
   Recommendation,
   Opportunity,
   CompetitorType,
-  ReportSummary
+  ReportSummary,
 } from '../types/strategy-engine';
 
 import type { LanguageModelV2 } from '@ai-sdk/provider';
@@ -72,9 +71,11 @@ export class CompetitorAnalysisService {
   /**
    * Conduct comprehensive competitor analysis
    */
-  async analyzeCompetitors(request: CompetitorAnalysisRequest): Promise<CompetitorAnalysisResponse> {
+  async analyzeCompetitors(
+    request: CompetitorAnalysisRequest,
+  ): Promise<CompetitorAnalysisResponse> {
     const cacheKey = `competitor_analysis_${JSON.stringify(request)}`;
-    
+
     // Check cache first
     if (this.cacheResults && this.cache.has(cacheKey)) {
       const cached = this.cache.get(cacheKey)!;
@@ -86,25 +87,36 @@ export class CompetitorAnalysisService {
     try {
       // Analyze each competitor
       const competitorAnalyses = await Promise.all(
-        request.competitors.slice(0, this.maxConcurrentAnalysis).map(domain =>
-          this.analyzeCompetitor(domain, request)
-        )
+        request.competitors
+          .slice(0, this.maxConcurrentAnalysis)
+          .map(domain => this.analyzeCompetitor(domain, request)),
       );
 
       // Identify gaps and opportunities
       const gaps = await this.identifyContentGaps(competitorAnalyses, request);
-      const opportunities = await this.identifyOpportunities(competitorAnalyses, gaps);
-      const recommendations = await this.generateRecommendations(competitorAnalyses, gaps, opportunities);
+      const opportunities = await this.identifyOpportunities(
+        competitorAnalyses,
+        gaps,
+      );
+      const recommendations = await this.generateRecommendations(
+        competitorAnalyses,
+        gaps,
+        opportunities,
+      );
 
       // Generate summary
-      const summary = this.generateAnalysisSummary(competitorAnalyses, gaps, opportunities);
+      const summary = this.generateAnalysisSummary(
+        competitorAnalyses,
+        gaps,
+        opportunities,
+      );
 
       const response: CompetitorAnalysisResponse = {
         analysis: competitorAnalyses,
         gaps,
         opportunities,
         recommendations,
-        summary
+        summary,
       };
 
       // Cache the result
@@ -118,17 +130,21 @@ export class CompetitorAnalysisService {
       }
 
       return response;
-
     } catch (error) {
       console.error('Error in competitor analysis:', error);
-      throw new Error(`Competitor analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Competitor analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   /**
    * Analyze a single competitor
    */
-  async analyzeCompetitor(domain: string, request: CompetitorAnalysisRequest): Promise<CompetitorAnalysis> {
+  async analyzeCompetitor(
+    domain: string,
+    request: CompetitorAnalysisRequest,
+  ): Promise<CompetitorAnalysis> {
     try {
       // Get or create competitor record
       const competitor = await this.getOrCreateCompetitor(domain);
@@ -155,10 +171,10 @@ export class CompetitorAnalysisService {
                   difficulty: { type: 'number', minimum: 0, maximum: 1 },
                   estimatedTraffic: { type: 'number' },
                   keywords: { type: 'array', items: { type: 'string' } },
-                  competitorUrls: { type: 'array', items: { type: 'string' } }
+                  competitorUrls: { type: 'array', items: { type: 'string' } },
                 },
-                required: ['type', 'description', 'opportunity', 'difficulty']
-              }
+                required: ['type', 'description', 'opportunity', 'difficulty'],
+              },
             },
             keywordGaps: {
               type: 'array',
@@ -170,10 +186,10 @@ export class CompetitorAnalysisService {
                   searchVolume: { type: 'number' },
                   difficulty: { type: 'number', minimum: 0, maximum: 1 },
                   opportunity: { type: 'number', minimum: 0, maximum: 1 },
-                  searchIntent: { type: 'string' }
+                  searchIntent: { type: 'string' },
                 },
-                required: ['keyword', 'competitorPosition', 'opportunity']
-              }
+                required: ['keyword', 'competitorPosition', 'opportunity'],
+              },
             },
             topicGaps: {
               type: 'array',
@@ -181,29 +197,54 @@ export class CompetitorAnalysisService {
                 type: 'object',
                 properties: {
                   topic: { type: 'string' },
-                  competitorCoverage: { type: 'number', minimum: 0, maximum: 1 },
+                  competitorCoverage: {
+                    type: 'number',
+                    minimum: 0,
+                    maximum: 1,
+                  },
                   ourCoverage: { type: 'number', minimum: 0, maximum: 1 },
                   opportunity: { type: 'number', minimum: 0, maximum: 1 },
-                  suggestedKeywords: { type: 'array', items: { type: 'string' } }
+                  suggestedKeywords: {
+                    type: 'array',
+                    items: { type: 'string' },
+                  },
                 },
-                required: ['topic', 'competitorCoverage', 'ourCoverage', 'opportunity']
-              }
+                required: [
+                  'topic',
+                  'competitorCoverage',
+                  'ourCoverage',
+                  'opportunity',
+                ],
+              },
             },
             recommendations: {
               type: 'array',
               items: {
                 type: 'object',
                 properties: {
-                  type: { type: 'string', enum: ['content', 'seo', 'keyword', 'technical'] },
-                  priority: { type: 'string', enum: ['low', 'medium', 'high', 'urgent'] },
+                  type: {
+                    type: 'string',
+                    enum: ['content', 'seo', 'keyword', 'technical'],
+                  },
+                  priority: {
+                    type: 'string',
+                    enum: ['low', 'medium', 'high', 'urgent'],
+                  },
                   title: { type: 'string' },
                   description: { type: 'string' },
                   estimatedImpact: { type: 'number', minimum: 0, maximum: 1 },
                   estimatedEffort: { type: 'number' },
-                  resources: { type: 'array', items: { type: 'string' } }
+                  resources: { type: 'array', items: { type: 'string' } },
                 },
-                required: ['type', 'priority', 'title', 'description', 'estimatedImpact', 'estimatedEffort']
-              }
+                required: [
+                  'type',
+                  'priority',
+                  'title',
+                  'description',
+                  'estimatedImpact',
+                  'estimatedEffort',
+                ],
+              },
             },
             opportunities: {
               type: 'array',
@@ -212,20 +253,37 @@ export class CompetitorAnalysisService {
                 properties: {
                   title: { type: 'string' },
                   description: { type: 'string' },
-                  type: { type: 'string', enum: ['keyword', 'topic', 'content_gap', 'technical'] },
+                  type: {
+                    type: 'string',
+                    enum: ['keyword', 'topic', 'content_gap', 'technical'],
+                  },
                   potential: { type: 'number', minimum: 0, maximum: 1 },
                   difficulty: { type: 'number', minimum: 0, maximum: 1 },
                   timeline: { type: 'string' },
                   keywords: { type: 'array', items: { type: 'string' } },
-                  competitorUrls: { type: 'array', items: { type: 'string' } }
+                  competitorUrls: { type: 'array', items: { type: 'string' } },
                 },
-                required: ['title', 'description', 'type', 'potential', 'difficulty', 'timeline']
-              }
-            }
+                required: [
+                  'title',
+                  'description',
+                  'type',
+                  'potential',
+                  'difficulty',
+                  'timeline',
+                ],
+              },
+            },
           },
-          required: ['overallScore', 'contentGaps', 'keywordGaps', 'topicGaps', 'recommendations', 'opportunities']
+          required: [
+            'overallScore',
+            'contentGaps',
+            'keywordGaps',
+            'topicGaps',
+            'recommendations',
+            'opportunities',
+          ],
         },
-        prompt
+        prompt,
       });
 
       const analysis: CompetitorAnalysis = {
@@ -241,14 +299,15 @@ export class CompetitorAnalysisService {
         recommendations: result.object.recommendations,
         opportunities: result.object.opportunities,
         analyzedAt: new Date(),
-        competitor
+        competitor,
       };
 
       return analysis;
-
     } catch (error) {
       console.error(`Error analyzing competitor ${domain}:`, error);
-      throw new Error(`Competitor analysis failed for ${domain}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Competitor analysis failed for ${domain}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -283,55 +342,65 @@ export class CompetitorAnalysisService {
                   domain: { type: 'string' },
                   name: { type: 'string' },
                   description: { type: 'string' },
-                  type: { type: 'string', enum: ['direct', 'indirect', 'aspirational'] },
+                  type: {
+                    type: 'string',
+                    enum: ['direct', 'indirect', 'aspirational'],
+                  },
                   domainAuthority: { type: 'number' },
                   estimatedTraffic: { type: 'number' },
                   contentStrategy: { type: 'string' },
                   strengths: { type: 'array', items: { type: 'string' } },
-                  weaknesses: { type: 'array', items: { type: 'string' } }
+                  weaknesses: { type: 'array', items: { type: 'string' } },
                 },
-                required: ['domain', 'name', 'type']
-              }
-            }
+                required: ['domain', 'name', 'type'],
+              },
+            },
           },
-          required: ['competitors']
+          required: ['competitors'],
         },
-        prompt
+        prompt,
       });
 
       const competitors = await Promise.all(
-        result.object.competitors.map(async (competitorData) => {
+        result.object.competitors.map(async competitorData => {
           const competitor = await this.getOrCreateCompetitor(
             competitorData.domain,
             competitorData.name,
             competitorData.description,
-            competitorData.type as CompetitorType
+            competitorData.type as CompetitorType,
           );
 
           // Update metrics if provided
-          if (competitorData.domainAuthority || competitorData.estimatedTraffic) {
+          if (
+            competitorData.domainAuthority ||
+            competitorData.estimatedTraffic
+          ) {
             await this.updateCompetitorMetrics(competitor.id, {
               domainAuthority: competitorData.domainAuthority,
-              monthlyTraffic: competitorData.estimatedTraffic
+              monthlyTraffic: competitorData.estimatedTraffic,
             });
           }
 
           return competitor;
-        })
+        }),
       );
 
       return competitors;
-
     } catch (error) {
       console.error('Error identifying SERP competitors:', error);
-      throw new Error(`SERP competitor identification failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `SERP competitor identification failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   /**
    * Analyze content gaps across all competitors
    */
-  async identifyContentGaps(analyses: CompetitorAnalysis[], request: CompetitorAnalysisRequest): Promise<ContentGap[]> {
+  async identifyContentGaps(
+    analyses: CompetitorAnalysis[],
+    request: CompetitorAnalysisRequest,
+  ): Promise<ContentGap[]> {
     try {
       const allGaps = analyses.flatMap(analysis => analysis.contentGaps);
       const keywords = request.keywords?.join(', ') || 'target keywords';
@@ -370,19 +439,18 @@ export class CompetitorAnalysisService {
                   keywords: { type: 'array', items: { type: 'string' } },
                   competitorUrls: { type: 'array', items: { type: 'string' } },
                   strategicValue: { type: 'string' },
-                  contentAngle: { type: 'string' }
+                  contentAngle: { type: 'string' },
                 },
-                required: ['type', 'description', 'opportunity', 'difficulty']
-              }
-            }
+                required: ['type', 'description', 'opportunity', 'difficulty'],
+              },
+            },
           },
-          required: ['consolidatedGaps']
+          required: ['consolidatedGaps'],
         },
-        prompt
+        prompt,
       });
 
       return result.object.consolidatedGaps;
-
     } catch (error) {
       console.error('Error identifying content gaps:', error);
       return analyses.flatMap(analysis => analysis.contentGaps);
@@ -392,7 +460,10 @@ export class CompetitorAnalysisService {
   /**
    * Generate strategic opportunities from gap analysis
    */
-  async identifyOpportunities(analyses: CompetitorAnalysis[], gaps: ContentGap[]): Promise<Opportunity[]> {
+  async identifyOpportunities(
+    analyses: CompetitorAnalysis[],
+    gaps: ContentGap[],
+  ): Promise<Opportunity[]> {
     try {
       const prompt = `
         Based on competitor analysis and content gaps, identify the top strategic opportunities.
@@ -400,7 +471,10 @@ export class CompetitorAnalysisService {
         Competitor Analysis Summary:
         - ${analyses.length} competitors analyzed
         - Average competitor score: ${(analyses.reduce((sum, a) => sum + a.overallScore, 0) / analyses.length).toFixed(2)}
-        - Key strengths to address: ${analyses.flatMap(a => a.recommendations.filter(r => r.priority === 'high')).map(r => r.title).join(', ')}
+        - Key strengths to address: ${analyses
+          .flatMap(a => a.recommendations.filter(r => r.priority === 'high'))
+          .map(r => r.title)
+          .join(', ')}
         
         Content Gaps Identified:
         ${gaps.map(gap => `- ${gap.type}: ${gap.description} (Opportunity: ${gap.opportunity}, Difficulty: ${gap.difficulty})`).join('\n')}
@@ -426,7 +500,10 @@ export class CompetitorAnalysisService {
                 properties: {
                   title: { type: 'string' },
                   description: { type: 'string' },
-                  type: { type: 'string', enum: ['keyword', 'topic', 'content_gap', 'technical'] },
+                  type: {
+                    type: 'string',
+                    enum: ['keyword', 'topic', 'content_gap', 'technical'],
+                  },
                   potential: { type: 'number', minimum: 0, maximum: 1 },
                   difficulty: { type: 'number', minimum: 0, maximum: 1 },
                   timeline: { type: 'string' },
@@ -434,19 +511,25 @@ export class CompetitorAnalysisService {
                   competitorUrls: { type: 'array', items: { type: 'string' } },
                   actionSteps: { type: 'array', items: { type: 'string' } },
                   expectedOutcome: { type: 'string' },
-                  successMetrics: { type: 'array', items: { type: 'string' } }
+                  successMetrics: { type: 'array', items: { type: 'string' } },
                 },
-                required: ['title', 'description', 'type', 'potential', 'difficulty', 'timeline']
-              }
-            }
+                required: [
+                  'title',
+                  'description',
+                  'type',
+                  'potential',
+                  'difficulty',
+                  'timeline',
+                ],
+              },
+            },
           },
-          required: ['opportunities']
+          required: ['opportunities'],
         },
-        prompt
+        prompt,
       });
 
       return result.object.opportunities;
-
     } catch (error) {
       console.error('Error identifying opportunities:', error);
       return [];
@@ -457,9 +540,9 @@ export class CompetitorAnalysisService {
    * Generate strategic recommendations
    */
   async generateRecommendations(
-    analyses: CompetitorAnalysis[], 
-    gaps: ContentGap[], 
-    opportunities: Opportunity[]
+    analyses: CompetitorAnalysis[],
+    gaps: ContentGap[],
+    opportunities: Opportunity[],
   ): Promise<Recommendation[]> {
     try {
       const prompt = `
@@ -474,7 +557,13 @@ export class CompetitorAnalysisService {
         ${analyses.map(a => `- ${a.competitor.domain}: Score ${a.overallScore}, Strengths: SEO ${a.seoStrength}, Content ${a.contentQuality}`).join('\n')}
         
         Top Opportunities:
-        ${opportunities.slice(0, 5).map(o => `- ${o.title} (${o.type}): Potential ${o.potential}, Difficulty ${o.difficulty}`).join('\n')}
+        ${opportunities
+          .slice(0, 5)
+          .map(
+            o =>
+              `- ${o.title} (${o.type}): Potential ${o.potential}, Difficulty ${o.difficulty}`,
+          )
+          .join('\n')}
         
         Provide actionable recommendations that:
         1. Address the highest-impact opportunities
@@ -495,8 +584,14 @@ export class CompetitorAnalysisService {
               items: {
                 type: 'object',
                 properties: {
-                  type: { type: 'string', enum: ['content', 'seo', 'keyword', 'technical'] },
-                  priority: { type: 'string', enum: ['low', 'medium', 'high', 'urgent'] },
+                  type: {
+                    type: 'string',
+                    enum: ['content', 'seo', 'keyword', 'technical'],
+                  },
+                  priority: {
+                    type: 'string',
+                    enum: ['low', 'medium', 'high', 'urgent'],
+                  },
                   title: { type: 'string' },
                   description: { type: 'string' },
                   estimatedImpact: { type: 'number', minimum: 0, maximum: 1 },
@@ -504,19 +599,25 @@ export class CompetitorAnalysisService {
                   resources: { type: 'array', items: { type: 'string' } },
                   timeline: { type: 'string' },
                   successMetrics: { type: 'array', items: { type: 'string' } },
-                  dependencies: { type: 'array', items: { type: 'string' } }
+                  dependencies: { type: 'array', items: { type: 'string' } },
                 },
-                required: ['type', 'priority', 'title', 'description', 'estimatedImpact', 'estimatedEffort']
-              }
-            }
+                required: [
+                  'type',
+                  'priority',
+                  'title',
+                  'description',
+                  'estimatedImpact',
+                  'estimatedEffort',
+                ],
+              },
+            },
           },
-          required: ['recommendations']
+          required: ['recommendations'],
         },
-        prompt
+        prompt,
       });
 
       return result.object.recommendations;
-
     } catch (error) {
       console.error('Error generating recommendations:', error);
       return analyses.flatMap(analysis => analysis.recommendations);
@@ -526,7 +627,10 @@ export class CompetitorAnalysisService {
   /**
    * Track competitor keyword rankings over time
    */
-  async trackCompetitorKeywords(competitorId: string, keywords: string[]): Promise<CompetitorKeyword[]> {
+  async trackCompetitorKeywords(
+    competitorId: string,
+    keywords: string[],
+  ): Promise<CompetitorKeyword[]> {
     if (!this.prisma) {
       throw new Error('Database connection required for keyword tracking');
     }
@@ -544,8 +648,8 @@ export class CompetitorAnalysisService {
           where: {
             competitorId_keyword: {
               competitorId,
-              keyword
-            }
+              keyword,
+            },
           },
           update: {
             position: rankingData.position,
@@ -554,7 +658,7 @@ export class CompetitorAnalysisService {
             traffic: rankingData.traffic,
             url: rankingData.url,
             opportunity: rankingData.opportunity,
-            updatedAt: new Date()
+            updatedAt: new Date(),
           },
           create: {
             competitorId,
@@ -566,27 +670,33 @@ export class CompetitorAnalysisService {
             url: rankingData.url,
             opportunity: rankingData.opportunity,
             trackedAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
           },
           include: {
-            competitor: true
-          }
+            competitor: true,
+          },
         });
 
-        trackedKeywords.push(this.mapPrismaCompetitorKeywordToType(competitorKeyword));
+        trackedKeywords.push(
+          this.mapPrismaCompetitorKeywordToType(competitorKeyword),
+        );
       }
 
       return trackedKeywords;
-
     } catch (error) {
       console.error('Error tracking competitor keywords:', error);
-      throw new Error(`Keyword tracking failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Keyword tracking failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   // Private helper methods
 
-  private buildCompetitorAnalysisPrompt(domain: string, request: CompetitorAnalysisRequest): string {
+  private buildCompetitorAnalysisPrompt(
+    domain: string,
+    request: CompetitorAnalysisRequest,
+  ): string {
     const keywords = request.keywords?.join(', ') || 'target keywords';
     const depth = request.depth || 'detailed';
 
@@ -649,10 +759,10 @@ export class CompetitorAnalysisService {
   }
 
   private async getOrCreateCompetitor(
-    domain: string, 
-    name?: string, 
-    description?: string, 
-    type: CompetitorType = 'direct'
+    domain: string,
+    name?: string,
+    description?: string,
+    type: CompetitorType = 'direct',
   ): Promise<Competitor> {
     if (!this.prisma) {
       // Return mock competitor if no database
@@ -668,7 +778,7 @@ export class CompetitorAnalysisService {
         content: [],
         topics: [],
         keywords: [],
-        analysis: []
+        analysis: [],
       };
     }
 
@@ -679,7 +789,7 @@ export class CompetitorAnalysisService {
           name: name || undefined,
           description: description || undefined,
           type,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         create: {
           name: name || domain,
@@ -688,25 +798,27 @@ export class CompetitorAnalysisService {
           type,
           isActive: true,
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         include: {
           content: true,
           topics: true,
           keywords: true,
-          analysis: true
-        }
+          analysis: true,
+        },
       });
 
       return this.mapPrismaCompetitorToType(competitor);
-
     } catch (error) {
       console.error(`Error getting/creating competitor ${domain}:`, error);
       throw error;
     }
   }
 
-  private async updateCompetitorMetrics(competitorId: string, metrics: Partial<DomainMetrics>): Promise<void> {
+  private async updateCompetitorMetrics(
+    competitorId: string,
+    metrics: Partial<DomainMetrics>,
+  ): Promise<void> {
     if (!this.prisma) return;
 
     try {
@@ -716,8 +828,8 @@ export class CompetitorAnalysisService {
           domainAuthority: metrics.domainAuthority,
           monthlyTraffic: metrics.monthlyTraffic,
           backlinks: metrics.backlinks,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       });
     } catch (error) {
       console.error('Error updating competitor metrics:', error);
@@ -739,33 +851,43 @@ export class CompetitorAnalysisService {
       difficulty: Math.random(),
       traffic: Math.floor(Math.random() * 1000),
       url: `https://example.com/${keyword.replace(/\s+/g, '-')}`,
-      opportunity: Math.random()
+      opportunity: Math.random(),
     };
   }
 
   private generateAnalysisSummary(
-    analyses: CompetitorAnalysis[], 
-    gaps: ContentGap[], 
-    opportunities: Opportunity[]
+    analyses: CompetitorAnalysis[],
+    gaps: ContentGap[],
+    opportunities: Opportunity[],
   ): ReportSummary {
     const keyFindings = [
       `Analyzed ${analyses.length} competitors with average strength score of ${(analyses.reduce((sum, a) => sum + a.overallScore, 0) / analyses.length).toFixed(2)}`,
       `Identified ${gaps.length} content gaps with ${gaps.filter(g => g.opportunity > 0.7).length} high-opportunity gaps`,
       `Found ${opportunities.length} strategic opportunities with ${opportunities.filter(o => o.potential > 0.7 && o.difficulty < 0.5).length} quick wins`,
-      `Top competitor strengths: ${analyses.reduce((acc, a) => a.seoStrength > acc.seo ? { seo: a.seoStrength, domain: a.competitor.domain } : acc, { seo: 0, domain: '' }).domain}`,
-      `Biggest opportunity: ${opportunities.sort((a, b) => (b.potential - b.difficulty) - (a.potential - a.difficulty))[0]?.title || 'None identified'}`
+      `Top competitor strengths: ${analyses.reduce((acc, a) => (a.seoStrength > acc.seo ? { seo: a.seoStrength, domain: a.competitor.domain } : acc), { seo: 0, domain: '' }).domain}`,
+      `Biggest opportunity: ${opportunities.sort((a, b) => b.potential - b.difficulty - (a.potential - a.difficulty))[0]?.title || 'None identified'}`,
     ];
 
     return {
       keyFindings,
       opportunities: opportunities.filter(o => o.potential > 0.6).length,
       threats: analyses.filter(a => a.overallScore > 0.8).length,
-      overallScore: Math.min(1, Math.max(0, 1 - (analyses.reduce((sum, a) => sum + a.overallScore, 0) / analyses.length))),
-      confidence: Math.min(1, analyses.length / 5) // Confidence increases with more competitors analyzed
+      overallScore: Math.min(
+        1,
+        Math.max(
+          0,
+          1 -
+            analyses.reduce((sum, a) => sum + a.overallScore, 0) /
+              analyses.length,
+        ),
+      ),
+      confidence: Math.min(1, analyses.length / 5), // Confidence increases with more competitors analyzed
     };
   }
 
-  private async saveAnalysisResults(response: CompetitorAnalysisResponse): Promise<void> {
+  private async saveAnalysisResults(
+    response: CompetitorAnalysisResponse,
+  ): Promise<void> {
     if (!this.prisma) return;
 
     try {
@@ -783,8 +905,8 @@ export class CompetitorAnalysisService {
             topicGaps: analysis.topicGaps as any,
             recommendations: analysis.recommendations as any,
             opportunities: analysis.opportunities as any,
-            analyzedAt: analysis.analyzedAt
-          }
+            analyzedAt: analysis.analyzedAt,
+          },
         });
       }
     } catch (error) {
@@ -809,11 +931,13 @@ export class CompetitorAnalysisService {
       content: prismaCompetitor.content || [],
       topics: prismaCompetitor.topics || [],
       keywords: prismaCompetitor.keywords || [],
-      analysis: prismaCompetitor.analysis || []
+      analysis: prismaCompetitor.analysis || [],
     };
   }
 
-  private mapPrismaCompetitorKeywordToType(prismaKeyword: any): CompetitorKeyword {
+  private mapPrismaCompetitorKeywordToType(
+    prismaKeyword: any,
+  ): CompetitorKeyword {
     return {
       id: prismaKeyword.id,
       competitorId: prismaKeyword.competitorId,
@@ -828,7 +952,7 @@ export class CompetitorAnalysisService {
       opportunity: prismaKeyword.opportunity,
       competitor: this.mapPrismaCompetitorToType(prismaKeyword.competitor),
       trackedAt: prismaKeyword.trackedAt,
-      updatedAt: prismaKeyword.updatedAt
+      updatedAt: prismaKeyword.updatedAt,
     };
   }
 
@@ -838,7 +962,7 @@ export class CompetitorAnalysisService {
   public clearExpiredCache(): void {
     const now = Date.now();
     const ttlMs = this.cacheTTL * 60 * 60 * 1000;
-    
+
     for (const [key, value] of this.cache.entries()) {
       if (now - value.timestamp > ttlMs) {
         this.cache.delete(key);

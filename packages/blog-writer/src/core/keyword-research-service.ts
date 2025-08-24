@@ -1,5 +1,3 @@
-
-
 /**
  * Keyword Research & Analysis Service
  * Provides comprehensive keyword research, difficulty analysis, clustering, and competitive insights
@@ -18,7 +16,7 @@ import {
   KeywordDifficulty,
   SearchIntent,
   KeywordTrends,
-  DataForSEOConfig
+  DataForSEOConfig,
 } from '../types/seo-engine';
 
 export interface KeywordResearchConfig {
@@ -42,44 +40,80 @@ export interface KeywordAnalysisOptions {
 
 // Zod schemas for AI-powered keyword analysis
 const KeywordSuggestionsSchema = z.object({
-  keywords: z.array(z.object({
-    keyword: z.string(),
-    searchIntent: z.enum(['informational', 'navigational', 'commercial', 'transactional']),
-    relevanceScore: z.number().min(0).max(100),
-    commercialValue: z.number().min(0).max(100),
-    longTailVariations: z.array(z.string()).optional(),
-    relatedTopics: z.array(z.string()).optional()
-  })),
-  clusters: z.array(z.object({
-    name: z.string(),
-    theme: z.string(),
-    keywords: z.array(z.string()),
-    priority: z.number().min(1).max(100)
-  }))
+  keywords: z.array(
+    z.object({
+      keyword: z.string(),
+      searchIntent: z.enum([
+        'informational',
+        'navigational',
+        'commercial',
+        'transactional',
+      ]),
+      relevanceScore: z.number().min(0).max(100),
+      commercialValue: z.number().min(0).max(100),
+      longTailVariations: z.array(z.string()).optional(),
+      relatedTopics: z.array(z.string()).optional(),
+    }),
+  ),
+  clusters: z.array(
+    z.object({
+      name: z.string(),
+      theme: z.string(),
+      keywords: z.array(z.string()),
+      priority: z.number().min(1).max(100),
+    }),
+  ),
 });
 
 const KeywordClusteringSchema = z.object({
-  clusters: z.array(z.object({
-    name: z.string(),
-    theme: z.string(),
-    primaryKeyword: z.string(),
-    keywords: z.array(z.string()),
-    searchIntent: z.enum(['informational', 'navigational', 'commercial', 'transactional']),
-    priority: z.number().min(1).max(100),
-    difficulty: z.enum(['very_easy', 'easy', 'possible', 'difficult', 'very_difficult']),
-    commercialPotential: z.number().min(0).max(100)
-  }))
+  clusters: z.array(
+    z.object({
+      name: z.string(),
+      theme: z.string(),
+      primaryKeyword: z.string(),
+      keywords: z.array(z.string()),
+      searchIntent: z.enum([
+        'informational',
+        'navigational',
+        'commercial',
+        'transactional',
+      ]),
+      priority: z.number().min(1).max(100),
+      difficulty: z.enum([
+        'very_easy',
+        'easy',
+        'possible',
+        'difficult',
+        'very_difficult',
+      ]),
+      commercialPotential: z.number().min(0).max(100),
+    }),
+  ),
 });
 
 const SearchIntentAnalysisSchema = z.object({
-  analysis: z.array(z.object({
-    keyword: z.string(),
-    primaryIntent: z.enum(['informational', 'navigational', 'commercial', 'transactional']),
-    confidence: z.number().min(0).max(1),
-    modifiers: z.array(z.string()),
-    userNeed: z.string(),
-    contentType: z.enum(['blog', 'product', 'service', 'guide', 'comparison', 'review'])
-  }))
+  analysis: z.array(
+    z.object({
+      keyword: z.string(),
+      primaryIntent: z.enum([
+        'informational',
+        'navigational',
+        'commercial',
+        'transactional',
+      ]),
+      confidence: z.number().min(0).max(1),
+      modifiers: z.array(z.string()),
+      userNeed: z.string(),
+      contentType: z.enum([
+        'blog',
+        'product',
+        'service',
+        'guide',
+        'comparison',
+        'review',
+      ]),
+    }),
+  ),
 });
 
 /**
@@ -96,7 +130,7 @@ export class KeywordResearchService {
       cacheTTL: 24, // 24 hours default
       enableClustering: true,
       maxKeywordsPerCluster: 20,
-      ...config
+      ...config,
     };
 
     // Initialize DataForSEO service if configured
@@ -105,7 +139,7 @@ export class KeywordResearchService {
         config: config.dataForSEOConfig,
         model: config.model,
         prisma: config.prisma,
-        enableCaching: config.cacheResults
+        enableCaching: config.cacheResults,
       });
     }
   }
@@ -113,7 +147,9 @@ export class KeywordResearchService {
   /**
    * Perform comprehensive keyword research
    */
-  async performKeywordResearch(request: KeywordResearchRequest): Promise<KeywordResearchResponse> {
+  async performKeywordResearch(
+    request: KeywordResearchRequest,
+  ): Promise<KeywordResearchResponse> {
     const startTime = Date.now();
 
     try {
@@ -140,24 +176,28 @@ export class KeywordResearchService {
         clusters,
         totalResults: keywordData.length,
         processingTime,
-        source: this.dataForSEOService ? 'dataforseo' : 'ai_analysis'
+        source: this.dataForSEOService ? 'dataforseo' : 'ai_analysis',
       };
-
     } catch (error) {
-      throw new Error(`Keyword research failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Keyword research failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   /**
    * Analyze keyword difficulty for specific keywords
    */
-  async analyzeKeywordDifficulty(keywords: string[]): Promise<Record<string, KeywordDifficulty>> {
+  async analyzeKeywordDifficulty(
+    keywords: string[],
+  ): Promise<Record<string, KeywordDifficulty>> {
     try {
       const difficulties: Record<string, KeywordDifficulty> = {};
 
       // Try DataForSEO first
       if (this.dataForSEOService) {
-        const response = await this.dataForSEOService.getKeywordDifficulty(keywords);
+        const response =
+          await this.dataForSEOService.getKeywordDifficulty(keywords);
         if (response.success && response.data) {
           for (const [keyword, score] of Object.entries(response.data)) {
             difficulties[keyword] = {
@@ -167,8 +207,8 @@ export class KeywordResearchService {
                 domainAuthority: 0,
                 contentQuality: 0,
                 backlinks: 0,
-                competition: score
-              }
+                competition: score,
+              },
             };
           }
         }
@@ -177,21 +217,26 @@ export class KeywordResearchService {
       // Fill in missing data with AI analysis
       const missingKeywords = keywords.filter(k => !difficulties[k]);
       if (missingKeywords.length > 0) {
-        const aiAnalysis = await this.analyzeKeywordDifficultyWithAI(missingKeywords);
+        const aiAnalysis =
+          await this.analyzeKeywordDifficultyWithAI(missingKeywords);
         Object.assign(difficulties, aiAnalysis);
       }
 
       return difficulties;
-
     } catch (error) {
-      throw new Error(`Keyword difficulty analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Keyword difficulty analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   /**
    * Generate long-tail keyword variations
    */
-  async generateLongTailVariations(seedKeywords: string[], maxVariations: number = 50): Promise<string[]> {
+  async generateLongTailVariations(
+    seedKeywords: string[],
+    maxVariations: number = 50,
+  ): Promise<string[]> {
     const prompt = `Generate long-tail keyword variations for these seed keywords: ${seedKeywords.join(', ')}
 
 Requirements:
@@ -210,34 +255,37 @@ Generate exactly ${maxVariations} unique long-tail variations.`;
         model: this.config.model,
         prompt,
         schema: z.object({
-          variations: z.array(z.string()).max(maxVariations)
-        })
+          variations: z.array(z.string()).max(maxVariations),
+        }),
       });
 
       return result.object.variations;
-
     } catch (error) {
-      throw new Error(`Long-tail variation generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Long-tail variation generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   /**
    * Analyze seasonal trends for keywords
    */
-  async analyzeSeasonalTrends(keywords: string[]): Promise<Record<string, KeywordTrends>> {
+  async analyzeSeasonalTrends(
+    keywords: string[],
+  ): Promise<Record<string, KeywordTrends>> {
     // If DataForSEO is available, use it for historical data
     if (this.dataForSEOService) {
       try {
         // DataForSEO provides monthly search data
         const trends: Record<string, KeywordTrends> = {};
-        
+
         // This would be implemented with actual DataForSEO trends API
         for (const keyword of keywords) {
           trends[keyword] = {
             monthlySearches: [],
             yearOverYear: 0,
             trending: 'stable',
-            seasonalPattern: false
+            seasonalPattern: false,
           };
         }
 
@@ -269,38 +317,49 @@ Provide insights about:
         model: this.config.model,
         prompt,
         schema: z.object({
-          trends: z.array(z.object({
-            keyword: z.string(),
-            seasonalPattern: z.boolean(),
-            peakMonths: z.array(z.string()).optional(),
-            lowMonths: z.array(z.string()).optional(),
-            yearOverYearTrend: z.enum(['rising', 'falling', 'stable']),
-            seasonalFactors: z.array(z.string()).optional()
-          }))
-        })
+          trends: z.array(
+            z.object({
+              keyword: z.string(),
+              seasonalPattern: z.boolean(),
+              peakMonths: z.array(z.string()).optional(),
+              lowMonths: z.array(z.string()).optional(),
+              yearOverYearTrend: z.enum(['rising', 'falling', 'stable']),
+              seasonalFactors: z.array(z.string()).optional(),
+            }),
+          ),
+        }),
       });
 
       const trends: Record<string, KeywordTrends> = {};
       for (const trend of result.object.trends) {
         trends[trend.keyword] = {
           monthlySearches: [], // Would be populated with actual data
-          yearOverYear: trend.yearOverYearTrend === 'rising' ? 15 : trend.yearOverYearTrend === 'falling' ? -10 : 0,
+          yearOverYear:
+            trend.yearOverYearTrend === 'rising'
+              ? 15
+              : trend.yearOverYearTrend === 'falling'
+                ? -10
+                : 0,
           trending: trend.yearOverYearTrend,
-          seasonalPattern: trend.seasonalPattern
+          seasonalPattern: trend.seasonalPattern,
         };
       }
 
       return trends;
-
     } catch (error) {
-      throw new Error(`Seasonal trend analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Seasonal trend analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   /**
    * Find keyword opportunities based on competitor gaps
    */
-  async findKeywordOpportunities(competitorUrls: string[], targetKeywords: string[]): Promise<{
+  async findKeywordOpportunities(
+    competitorUrls: string[],
+    targetKeywords: string[],
+  ): Promise<{
     opportunities: string[];
     gaps: string[];
     underutilized: string[];
@@ -330,18 +389,19 @@ Consider:
           opportunities: z.array(z.string()),
           gaps: z.array(z.string()),
           underutilized: z.array(z.string()),
-          insights: z.array(z.string())
-        })
+          insights: z.array(z.string()),
+        }),
       });
 
       return {
         opportunities: result.object.opportunities,
         gaps: result.object.gaps,
-        underutilized: result.object.underutilized
+        underutilized: result.object.underutilized,
       };
-
     } catch (error) {
-      throw new Error(`Keyword opportunity analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Keyword opportunity analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -352,10 +412,13 @@ Consider:
   /**
    * Get keyword data from DataForSEO or AI fallback
    */
-  private async getKeywordData(request: KeywordResearchRequest): Promise<KeywordData[]> {
+  private async getKeywordData(
+    request: KeywordResearchRequest,
+  ): Promise<KeywordData[]> {
     // Try DataForSEO first
     if (this.dataForSEOService) {
-      const response = await this.dataForSEOService.performKeywordResearch(request);
+      const response =
+        await this.dataForSEOService.performKeywordResearch(request);
       if (response.success && response.data) {
         return response.data;
       }
@@ -368,7 +431,9 @@ Consider:
   /**
    * Generate keywords using AI when DataForSEO is not available
    */
-  private async generateKeywordsWithAI(request: KeywordResearchRequest): Promise<KeywordData[]> {
+  private async generateKeywordsWithAI(
+    request: KeywordResearchRequest,
+  ): Promise<KeywordData[]> {
     const prompt = `Generate keyword research data for these seed keywords: ${request.seedKeywords.join(', ')}
 
 Requirements:
@@ -391,12 +456,12 @@ For each keyword provide:
       const result = await generateObject({
         model: this.config.model,
         prompt,
-        schema: KeywordSuggestionsSchema
+        schema: KeywordSuggestionsSchema,
       });
 
       // Convert AI response to KeywordData format
       const keywordData: KeywordData[] = [];
-      
+
       for (const keyword of result.object.keywords) {
         const data: KeywordData = {
           keyword: keyword.keyword,
@@ -409,49 +474,59 @@ For each keyword provide:
               domainAuthority: 50,
               contentQuality: 60,
               backlinks: 40,
-              competition: 50
-            }
+              competition: 50,
+            },
           },
           trends: {
             monthlySearches: [],
             yearOverYear: 0,
             trending: 'stable',
-            seasonalPattern: false
+            seasonalPattern: false,
           },
           relatedKeywords: keyword.relatedTopics || [],
           longTailVariations: keyword.longTailVariations || [],
           searchIntent: {
             primary: keyword.searchIntent,
             confidence: 0.8,
-            modifiers: []
-          }
+            modifiers: [],
+          },
         };
 
         keywordData.push(data);
       }
 
       return keywordData;
-
     } catch (error) {
-      throw new Error(`AI keyword generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `AI keyword generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   /**
    * Enhance keyword data with additional AI analysis
    */
-  private async enhanceKeywordData(keywordData: KeywordData[], request: KeywordResearchRequest): Promise<KeywordData[]> {
+  private async enhanceKeywordData(
+    keywordData: KeywordData[],
+    request: KeywordResearchRequest,
+  ): Promise<KeywordData[]> {
     // Add long-tail variations if requested
     if (request.includeLongTail) {
       const seedKeywords = keywordData.slice(0, 10).map(k => k.keyword);
-      const longTailVariations = await this.generateLongTailVariations(seedKeywords, 20);
-      
+      const longTailVariations = await this.generateLongTailVariations(
+        seedKeywords,
+        20,
+      );
+
       // Add variations to existing keywords
       keywordData.forEach(keyword => {
-        const variations = longTailVariations.filter(v => 
-          v.toLowerCase().includes(keyword.keyword.toLowerCase())
+        const variations = longTailVariations.filter(v =>
+          v.toLowerCase().includes(keyword.keyword.toLowerCase()),
         );
-        keyword.longTailVariations = [...(keyword.longTailVariations || []), ...variations];
+        keyword.longTailVariations = [
+          ...(keyword.longTailVariations || []),
+          ...variations,
+        ];
       });
     }
 
@@ -461,13 +536,15 @@ For each keyword provide:
   /**
    * Analyze search intent using AI
    */
-  private async analyzeSearchIntent(keywordData: KeywordData[]): Promise<KeywordData[]> {
+  private async analyzeSearchIntent(
+    keywordData: KeywordData[],
+  ): Promise<KeywordData[]> {
     const keywords = keywordData.map(k => k.keyword);
     const batchSize = 50; // Process in batches to avoid token limits
 
     for (let i = 0; i < keywords.length; i += batchSize) {
       const batch = keywords.slice(i, i + batchSize);
-      
+
       const prompt = `Analyze search intent for these keywords: ${batch.join(', ')}
 
 For each keyword, determine:
@@ -487,7 +564,7 @@ Consider:
         const result = await generateObject({
           model: this.config.model,
           prompt,
-          schema: SearchIntentAnalysisSchema
+          schema: SearchIntentAnalysisSchema,
         });
 
         // Update keyword data with intent analysis
@@ -497,11 +574,10 @@ Consider:
             keyword.searchIntent = {
               primary: analysis.primaryIntent,
               confidence: analysis.confidence,
-              modifiers: analysis.modifiers
+              modifiers: analysis.modifiers,
             };
           }
         }
-
       } catch (error) {
         console.warn('Search intent analysis failed for batch:', batch);
       }
@@ -513,9 +589,11 @@ Consider:
   /**
    * Create keyword clusters using AI
    */
-  private async createKeywordClusters(keywordData: KeywordData[]): Promise<KeywordCluster[]> {
+  private async createKeywordClusters(
+    keywordData: KeywordData[],
+  ): Promise<KeywordCluster[]> {
     const keywords = keywordData.map(k => k.keyword);
-    
+
     const prompt = `Create keyword clusters from these keywords: ${keywords.join(', ')}
 
 Group related keywords into clusters based on:
@@ -540,7 +618,7 @@ Create ${Math.min(Math.ceil(keywords.length / this.config.maxKeywordsPerCluster!
       const result = await generateObject({
         model: this.config.model,
         prompt,
-        schema: KeywordClusteringSchema
+        schema: KeywordClusteringSchema,
       });
 
       const clusters: KeywordCluster[] = [];
@@ -548,13 +626,18 @@ Create ${Math.min(Math.ceil(keywords.length / this.config.maxKeywordsPerCluster!
 
       for (const cluster of result.object.clusters) {
         // Get keyword data for cluster keywords
-        const clusterKeywords = keywordData.filter(k => 
-          cluster.keywords.includes(k.keyword)
+        const clusterKeywords = keywordData.filter(k =>
+          cluster.keywords.includes(k.keyword),
         );
 
         if (clusterKeywords.length > 0) {
-          const totalSearchVolume = clusterKeywords.reduce((sum, k) => sum + k.searchVolume, 0);
-          const averageDifficulty = clusterKeywords.reduce((sum, k) => sum + k.difficulty.score, 0) / clusterKeywords.length;
+          const totalSearchVolume = clusterKeywords.reduce(
+            (sum, k) => sum + k.searchVolume,
+            0,
+          );
+          const averageDifficulty =
+            clusterKeywords.reduce((sum, k) => sum + k.difficulty.score, 0) /
+            clusterKeywords.length;
 
           clusters.push({
             id: `cluster_${clusterId++}`,
@@ -566,15 +649,14 @@ Create ${Math.min(Math.ceil(keywords.length / this.config.maxKeywordsPerCluster!
             searchIntent: {
               primary: cluster.searchIntent,
               confidence: 0.8,
-              modifiers: []
+              modifiers: [],
             },
-            priority: cluster.priority
+            priority: cluster.priority,
           });
         }
       }
 
       return clusters;
-
     } catch (error) {
       console.warn('Keyword clustering failed:', error);
       return [];
@@ -584,7 +666,9 @@ Create ${Math.min(Math.ceil(keywords.length / this.config.maxKeywordsPerCluster!
   /**
    * Analyze keyword difficulty using AI when DataForSEO is not available
    */
-  private async analyzeKeywordDifficultyWithAI(keywords: string[]): Promise<Record<string, KeywordDifficulty>> {
+  private async analyzeKeywordDifficultyWithAI(
+    keywords: string[],
+  ): Promise<Record<string, KeywordDifficulty>> {
     const prompt = `Analyze keyword difficulty for these keywords: ${keywords.join(', ')}
 
 For each keyword, estimate:
@@ -608,20 +692,28 @@ Consider:
         model: this.config.model,
         prompt,
         schema: z.object({
-          difficulties: z.array(z.object({
-            keyword: z.string(),
-            score: z.number().min(0).max(100),
-            level: z.enum(['very_easy', 'easy', 'possible', 'difficult', 'very_difficult']),
-            domainAuthorityRequirement: z.number().min(0).max(100),
-            contentQualityRequirement: z.number().min(0).max(100),
-            backlinkRequirement: z.number().min(0).max(100),
-            competitionLevel: z.number().min(0).max(100)
-          }))
-        })
+          difficulties: z.array(
+            z.object({
+              keyword: z.string(),
+              score: z.number().min(0).max(100),
+              level: z.enum([
+                'very_easy',
+                'easy',
+                'possible',
+                'difficult',
+                'very_difficult',
+              ]),
+              domainAuthorityRequirement: z.number().min(0).max(100),
+              contentQualityRequirement: z.number().min(0).max(100),
+              backlinkRequirement: z.number().min(0).max(100),
+              competitionLevel: z.number().min(0).max(100),
+            }),
+          ),
+        }),
       });
 
       const difficulties: Record<string, KeywordDifficulty> = {};
-      
+
       for (const diff of result.object.difficulties) {
         difficulties[diff.keyword] = {
           score: diff.score,
@@ -630,22 +722,25 @@ Consider:
             domainAuthority: diff.domainAuthorityRequirement,
             contentQuality: diff.contentQualityRequirement,
             backlinks: diff.backlinkRequirement,
-            competition: diff.competitionLevel
-          }
+            competition: diff.competitionLevel,
+          },
         };
       }
 
       return difficulties;
-
     } catch (error) {
-      throw new Error(`AI difficulty analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `AI difficulty analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   /**
    * Utility methods
    */
-  private getDifficultyLevel(score: number): 'very_easy' | 'easy' | 'possible' | 'difficult' | 'very_difficult' {
+  private getDifficultyLevel(
+    score: number,
+  ): 'very_easy' | 'easy' | 'possible' | 'difficult' | 'very_difficult' {
     if (score < 20) return 'very_easy';
     if (score < 40) return 'easy';
     if (score < 60) return 'possible';
@@ -653,4 +748,3 @@ Consider:
     return 'very_difficult';
   }
 }
-

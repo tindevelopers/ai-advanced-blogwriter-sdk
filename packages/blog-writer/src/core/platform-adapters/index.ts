@@ -1,4 +1,3 @@
-
 /**
  * Platform Adapters Export Index
  * Week 13-14 Platform Integration Framework
@@ -29,10 +28,10 @@ export const AVAILABLE_ADAPTERS = [
   'medium',
   'linkedin',
   'shopify',
-  'webflow'
+  'webflow',
 ] as const;
 
-export type AvailableAdapter = typeof AVAILABLE_ADAPTERS[number];
+export type AvailableAdapter = (typeof AVAILABLE_ADAPTERS)[number];
 
 // Adapter metadata
 export const ADAPTER_METADATA = {
@@ -45,8 +44,8 @@ export const ADAPTER_METADATA = {
       analytics: false,
       categories: true,
       tags: true,
-      media: true
-    }
+      media: true,
+    },
   },
   medium: {
     name: 'Medium',
@@ -57,8 +56,8 @@ export const ADAPTER_METADATA = {
       analytics: true,
       categories: false,
       tags: true,
-      media: true
-    }
+      media: true,
+    },
   },
   linkedin: {
     name: 'LinkedIn',
@@ -69,8 +68,8 @@ export const ADAPTER_METADATA = {
       analytics: true,
       categories: false,
       tags: false,
-      media: true
-    }
+      media: true,
+    },
   },
   shopify: {
     name: 'Shopify',
@@ -82,8 +81,8 @@ export const ADAPTER_METADATA = {
       categories: false,
       tags: true,
       media: true,
-      products: true
-    }
+      products: true,
+    },
   },
   webflow: {
     name: 'Webflow',
@@ -95,9 +94,9 @@ export const ADAPTER_METADATA = {
       categories: true,
       tags: true,
       media: true,
-      richText: true
-    }
-  }
+      richText: true,
+    },
+  },
 } as const;
 
 // Helper to get adapter info
@@ -106,6 +105,8 @@ export function getAdapterInfo(platformName: string) {
 }
 
 // Helper to check if adapter is available
-export function isAdapterAvailable(platformName: string): platformName is AvailableAdapter {
+export function isAdapterAvailable(
+  platformName: string,
+): platformName is AvailableAdapter {
   return AVAILABLE_ADAPTERS.includes(platformName as AvailableAdapter);
 }

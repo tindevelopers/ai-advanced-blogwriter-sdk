@@ -1,4 +1,8 @@
-import { ConfigurationProvider, ValidationResult, ValidationError } from '../interfaces/base-service';
+import {
+  ConfigurationProvider,
+  ValidationResult,
+  ValidationError,
+} from '../interfaces/base-service';
 import { z } from 'zod';
 
 /**
@@ -12,10 +16,12 @@ export const DatabaseConfigSchema = z.object({
   username: z.string(),
   password: z.string(),
   ssl: z.boolean().default(false),
-  connectionPool: z.object({
-    min: z.number().positive().default(1),
-    max: z.number().positive().default(10),
-  }).default({}),
+  connectionPool: z
+    .object({
+      min: z.number().positive().default(1),
+      max: z.number().positive().default(10),
+    })
+    .default({}),
 });
 
 export const AIModelConfigSchema = z.object({
@@ -50,7 +56,9 @@ export const LoggingConfigSchema = z.object({
 export const ServiceConfigSchema = z.object({
   name: z.string(),
   version: z.string(),
-  environment: z.enum(['development', 'staging', 'production']).default('development'),
+  environment: z
+    .enum(['development', 'staging', 'production'])
+    .default('development'),
   debug: z.boolean().default(false),
   timeout: z.number().positive().default(30000),
   retryAttempts: z.number().positive().default(3),
@@ -63,19 +71,23 @@ export const BlogWriterConfigSchema = z.object({
   aiModel: AIModelConfigSchema,
   cache: CacheConfigSchema.optional(),
   logging: LoggingConfigSchema,
-  features: z.object({
-    seoAnalysis: z.boolean().default(true),
-    factChecking: z.boolean().default(true),
-    plagiarismDetection: z.boolean().default(true),
-    contentOptimization: z.boolean().default(true),
-    multiPlatformPublishing: z.boolean().default(true),
-  }).default({}),
-  limits: z.object({
-    maxWordCount: z.number().positive().default(10000),
-    maxConcurrentRequests: z.number().positive().default(10),
-    maxRetryAttempts: z.number().positive().default(3),
-    rateLimitPerMinute: z.number().positive().default(60),
-  }).default({}),
+  features: z
+    .object({
+      seoAnalysis: z.boolean().default(true),
+      factChecking: z.boolean().default(true),
+      plagiarismDetection: z.boolean().default(true),
+      contentOptimization: z.boolean().default(true),
+      multiPlatformPublishing: z.boolean().default(true),
+    })
+    .default({}),
+  limits: z
+    .object({
+      maxWordCount: z.number().positive().default(10000),
+      maxConcurrentRequests: z.number().positive().default(10),
+      maxRetryAttempts: z.number().positive().default(3),
+      rateLimitPerMinute: z.number().positive().default(60),
+    })
+    .default({}),
 });
 
 export type DatabaseConfig = z.infer<typeof DatabaseConfigSchema>;
@@ -91,7 +103,8 @@ export type BlogWriterConfig = z.infer<typeof BlogWriterConfigSchema>;
 export class ConfigurationManager implements ConfigurationProvider {
   readonly environment: string;
   private readonly config: Map<string, any> = new Map();
-  private readonly environmentConfigs: Map<string, Map<string, any>> = new Map();
+  private readonly environmentConfigs: Map<string, Map<string, any>> =
+    new Map();
   private readonly schemas: Map<string, z.ZodSchema> = new Map();
 
   constructor(environment: string = 'development') {
@@ -138,17 +151,17 @@ export class ConfigurationManager implements ConfigurationProvider {
   getForEnvironment<T>(key: string, environment?: string): T {
     const env = environment || this.environment;
     const envConfig = this.environmentConfigs.get(env);
-    
+
     if (envConfig && envConfig.has(key)) {
       return envConfig.get(key) as T;
     }
-    
+
     return this.get<T>(key);
   }
 
   validate(schema: any): ValidationResult {
     const errors: ValidationError[] = [];
-    
+
     try {
       if (schema instanceof z.ZodSchema) {
         schema.parse(this.config);
@@ -160,20 +173,23 @@ export class ConfigurationManager implements ConfigurationProvider {
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        errors.push(...error.errors.map(err => ({
-          path: err.path.join('.'),
-          message: err.message,
-          code: err.code,
-        })));
+        errors.push(
+          ...error.errors.map(err => ({
+            path: err.path.join('.'),
+            message: err.message,
+            code: err.code,
+          })),
+        );
       } else {
         errors.push({
           path: '',
-          message: error instanceof Error ? error.message : 'Unknown validation error',
+          message:
+            error instanceof Error ? error.message : 'Unknown validation error',
           code: 'UNKNOWN',
         });
       }
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors,
@@ -185,7 +201,7 @@ export class ConfigurationManager implements ConfigurationProvider {
    */
   loadFromEnvironment(): void {
     const envVars = process.env;
-    
+
     // Database configuration
     if (envVars.DATABASE_URL) {
       this.set('database.url', envVars.DATABASE_URL);
@@ -234,7 +250,10 @@ export class ConfigurationManager implements ConfigurationProvider {
       this.set('service.timeout', parseInt(envVars.SERVICE_TIMEOUT, 10));
     }
     if (envVars.SERVICE_RETRY_ATTEMPTS) {
-      this.set('service.retryAttempts', parseInt(envVars.SERVICE_RETRY_ATTEMPTS, 10));
+      this.set(
+        'service.retryAttempts',
+        parseInt(envVars.SERVICE_RETRY_ATTEMPTS, 10),
+      );
     }
 
     // Logging configuration
@@ -254,17 +273,22 @@ export class ConfigurationManager implements ConfigurationProvider {
       const fs = await import('fs/promises');
       const content = await fs.readFile(filePath, 'utf-8');
       const config = JSON.parse(content);
-      
+
       this.mergeConfig(config);
     } catch (error) {
-      throw new Error(`Failed to load configuration from file: ${filePath} - ${error}`);
+      throw new Error(
+        `Failed to load configuration from file: ${filePath} - ${error}`,
+      );
     }
   }
 
   /**
    * Load configuration from remote source (e.g., API, database)
    */
-  async loadFromRemote(url: string, options?: { headers?: Record<string, string> }): Promise<void> {
+  async loadFromRemote(
+    url: string,
+    options?: { headers?: Record<string, string> },
+  ): Promise<void> {
     try {
       const response = await fetch(url, {
         method: 'GET',
@@ -273,15 +297,17 @@ export class ConfigurationManager implements ConfigurationProvider {
           ...options?.headers,
         },
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       const config = await response.json();
       this.mergeConfig(config);
     } catch (error) {
-      throw new Error(`Failed to load configuration from remote: ${url} - ${error}`);
+      throw new Error(
+        `Failed to load configuration from remote: ${url} - ${error}`,
+      );
     }
   }
 
@@ -292,7 +318,7 @@ export class ConfigurationManager implements ConfigurationProvider {
     if (!this.environmentConfigs.has(environment)) {
       this.environmentConfigs.set(environment, new Map());
     }
-    
+
     const envConfig = this.environmentConfigs.get(environment)!;
     Object.entries(config).forEach(([key, value]) => {
       envConfig.set(key, value);
@@ -305,8 +331,12 @@ export class ConfigurationManager implements ConfigurationProvider {
   private mergeConfig(config: Record<string, any>, prefix: string = ''): void {
     Object.entries(config).forEach(([key, value]) => {
       const fullKey = prefix ? `${prefix}.${key}` : key;
-      
-      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+
+      if (
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
         this.mergeConfig(value, fullKey);
       } else {
         this.set(fullKey, value);
@@ -319,21 +349,21 @@ export class ConfigurationManager implements ConfigurationProvider {
    */
   export(): Record<string, any> {
     const result: Record<string, any> = {};
-    
+
     this.config.forEach((value, key) => {
       const keys = key.split('.');
       let current = result;
-      
+
       for (let i = 0; i < keys.length - 1; i++) {
         if (!current[keys[i]]) {
           current[keys[i]] = {};
         }
         current = current[keys[i]];
       }
-      
+
       current[keys[keys.length - 1]] = value;
     });
-    
+
     return result;
   }
 
@@ -342,24 +372,26 @@ export class ConfigurationManager implements ConfigurationProvider {
    */
   validateAll(): ValidationResult {
     const errors: ValidationError[] = [];
-    
+
     this.schemas.forEach((schema, name) => {
       const sectionConfig = this.getSection(name);
       const sectionData = sectionConfig.export();
-      
+
       try {
         schema.parse(sectionData);
       } catch (error) {
         if (error instanceof z.ZodError) {
-          errors.push(...error.errors.map(err => ({
-            path: `${name}.${err.path.join('.')}`,
-            message: err.message,
-            code: err.code,
-          })));
+          errors.push(
+            ...error.errors.map(err => ({
+              path: `${name}.${err.path.join('.')}`,
+              message: err.message,
+              code: err.code,
+            })),
+          );
         }
       }
     });
-    
+
     return {
       isValid: errors.length === 0,
       errors,
@@ -402,7 +434,10 @@ class SectionConfigurationProvider implements ConfigurationProvider {
   }
 
   getSection(section: string): ConfigurationProvider {
-    return new SectionConfigurationProvider(this.parent, `${this.section}.${section}`);
+    return new SectionConfigurationProvider(
+      this.parent,
+      `${this.section}.${section}`,
+    );
   }
 
   getForEnvironment<T>(key: string, environment?: string): T {
@@ -412,7 +447,7 @@ class SectionConfigurationProvider implements ConfigurationProvider {
 
   validate(schema: any): ValidationResult {
     const sectionData = this.export();
-    
+
     try {
       if (schema instanceof z.ZodSchema) {
         schema.parse(sectionData);
@@ -431,30 +466,30 @@ class SectionConfigurationProvider implements ConfigurationProvider {
         };
       }
     }
-    
+
     return { isValid: true, errors: [] };
   }
 
   export(): Record<string, any> {
     const result: Record<string, any> = {};
-    
+
     this.parent.config.forEach((value, key) => {
       if (key.startsWith(`${this.section}.`)) {
         const sectionKey = key.substring(this.section.length + 1);
         const keys = sectionKey.split('.');
         let current = result;
-        
+
         for (let i = 0; i < keys.length - 1; i++) {
           if (!current[keys[i]]) {
             current[keys[i]] = {};
           }
           current = current[keys[i]];
         }
-        
+
         current[keys[keys.length - 1]] = value;
       }
     });
-    
+
     return result;
   }
 }

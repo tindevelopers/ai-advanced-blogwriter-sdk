@@ -1,5 +1,3 @@
-
-
 import { PrismaClient } from '../generated/prisma-client';
 import type {
   MetadataField,
@@ -16,7 +14,7 @@ import type {
   UpdateMetadataOptions,
   MetadataSearchQuery,
   HeadingStructure,
-  HeadingInfo
+  HeadingInfo,
 } from '../types/metadata';
 
 /**
@@ -29,7 +27,9 @@ export class MetadataManager {
   /**
    * Create a custom metadata field
    */
-  async createMetadataField(options: CreateMetadataFieldOptions): Promise<MetadataField> {
+  async createMetadataField(
+    options: CreateMetadataFieldOptions,
+  ): Promise<MetadataField> {
     const field = await this.prisma.metadataField.create({
       data: {
         name: options.name,
@@ -39,8 +39,8 @@ export class MetadataManager {
         isRequired: options.isRequired || false,
         defaultValue: options.defaultValue,
         validation: options.validation,
-        group: options.group
-      }
+        group: options.group,
+      },
     });
 
     return field as MetadataField;
@@ -51,11 +51,11 @@ export class MetadataManager {
    */
   async getMetadataFields(group?: string): Promise<MetadataField[]> {
     const where = group ? { group, isActive: true } : { isActive: true };
-    
-    return await this.prisma.metadataField.findMany({
+
+    return (await this.prisma.metadataField.findMany({
       where,
-      orderBy: [{ group: 'asc' }, { order: 'asc' }]
-    }) as MetadataField[];
+      orderBy: [{ group: 'asc' }, { order: 'asc' }],
+    })) as MetadataField[];
   }
 
   /**
@@ -63,10 +63,10 @@ export class MetadataManager {
    */
   async updateSeoMetadata(
     blogPostId: string,
-    metadata: Partial<SeoMetadata>
+    metadata: Partial<SeoMetadata>,
   ): Promise<SeoMetadata> {
     const existingMetadata = await this.prisma.seoMetadata.findUnique({
-      where: { blogPostId }
+      where: { blogPostId },
     });
 
     const seoMetadata = existingMetadata
@@ -74,14 +74,14 @@ export class MetadataManager {
           where: { blogPostId },
           data: {
             ...metadata,
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         })
       : await this.prisma.seoMetadata.create({
           data: {
             blogPostId,
-            ...metadata
-          }
+            ...metadata,
+          },
         });
 
     return seoMetadata as SeoMetadata;
@@ -92,7 +92,7 @@ export class MetadataManager {
    */
   async getSeoMetadata(blogPostId: string): Promise<SeoMetadata | null> {
     const metadata = await this.prisma.seoMetadata.findUnique({
-      where: { blogPostId }
+      where: { blogPostId },
     });
 
     return metadata as SeoMetadata | null;
@@ -104,10 +104,10 @@ export class MetadataManager {
   async setCustomMetadata(
     blogPostId: string,
     fieldId: string,
-    value: string
+    value: string,
   ): Promise<CustomMetadata> {
     const field = await this.prisma.metadataField.findUnique({
-      where: { id: fieldId }
+      where: { id: fieldId },
     });
 
     if (!field) {
@@ -115,25 +115,30 @@ export class MetadataManager {
     }
 
     // Validate the value
-    const validationResult = this.validateFieldValue(field as MetadataField, value);
+    const validationResult = this.validateFieldValue(
+      field as MetadataField,
+      value,
+    );
     if (!validationResult.isValid) {
-      throw new Error(`Validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`);
+      throw new Error(
+        `Validation failed: ${validationResult.errors.map(e => e.message).join(', ')}`,
+      );
     }
 
     const metadata = await this.prisma.customMetadata.upsert({
-      where: { 
-        blogPostId_fieldId: { blogPostId, fieldId }
+      where: {
+        blogPostId_fieldId: { blogPostId, fieldId },
       },
-      update: { 
+      update: {
         value,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       create: {
         blogPostId,
         fieldId,
-        value
+        value,
       },
-      include: { field: true }
+      include: { field: true },
     });
 
     return metadata as CustomMetadata;
@@ -143,11 +148,11 @@ export class MetadataManager {
    * Get all custom metadata for a blog post
    */
   async getCustomMetadata(blogPostId: string): Promise<CustomMetadata[]> {
-    return await this.prisma.customMetadata.findMany({
+    return (await this.prisma.customMetadata.findMany({
       where: { blogPostId },
       include: { field: true },
-      orderBy: { field: { order: 'asc' } }
-    }) as CustomMetadata[];
+      orderBy: { field: { order: 'asc' } },
+    })) as CustomMetadata[];
   }
 
   /**
@@ -155,7 +160,7 @@ export class MetadataManager {
    */
   async updateBlogPostMetadata(
     blogPostId: string,
-    options: UpdateMetadataOptions
+    options: UpdateMetadataOptions,
   ): Promise<{
     seoMetadata?: SeoMetadata;
     customMetadata: CustomMetadata[];
@@ -165,30 +170,38 @@ export class MetadataManager {
 
     // Update SEO metadata
     if (options.seoMetadata) {
-      results.seoMetadata = await this.updateSeoMetadata(blogPostId, options.seoMetadata);
+      results.seoMetadata = await this.updateSeoMetadata(
+        blogPostId,
+        options.seoMetadata,
+      );
     }
 
     // Update custom fields
     if (options.customFields) {
       const customMetadata: CustomMetadata[] = [];
-      
+
       for (const [fieldName, value] of Object.entries(options.customFields)) {
         const field = await this.prisma.metadataField.findUnique({
-          where: { name: fieldName }
+          where: { name: fieldName },
         });
-        
+
         if (field) {
-          const metadata = await this.setCustomMetadata(blogPostId, field.id, String(value));
+          const metadata = await this.setCustomMetadata(
+            blogPostId,
+            field.id,
+            String(value),
+          );
           customMetadata.push(metadata);
         }
       }
-      
+
       results.customMetadata = customMetadata;
     }
 
     // Validate if requested
     if (options.validateOnly || !options.skipValidation) {
-      results.validationResults = await this.validateBlogPostMetadata(blogPostId);
+      results.validationResults =
+        await this.validateBlogPostMetadata(blogPostId);
     }
 
     return results;
@@ -197,13 +210,15 @@ export class MetadataManager {
   /**
    * Validate blog post metadata
    */
-  async validateBlogPostMetadata(blogPostId: string): Promise<MetadataValidationResult> {
+  async validateBlogPostMetadata(
+    blogPostId: string,
+  ): Promise<MetadataValidationResult> {
     const [seoMetadata, customMetadata, requiredFields] = await Promise.all([
       this.getSeoMetadata(blogPostId),
       this.getCustomMetadata(blogPostId),
       this.prisma.metadataField.findMany({
-        where: { isRequired: true, isActive: true }
-      })
+        where: { isRequired: true, isActive: true },
+      }),
     ]);
 
     const errors: MetadataValidationError[] = [];
@@ -211,21 +226,26 @@ export class MetadataManager {
 
     // Validate required custom fields
     for (const field of requiredFields) {
-      const hasValue = customMetadata.some(cm => cm.fieldId === field.id && cm.value);
-      
+      const hasValue = customMetadata.some(
+        cm => cm.fieldId === field.id && cm.value,
+      );
+
       if (!hasValue) {
         errors.push({
           fieldId: field.id,
           fieldName: field.displayName,
-          message: `${field.displayName} is required but not provided`
+          message: `${field.displayName} is required but not provided`,
         });
       }
     }
 
     // Validate custom metadata values
     for (const metadata of customMetadata) {
-      const fieldValidation = this.validateFieldValue(metadata.field, metadata.value);
-      
+      const fieldValidation = this.validateFieldValue(
+        metadata.field,
+        metadata.value,
+      );
+
       errors.push(...fieldValidation.errors);
       warnings.push(...fieldValidation.warnings);
     }
@@ -240,14 +260,14 @@ export class MetadataManager {
         fieldId: 'seo_metadata',
         fieldName: 'SEO Metadata',
         message: 'No SEO metadata found',
-        suggestion: 'Add SEO metadata to improve search visibility'
+        suggestion: 'Add SEO metadata to improve search visibility',
       });
     }
 
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -257,7 +277,7 @@ export class MetadataManager {
   async analyzeSeo(blogPostId: string): Promise<SeoAnalysisResult> {
     const blogPost = await this.prisma.blogPost.findUnique({
       where: { id: blogPostId },
-      include: { seoMetadata: true }
+      include: { seoMetadata: true },
     });
 
     if (!blogPost) {
@@ -266,7 +286,7 @@ export class MetadataManager {
 
     const seoMetadata = blogPost.seoMetadata;
     const suggestions: SeoOptimizationSuggestion[] = [];
-    
+
     let keywordOptimization = 0;
     let contentStructure = 0;
     let metaOptimization = 0;
@@ -279,7 +299,7 @@ export class MetadataManager {
         priority: 'critical',
         message: 'Title is missing',
         reason: 'Title is essential for SEO',
-        impact: 'high'
+        impact: 'high',
       });
     } else {
       const titleLength = blogPost.title.length;
@@ -291,7 +311,7 @@ export class MetadataManager {
           currentValue: `${titleLength} characters`,
           suggestedValue: '30-60 characters',
           reason: 'Longer titles perform better in search results',
-          impact: 'medium'
+          impact: 'medium',
         });
         metaOptimization += 10;
       } else if (titleLength > 60) {
@@ -302,7 +322,7 @@ export class MetadataManager {
           currentValue: `${titleLength} characters`,
           suggestedValue: '30-60 characters',
           reason: 'Long titles get truncated in search results',
-          impact: 'medium'
+          impact: 'medium',
         });
         metaOptimization += 15;
       } else {
@@ -321,7 +341,7 @@ export class MetadataManager {
           currentValue: `${descLength} characters`,
           suggestedValue: '120-160 characters',
           reason: 'Longer descriptions provide more context',
-          impact: 'medium'
+          impact: 'medium',
         });
         metaOptimization += 10;
       } else if (descLength > 160) {
@@ -332,7 +352,7 @@ export class MetadataManager {
           currentValue: `${descLength} characters`,
           suggestedValue: '120-160 characters',
           reason: 'Long descriptions get truncated',
-          impact: 'medium'
+          impact: 'medium',
         });
         metaOptimization += 15;
       } else {
@@ -344,7 +364,7 @@ export class MetadataManager {
         priority: 'high',
         message: 'Meta description is missing',
         reason: 'Meta description affects click-through rates',
-        impact: 'high'
+        impact: 'high',
       });
     }
 
@@ -356,7 +376,7 @@ export class MetadataManager {
         priority: 'high',
         message: 'No H1 heading found',
         reason: 'H1 heading is important for content structure',
-        impact: 'high'
+        impact: 'high',
       });
     } else if (headingStructure.h1Count > 1) {
       suggestions.push({
@@ -366,7 +386,7 @@ export class MetadataManager {
         currentValue: `${headingStructure.h1Count} H1 headings`,
         suggestedValue: '1 H1 heading',
         reason: 'Only one H1 heading should be used per page',
-        impact: 'medium'
+        impact: 'medium',
       });
       contentStructure += 15;
     } else {
@@ -379,7 +399,7 @@ export class MetadataManager {
         priority: 'medium',
         message: 'No H2 headings found',
         reason: 'H2 headings improve content structure and readability',
-        impact: 'medium'
+        impact: 'medium',
       });
     } else {
       contentStructure += 25;
@@ -389,7 +409,7 @@ export class MetadataManager {
     if (seoMetadata?.focusKeywords && seoMetadata.focusKeywords.length > 0) {
       for (const keyword of seoMetadata.focusKeywords) {
         const density = this.calculateKeywordDensity(blogPost.content, keyword);
-        
+
         if (density < 0.005) {
           suggestions.push({
             type: 'keywords',
@@ -398,7 +418,7 @@ export class MetadataManager {
             currentValue: `${(density * 100).toFixed(2)}%`,
             suggestedValue: '0.5-2.5%',
             reason: 'Low keyword density may hurt rankings',
-            impact: 'medium'
+            impact: 'medium',
           });
           keywordOptimization += 10;
         } else if (density > 0.025) {
@@ -409,7 +429,7 @@ export class MetadataManager {
             currentValue: `${(density * 100).toFixed(2)}%`,
             suggestedValue: '0.5-2.5%',
             reason: 'Keyword stuffing can hurt rankings',
-            impact: 'medium'
+            impact: 'medium',
           });
           keywordOptimization += 15;
         } else {
@@ -422,7 +442,7 @@ export class MetadataManager {
         priority: 'high',
         message: 'No focus keywords defined',
         reason: 'Focus keywords help target specific search queries',
-        impact: 'high'
+        impact: 'high',
       });
     }
 
@@ -436,7 +456,7 @@ export class MetadataManager {
         currentValue: `${wordCount} words`,
         suggestedValue: 'At least 300 words',
         reason: 'Longer content tends to rank better',
-        impact: 'high'
+        impact: 'high',
       });
       contentStructure += 10;
     } else if (wordCount >= 1000) {
@@ -448,7 +468,12 @@ export class MetadataManager {
     }
 
     // Calculate overall score
-    const overallScore = (keywordOptimization + contentStructure + metaOptimization + readability) / 4;
+    const overallScore =
+      (keywordOptimization +
+        contentStructure +
+        metaOptimization +
+        readability) /
+      4;
 
     // Save analysis to database
     const analysis = await this.prisma.sEOAnalysis.create({
@@ -466,9 +491,9 @@ export class MetadataManager {
           currentValue: s.currentValue,
           suggestedValue: s.suggestedValue,
           reason: s.reason,
-          impact: s.impact
-        }))
-      }
+          impact: s.impact,
+        })),
+      },
     });
 
     return {
@@ -478,7 +503,7 @@ export class MetadataManager {
       metaOptimization,
       readability,
       suggestions,
-      analyzedAt: analysis.analyzedAt
+      analyzedAt: analysis.analyzedAt,
     };
   }
 
@@ -493,21 +518,23 @@ export class MetadataManager {
       where.customMetadata = {
         some: {
           field: {
-            name: { in: query.fields }
-          }
-        }
+            name: { in: query.fields },
+          },
+        },
       };
     }
 
     if (query.values && Object.keys(query.values).length > 0) {
-      const customMetadataConditions = Object.entries(query.values).map(([fieldName, value]) => ({
-        customMetadata: {
-          some: {
-            field: { name: fieldName },
-            value: String(value)
-          }
-        }
-      }));
+      const customMetadataConditions = Object.entries(query.values).map(
+        ([fieldName, value]) => ({
+          customMetadata: {
+            some: {
+              field: { name: fieldName },
+              value: String(value),
+            },
+          },
+        }),
+      );
 
       where.AND = customMetadataConditions;
     }
@@ -515,7 +542,7 @@ export class MetadataManager {
     if (query.dateRange) {
       where.createdAt = {
         gte: query.dateRange.from,
-        lte: query.dateRange.to
+        lte: query.dateRange.to,
       };
     }
 
@@ -523,10 +550,10 @@ export class MetadataManager {
       where,
       include: {
         customMetadata: {
-          include: { field: true }
+          include: { field: true },
         },
-        seoMetadata: true
-      }
+        seoMetadata: true,
+      },
     });
   }
 
@@ -535,8 +562,12 @@ export class MetadataManager {
    */
   private validateFieldValue(
     field: MetadataField,
-    value: string
-  ): { isValid: boolean; errors: MetadataValidationError[]; warnings: MetadataValidationWarning[] } {
+    value: string,
+  ): {
+    isValid: boolean;
+    errors: MetadataValidationError[];
+    warnings: MetadataValidationWarning[];
+  } {
     const errors: MetadataValidationError[] = [];
     const warnings: MetadataValidationWarning[] = [];
 
@@ -544,7 +575,7 @@ export class MetadataManager {
       errors.push({
         fieldId: field.id,
         fieldName: field.displayName,
-        message: `${field.displayName} is required`
+        message: `${field.displayName} is required`,
       });
       return { isValid: false, errors, warnings };
     }
@@ -564,7 +595,7 @@ export class MetadataManager {
         fieldId: field.id,
         fieldName: field.displayName,
         message: `${field.displayName} must be at least ${validation.minLength} characters`,
-        currentValue: `${value.length} characters`
+        currentValue: `${value.length} characters`,
       });
     }
 
@@ -573,7 +604,7 @@ export class MetadataManager {
         fieldId: field.id,
         fieldName: field.displayName,
         message: `${field.displayName} must not exceed ${validation.maxLength} characters`,
-        currentValue: `${value.length} characters`
+        currentValue: `${value.length} characters`,
       });
     }
 
@@ -584,14 +615,14 @@ export class MetadataManager {
         errors.push({
           fieldId: field.id,
           fieldName: field.displayName,
-          message: `${field.displayName} must be a valid number`
+          message: `${field.displayName} must be a valid number`,
         });
       } else {
         if (validation.min !== undefined && numValue < validation.min) {
           errors.push({
             fieldId: field.id,
             fieldName: field.displayName,
-            message: `${field.displayName} must be at least ${validation.min}`
+            message: `${field.displayName} must be at least ${validation.min}`,
           });
         }
 
@@ -599,7 +630,7 @@ export class MetadataManager {
           errors.push({
             fieldId: field.id,
             fieldName: field.displayName,
-            message: `${field.displayName} must not exceed ${validation.max}`
+            message: `${field.displayName} must not exceed ${validation.max}`,
           });
         }
       }
@@ -612,7 +643,7 @@ export class MetadataManager {
         errors.push({
           fieldId: field.id,
           fieldName: field.displayName,
-          message: `${field.displayName} format is invalid`
+          message: `${field.displayName} format is invalid`,
         });
       }
     }
@@ -623,7 +654,7 @@ export class MetadataManager {
         errors.push({
           fieldId: field.id,
           fieldName: field.displayName,
-          message: `${field.displayName} must be one of: ${validation.options.join(', ')}`
+          message: `${field.displayName} must be one of: ${validation.options.join(', ')}`,
         });
       }
     }
@@ -631,7 +662,7 @@ export class MetadataManager {
     return {
       isValid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     };
   }
 
@@ -647,7 +678,7 @@ export class MetadataManager {
 
     // URL validation
     const urlFields = ['canonicalUrl', 'ogUrl', 'ogImage', 'twitterImage'];
-    
+
     for (const field of urlFields) {
       const value = (seoMetadata as any)[field];
       if (value && !this.isValidUrl(value)) {
@@ -655,7 +686,7 @@ export class MetadataManager {
           fieldId: field,
           fieldName: field,
           message: `${field} is not a valid URL`,
-          currentValue: value
+          currentValue: value,
         });
       }
     }
@@ -669,20 +700,27 @@ export class MetadataManager {
   private analyzeHeadingStructure(content: string): HeadingStructure {
     const headingRegex = /<h([1-6])[^>]*>(.*?)<\/h[1-6]>/gi;
     const headings: HeadingInfo[] = [];
-    const counts = { h1Count: 0, h2Count: 0, h3Count: 0, h4Count: 0, h5Count: 0, h6Count: 0 };
-    
+    const counts = {
+      h1Count: 0,
+      h2Count: 0,
+      h3Count: 0,
+      h4Count: 0,
+      h5Count: 0,
+      h6Count: 0,
+    };
+
     let match;
     let position = 0;
-    
+
     while ((match = headingRegex.exec(content)) !== null) {
       const level = parseInt(match[1]);
       const text = match[2].replace(/<[^>]*>/g, ''); // Remove HTML tags
-      
+
       headings.push({
         level,
         text,
         position,
-        hasKeyword: false // Would need keyword analysis
+        hasKeyword: false, // Would need keyword analysis
       });
 
       (counts as any)[`h${level}Count`]++;
@@ -691,7 +729,7 @@ export class MetadataManager {
 
     return {
       ...counts,
-      headings
+      headings,
     };
   }
 
@@ -702,9 +740,9 @@ export class MetadataManager {
     const words = content.toLowerCase().split(/\s+/);
     const keywordWords = keyword.toLowerCase().split(/\s+/);
     const totalWords = words.length;
-    
+
     if (totalWords === 0) return 0;
-    
+
     let matches = 0;
     for (let i = 0; i <= words.length - keywordWords.length; i++) {
       const phrase = words.slice(i, i + keywordWords.length).join(' ');
@@ -712,7 +750,7 @@ export class MetadataManager {
         matches++;
       }
     }
-    
+
     return matches / totalWords;
   }
 
@@ -735,4 +773,3 @@ export class MetadataManager {
     }
   }
 }
-

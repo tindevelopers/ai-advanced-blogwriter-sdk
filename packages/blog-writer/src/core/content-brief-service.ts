@@ -1,4 +1,3 @@
-
 /**
  * Content Brief Generation Service
  * AI-powered content brief generation with comprehensive research and strategy
@@ -18,7 +17,7 @@ import {
   ExternalLink,
   SearchIntent,
   BriefStatus,
-  TopicResearch
+  TopicResearch,
 } from '../types/strategy-engine';
 
 import { LanguageModel } from 'ai';
@@ -87,7 +86,8 @@ export class ContentBriefService {
     this.topicResearchService = config.topicResearchService;
     this.competitorAnalysisService = config.competitorAnalysisService;
     this.includeResearchByDefault = config.includeResearchByDefault ?? true;
-    this.includeCompetitorAnalysisByDefault = config.includeCompetitorAnalysisByDefault ?? true;
+    this.includeCompetitorAnalysisByDefault =
+      config.includeCompetitorAnalysisByDefault ?? true;
     this.includeOutlineByDefault = config.includeOutlineByDefault ?? true;
     this.defaultWordCount = config.defaultWordCount ?? 1500;
   }
@@ -95,9 +95,11 @@ export class ContentBriefService {
   /**
    * Generate comprehensive content brief
    */
-  async generateBrief(request: ContentBriefRequest): Promise<ContentBriefResponse> {
+  async generateBrief(
+    request: ContentBriefRequest,
+  ): Promise<ContentBriefResponse> {
     const startTime = Date.now();
-    
+
     try {
       // Generate slug from title
       const slug = this.generateSlug(request.title);
@@ -108,7 +110,7 @@ export class ContentBriefService {
       // Generate the brief using AI
       const result = await this.model.generateObject({
         schema: this.getBriefSchema(),
-        prompt
+        prompt,
       });
 
       // Process and enhance the generated brief
@@ -116,14 +118,17 @@ export class ContentBriefService {
 
       // Add research data if requested
       if (request.includeResearch && this.topicResearchService) {
-        brief.researchSources = await this.gatherResearchSources(request.title, request.primaryKeyword);
+        brief.researchSources = await this.gatherResearchSources(
+          request.title,
+          request.primaryKeyword,
+        );
       }
 
       // Add competitor analysis if requested
       if (request.includeCompetitorAnalysis && this.competitorAnalysisService) {
         brief.competitorAnalysis = await this.generateCompetitorAnalysis(
           request.primaryKeyword || request.title,
-          request.secondaryKeywords
+          request.secondaryKeywords,
         );
       }
 
@@ -141,14 +146,15 @@ export class ContentBriefService {
         brief,
         confidence: result.object.confidence || 0.85,
         generatedSections: this.getGeneratedSections(brief),
-        researchTime: (Date.now() - startTime) / 1000
+        researchTime: (Date.now() - startTime) / 1000,
       };
 
       return response;
-
     } catch (error) {
       console.error('Error generating content brief:', error);
-      throw new Error(`Content brief generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Content brief generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -189,7 +195,10 @@ export class ContentBriefService {
         schema: {
           type: 'object',
           properties: {
-            structure: { type: 'string', enum: ['linear', 'pillar', 'listicle', 'comparison', 'guide'] },
+            structure: {
+              type: 'string',
+              enum: ['linear', 'pillar', 'listicle', 'comparison', 'guide'],
+            },
             estimatedWordCount: { type: 'number' },
             sections: {
               type: 'array',
@@ -198,7 +207,10 @@ export class ContentBriefService {
                 properties: {
                   title: { type: 'string' },
                   description: { type: 'string' },
-                  type: { type: 'string', enum: ['introduction', 'main', 'conclusion', 'cta', 'faq'] },
+                  type: {
+                    type: 'string',
+                    enum: ['introduction', 'main', 'conclusion', 'cta', 'faq'],
+                  },
                   required: { type: 'boolean' },
                   estimatedWords: { type: 'number' },
                   keywords: { type: 'array', items: { type: 'string' } },
@@ -212,39 +224,45 @@ export class ContentBriefService {
                         type: { type: 'string' },
                         required: { type: 'boolean' },
                         estimatedWords: { type: 'number' },
-                        keywords: { type: 'array', items: { type: 'string' } }
+                        keywords: { type: 'array', items: { type: 'string' } },
                       },
-                      required: ['title', 'type', 'required', 'estimatedWords']
-                    }
-                  }
+                      required: ['title', 'type', 'required', 'estimatedWords'],
+                    },
+                  },
                 },
-                required: ['title', 'type', 'required', 'estimatedWords']
-              }
-            }
+                required: ['title', 'type', 'required', 'estimatedWords'],
+              },
+            },
           },
-          required: ['structure', 'estimatedWordCount', 'sections']
+          required: ['structure', 'estimatedWordCount', 'sections'],
         },
-        prompt
+        prompt,
       });
 
       return {
         sections: result.object.sections as OutlineSection[],
         estimatedWordCount: result.object.estimatedWordCount,
-        structure: result.object.structure as ContentOutline['structure']
+        structure: result.object.structure as ContentOutline['structure'],
       };
-
     } catch (error) {
       console.error('Error generating content outline:', error);
-      throw new Error(`Outline generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Outline generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   /**
    * Create brief from topic research
    */
-  async createBriefFromTopic(topicId: string, customization?: Partial<ContentBrief>): Promise<ContentBrief> {
+  async createBriefFromTopic(
+    topicId: string,
+    customization?: Partial<ContentBrief>,
+  ): Promise<ContentBrief> {
     if (!this.prisma) {
-      throw new Error('Database connection required for topic-based brief generation');
+      throw new Error(
+        'Database connection required for topic-based brief generation',
+      );
     }
 
     try {
@@ -254,10 +272,10 @@ export class ContentBriefService {
           cluster: true,
           relatedTopics: {
             include: {
-              toTopic: true
-            }
-          }
-        }
+              toTopic: true,
+            },
+          },
+        },
       });
 
       if (!topic) {
@@ -273,11 +291,11 @@ export class ContentBriefService {
         contentType: customization?.targetContentType || 'BLOG',
         includeCompetitorAnalysis: true,
         includeResearch: true,
-        includeOutline: true
+        includeOutline: true,
       };
 
       const response = await this.generateBrief(request);
-      
+
       // Link the brief to the topic
       response.brief.topicId = topicId;
       response.brief.clusterId = topic.clusterId;
@@ -289,17 +307,17 @@ export class ContentBriefService {
           searchVolume: topic.searchVolume,
           difficulty: topic.keywordDifficulty,
           intent: this.inferSearchIntent(topic.primaryKeywords[0] || ''),
-          trending: topic.trending
+          trending: topic.trending,
         },
         secondary: topic.secondaryKeywords.map(kw => ({
           keyword: kw,
-          intent: this.inferSearchIntent(kw)
+          intent: this.inferSearchIntent(kw),
         })),
         longTail: topic.longTailKeywords.map(kw => ({
           keyword: kw,
-          intent: this.inferSearchIntent(kw)
+          intent: this.inferSearchIntent(kw),
         })),
-        semantic: []
+        semantic: [],
       };
 
       // Apply customizations
@@ -313,10 +331,11 @@ export class ContentBriefService {
       }
 
       return response.brief;
-
     } catch (error) {
       console.error('Error creating brief from topic:', error);
-      throw new Error(`Brief creation from topic failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Brief creation from topic failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -324,8 +343,8 @@ export class ContentBriefService {
    * Generate persona-specific content briefs
    */
   async generatePersonaBrief(
-    baseRequest: ContentBriefRequest, 
-    persona: BriefPersona
+    baseRequest: ContentBriefRequest,
+    persona: BriefPersona,
   ): Promise<ContentBrief> {
     try {
       const prompt = `
@@ -358,13 +377,13 @@ export class ContentBriefService {
 
       const result = await this.model.generateObject({
         schema: this.getBriefSchema(),
-        prompt
+        prompt,
       });
 
       const brief = await this.processBriefResult(
-        result.object, 
-        baseRequest, 
-        this.generateSlug(baseRequest.title)
+        result.object,
+        baseRequest,
+        this.generateSlug(baseRequest.title),
       );
 
       // Add persona-specific customizations
@@ -372,18 +391,19 @@ export class ContentBriefService {
       brief.userQuestions = [
         ...brief.userQuestions,
         ...persona.psychographics.painPoints.map(p => `How can I solve ${p}?`),
-        ...persona.psychographics.goals.map(g => `How can I achieve ${g}?`)
+        ...persona.psychographics.goals.map(g => `How can I achieve ${g}?`),
       ];
       brief.painPoints = [
         ...brief.painPoints,
-        ...persona.psychographics.painPoints
+        ...persona.psychographics.painPoints,
       ];
 
       return brief;
-
     } catch (error) {
       console.error('Error generating persona-specific brief:', error);
-      throw new Error(`Persona brief generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Persona brief generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -397,7 +417,7 @@ export class ContentBriefService {
 
     try {
       const brief = await this.prisma.contentBrief.findUnique({
-        where: { id: briefId }
+        where: { id: briefId },
       });
 
       if (!brief) {
@@ -405,14 +425,17 @@ export class ContentBriefService {
       }
 
       // Gather fresh research data
-      const researchSources = await this.gatherResearchSources(brief.title, brief.primaryKeyword);
-      
+      const researchSources = await this.gatherResearchSources(
+        brief.title,
+        brief.primaryKeyword,
+      );
+
       // Update competitor analysis
       let competitorAnalysis;
       if (this.competitorAnalysisService) {
         competitorAnalysis = await this.generateCompetitorAnalysis(
           brief.primaryKeyword || brief.title,
-          brief.secondaryKeywords
+          brief.secondaryKeywords,
         );
       }
 
@@ -423,15 +446,16 @@ export class ContentBriefService {
           researchSources: researchSources as any,
           competitorAnalysis: competitorAnalysis as any,
           version: brief.version + 1,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       });
 
       return this.mapPrismaBriefToType(updatedBrief);
-
     } catch (error) {
       console.error('Error updating brief with research:', error);
-      throw new Error(`Brief update failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Brief update failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -468,33 +492,42 @@ export class ContentBriefService {
               type: 'object',
               properties: {
                 min: { type: 'number' },
-                max: { type: 'number' }
+                max: { type: 'number' },
               },
-              required: ['min', 'max']
+              required: ['min', 'max'],
             },
             typicalTone: { type: 'array', items: { type: 'string' } },
             keywordDensityTarget: { type: 'number' },
-            readingLevelTarget: { type: 'number' }
+            readingLevelTarget: { type: 'number' },
           },
-          required: ['name', 'contentType', 'sections', 'requiredElements', 'wordCountRange']
+          required: [
+            'name',
+            'contentType',
+            'sections',
+            'requiredElements',
+            'wordCountRange',
+          ],
         },
-        prompt
+        prompt,
       });
 
       return {
         id: `template_${contentType.toLowerCase().replace(/\s+/g, '_')}`,
-        ...result.object
+        ...result.object,
       } as BriefTemplate;
-
     } catch (error) {
       console.error('Error generating brief template:', error);
-      throw new Error(`Template generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Template generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   // Private helper methods
 
-  private async buildBriefGenerationPrompt(request: ContentBriefRequest): Promise<string> {
+  private async buildBriefGenerationPrompt(
+    request: ContentBriefRequest,
+  ): Promise<string> {
     const basePrompt = `
       Generate a comprehensive content brief for: "${request.title}"
       
@@ -562,7 +595,15 @@ export class ContentBriefService {
         description: { type: 'string' },
         targetWordCount: { type: 'number' },
         targetAudience: { type: 'string' },
-        searchIntent: { type: 'string', enum: ['informational', 'commercial', 'navigational', 'transactional'] },
+        searchIntent: {
+          type: 'string',
+          enum: [
+            'informational',
+            'commercial',
+            'navigational',
+            'transactional',
+          ],
+        },
         requiredSections: { type: 'array', items: { type: 'string' } },
         suggestedSections: { type: 'array', items: { type: 'string' } },
         examplesNeeded: { type: 'array', items: { type: 'string' } },
@@ -587,10 +628,10 @@ export class ContentBriefService {
               anchor: { type: 'string' },
               authority: { type: 'number' },
               relevance: { type: 'number' },
-              reason: { type: 'string' }
+              reason: { type: 'string' },
             },
-            required: ['url', 'anchor', 'authority', 'relevance', 'reason']
-          }
+            required: ['url', 'anchor', 'authority', 'relevance', 'reason'],
+          },
         },
         statisticsToInclude: {
           type: 'array',
@@ -601,21 +642,28 @@ export class ContentBriefService {
               description: { type: 'string' },
               source: { type: 'string' },
               year: { type: 'number' },
-              relevance: { type: 'number' }
+              relevance: { type: 'number' },
             },
-            required: ['value', 'description', 'source', 'relevance']
-          }
+            required: ['value', 'description', 'source', 'relevance'],
+          },
         },
-        confidence: { type: 'number', minimum: 0, maximum: 1 }
+        confidence: { type: 'number', minimum: 0, maximum: 1 },
       },
-      required: ['description', 'targetWordCount', 'searchIntent', 'requiredSections', 'userQuestions', 'painPoints']
+      required: [
+        'description',
+        'targetWordCount',
+        'searchIntent',
+        'requiredSections',
+        'userQuestions',
+        'painPoints',
+      ],
     };
   }
 
   private async processBriefResult(
-    aiResult: any, 
-    request: ContentBriefRequest, 
-    slug: string
+    aiResult: any,
+    request: ContentBriefRequest,
+    slug: string,
   ): Promise<ContentBrief> {
     const brief: ContentBrief = {
       id: `brief_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -650,7 +698,7 @@ export class ContentBriefService {
       createdAt: new Date(),
       updatedAt: new Date(),
       blogPosts: [],
-      calendarEntries: []
+      calendarEntries: [],
     };
 
     // Process statistics if provided
@@ -660,14 +708,17 @@ export class ContentBriefService {
         description: stat.description,
         source: stat.source,
         year: stat.year,
-        relevance: stat.relevance
+        relevance: stat.relevance,
       }));
     }
 
     return brief;
   }
 
-  private async gatherResearchSources(title: string, primaryKeyword?: string): Promise<ResearchSource[]> {
+  private async gatherResearchSources(
+    title: string,
+    primaryKeyword?: string,
+  ): Promise<ResearchSource[]> {
     try {
       const prompt = `
         Find authoritative research sources for the topic: "${title}"
@@ -700,7 +751,10 @@ export class ContentBriefService {
                 properties: {
                   title: { type: 'string' },
                   url: { type: 'string' },
-                  type: { type: 'string', enum: ['article', 'study', 'report', 'news', 'tool'] },
+                  type: {
+                    type: 'string',
+                    enum: ['article', 'study', 'report', 'news', 'tool'],
+                  },
                   authority: { type: 'number', minimum: 0, maximum: 1 },
                   relevance: { type: 'number', minimum: 0, maximum: 1 },
                   keyQuotes: { type: 'array', items: { type: 'string' } },
@@ -713,23 +767,22 @@ export class ContentBriefService {
                         description: { type: 'string' },
                         source: { type: 'string' },
                         year: { type: 'number' },
-                        relevance: { type: 'number' }
+                        relevance: { type: 'number' },
                       },
-                      required: ['value', 'description', 'source', 'relevance']
-                    }
-                  }
+                      required: ['value', 'description', 'source', 'relevance'],
+                    },
+                  },
                 },
-                required: ['title', 'url', 'type', 'authority', 'relevance']
-              }
-            }
+                required: ['title', 'url', 'type', 'authority', 'relevance'],
+              },
+            },
           },
-          required: ['sources']
+          required: ['sources'],
         },
-        prompt
+        prompt,
       });
 
       return result.object.sources;
-
     } catch (error) {
       console.error('Error gathering research sources:', error);
       return [];
@@ -737,8 +790,8 @@ export class ContentBriefService {
   }
 
   private async generateCompetitorAnalysis(
-    keyword: string, 
-    secondaryKeywords?: string[]
+    keyword: string,
+    secondaryKeywords?: string[],
   ): Promise<BriefCompetitorAnalysis> {
     if (!this.competitorAnalysisService) {
       return {
@@ -746,7 +799,7 @@ export class ContentBriefService {
         gapAnalysis: [],
         strengthsToAddress: [],
         weaknessesToExploit: [],
-        differentiationStrategy: []
+        differentiationStrategy: [],
       };
     }
 
@@ -757,7 +810,7 @@ export class ContentBriefService {
         keywords: [keyword, ...(secondaryKeywords || [])],
         includeContent: true,
         includeKeywords: true,
-        depth: 'basic' as const
+        depth: 'basic' as const,
       };
 
       // For now, return mock data since we don't have actual competitors
@@ -786,22 +839,30 @@ export class ContentBriefService {
                   type: { type: 'string' },
                   description: { type: 'string' },
                   opportunity: { type: 'number' },
-                  difficulty: { type: 'number' }
+                  difficulty: { type: 'number' },
                 },
-                required: ['type', 'description', 'opportunity', 'difficulty']
-              }
+                required: ['type', 'description', 'opportunity', 'difficulty'],
+              },
             },
             strengthsToAddress: { type: 'array', items: { type: 'string' } },
             weaknessesToExploit: { type: 'array', items: { type: 'string' } },
-            differentiationStrategy: { type: 'array', items: { type: 'string' } }
+            differentiationStrategy: {
+              type: 'array',
+              items: { type: 'string' },
+            },
           },
-          required: ['topCompetitors', 'gapAnalysis', 'strengthsToAddress', 'weaknessesToExploit', 'differentiationStrategy']
+          required: [
+            'topCompetitors',
+            'gapAnalysis',
+            'strengthsToAddress',
+            'weaknessesToExploit',
+            'differentiationStrategy',
+          ],
         },
-        prompt
+        prompt,
       });
 
       return result.object;
-
     } catch (error) {
       console.error('Error generating competitor analysis for brief:', error);
       return {
@@ -809,7 +870,7 @@ export class ContentBriefService {
         gapAnalysis: [],
         strengthsToAddress: [],
         weaknessesToExploit: [],
-        differentiationStrategy: []
+        differentiationStrategy: [],
       };
     }
   }
@@ -823,16 +884,27 @@ export class ContentBriefService {
   }
 
   private inferSearchIntent(keyword: string): SearchIntent {
-    const commercial = ['buy', 'price', 'cost', 'review', 'best', 'vs', 'compare'];
+    const commercial = [
+      'buy',
+      'price',
+      'cost',
+      'review',
+      'best',
+      'vs',
+      'compare',
+    ];
     const transactional = ['download', 'free', 'trial', 'signup', 'register'];
     const navigational = ['login', 'contact', 'about', 'support'];
-    
+
     const lowerKeyword = keyword.toLowerCase();
-    
-    if (commercial.some(term => lowerKeyword.includes(term))) return 'commercial';
-    if (transactional.some(term => lowerKeyword.includes(term))) return 'transactional';
-    if (navigational.some(term => lowerKeyword.includes(term))) return 'navigational';
-    
+
+    if (commercial.some(term => lowerKeyword.includes(term)))
+      return 'commercial';
+    if (transactional.some(term => lowerKeyword.includes(term)))
+      return 'transactional';
+    if (navigational.some(term => lowerKeyword.includes(term)))
+      return 'navigational';
+
     return 'informational';
   }
 
@@ -888,7 +960,7 @@ export class ContentBriefService {
           clusterId: brief.clusterId,
           status: brief.status,
           version: brief.version,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         create: {
           id: brief.id,
@@ -928,8 +1000,8 @@ export class ContentBriefService {
           status: brief.status,
           version: brief.version,
           createdAt: brief.createdAt,
-          updatedAt: brief.updatedAt
-        }
+          updatedAt: brief.updatedAt,
+        },
       });
     } catch (error) {
       console.error('Error saving content brief:', error);
@@ -980,7 +1052,7 @@ export class ContentBriefService {
       updatedAt: prismaBrief.updatedAt,
       createdBy: prismaBrief.createdBy,
       blogPosts: prismaBrief.blogPosts || [],
-      calendarEntries: prismaBrief.calendarEntries || []
+      calendarEntries: prismaBrief.calendarEntries || [],
     };
   }
 }

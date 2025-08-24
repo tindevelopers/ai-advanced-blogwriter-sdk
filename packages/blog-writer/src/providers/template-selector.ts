@@ -16,7 +16,18 @@ export interface TemplateSelectionCriteria {
     | 'marketing'
     | 'information'
     | 'persuasion';
-  tone?: 'professional' | 'casual' | 'friendly' | 'authoritative' | 'technical' | 'conversational' | 'humorous' | 'inspirational' | 'educational' | 'persuasive' | 'informative';
+  tone?:
+    | 'professional'
+    | 'casual'
+    | 'friendly'
+    | 'authoritative'
+    | 'technical'
+    | 'conversational'
+    | 'humorous'
+    | 'inspirational'
+    | 'educational'
+    | 'persuasive'
+    | 'informative';
   wordCountRange?: { min: number; max: number };
   requiredSections?: string[];
   businessGoals?: string[];

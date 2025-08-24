@@ -13,7 +13,7 @@ import {
   SEORecommendationSchema,
   TitleOptimizationSchema,
   MetaDescriptionSchema,
-  ContentOptimizationSchema
+  ContentOptimizationSchema,
 } from '../schemas/ai-schemas';
 
 /**
@@ -78,46 +78,61 @@ export class SEOOptimizer {
         contentLength: result.object.components.content.score,
         internalLinks: 0, // Would be calculated separately
         images: result.object.components.images?.score || 0,
-        url: result.object.components.url.score
+        url: result.object.components.url.score,
       },
       recommendations: result.object.recommendations.map((rec: any) => ({
-        type: rec.impact === 'critical' ? 'critical' : rec.impact === 'high' ? 'important' : 'minor',
+        type:
+          rec.impact === 'critical'
+            ? 'critical'
+            : rec.impact === 'high'
+              ? 'important'
+              : 'minor',
         category: rec.category,
         message: rec.message,
         current: rec.current,
         suggested: rec.suggested,
-        impact: rec.impact === 'critical' ? 100 : rec.impact === 'high' ? 75 : rec.impact === 'medium' ? 50 : 25,
-        fix: rec.fix || rec.message
+        impact:
+          rec.impact === 'critical'
+            ? 100
+            : rec.impact === 'high'
+              ? 75
+              : rec.impact === 'medium'
+                ? 50
+                : 25,
+        fix: rec.fix || rec.message,
       })),
       keywords: {
-        primary: result.object.keywords?.[0] ? {
-          keyword: result.object.keywords[0].keyword,
-          density: result.object.keywords[0].density,
-          recommendedDensity: result.object.keywords[0].recommendedDensity,
-          positions: result.object.keywords[0].positions || [],
-          related: result.object.keywords[0].related || [],
-          longTail: result.object.keywords[0].longTail || []
-        } : undefined,
-        secondary: result.object.keywords?.slice(1).map((k: any) => ({
-          keyword: k.keyword,
-          density: k.density,
-          recommendedDensity: k.recommendedDensity,
-          positions: k.positions || [],
-          related: k.related || [],
-          longTail: k.longTail || []
-        })) || []
+        primary: result.object.keywords?.[0]
+          ? {
+              keyword: result.object.keywords[0].keyword,
+              density: result.object.keywords[0].density,
+              recommendedDensity: result.object.keywords[0].recommendedDensity,
+              positions: result.object.keywords[0].positions || [],
+              related: result.object.keywords[0].related || [],
+              longTail: result.object.keywords[0].longTail || [],
+            }
+          : undefined,
+        secondary:
+          result.object.keywords?.slice(1).map((k: any) => ({
+            keyword: k.keyword,
+            density: k.density,
+            recommendedDensity: k.recommendedDensity,
+            positions: k.positions || [],
+            related: k.related || [],
+            longTail: k.longTail || [],
+          })) || [],
       },
       content: {
         wordCount: blogPost.metadata.seo.wordCount,
         readingLevel: 8, // Would be calculated separately
         readabilityScore: result.object.components.readability?.score || 0,
         avgSentenceLength: 15, // Would be calculated separately
-        paragraphCount: 10 // Would be calculated separately
+        paragraphCount: 10, // Would be calculated separately
       },
       analyzedAt: new Date(),
-      modelUsed: 'ai-model'
+      modelUsed: 'ai-model',
     };
-    
+
     return analysis;
   }
 

@@ -1,4 +1,3 @@
-
 # AI SDK Blog Writer
 
 > Intelligent blog content generation and optimization for the AI SDK ecosystem.
@@ -8,30 +7,35 @@ The AI SDK Blog Writer extends the [Vercel AI SDK](https://sdk.vercel.ai/) with 
 ## Features
 
 ### 🚀 Intelligent Content Generation
+
 - **Template-based generation** with 10+ pre-built blog templates
 - **Smart content structure** with automated heading organization
 - **Context-aware writing** that adapts tone and style to your audience
 - **Research integration** for data-driven content creation
 
 ### 🎯 SEO Optimization Engine
+
 - **Comprehensive SEO analysis** with 100-point scoring system
 - **Keyword optimization** with density analysis and placement recommendations
 - **Meta tag generation** for titles, descriptions, and social media
 - **Content structure optimization** for better search visibility
 
 ### 🔍 Content Research Tools
+
 - **Topic research** with competitive analysis
 - **Keyword discovery** including long-tail and trending keywords
 - **Content gap analysis** to identify opportunities
 - **Audience insight generation** for targeted content
 
 ### 📊 Quality Assurance
+
 - **Content validation** with detailed error reporting
 - **Readability analysis** with grade-level scoring
 - **Performance suggestions** for engagement optimization
 - **Version management** with change tracking
 
 ### 🎨 Advanced Writing Features (NEW)
+
 - **Multi-Section Generation** - Intelligent content structuring with context-aware section generation
 - **Tone & Style Consistency** - Brand voice alignment and automated style guide compliance
 - **Fact-Checking & Verification** - AI-powered claim verification with credible source analysis
@@ -40,6 +44,7 @@ The AI SDK Blog Writer extends the [Vercel AI SDK](https://sdk.vercel.ai/) with 
 - **A/B Testing Suggestions** - Generate content variations for optimization testing
 
 ### 🏢 Content Management Foundation
+
 - **Version Control** - Complete version history with branching and merging capabilities
 - **Workflow Management** - Configurable approval workflows and status tracking
 - **Metadata System** - Flexible custom fields and content classification
@@ -47,6 +52,7 @@ The AI SDK Blog Writer extends the [Vercel AI SDK](https://sdk.vercel.ai/) with 
 - **Series Management** - Create and manage multi-part content series
 
 ### 📈 Content Strategy Engine
+
 - **Topic Research** - AI-powered topic discovery with trend analysis
 - **Editorial Calendar** - Smart content planning with deadline management
 - **Competitor Analysis** - Comprehensive competitive intelligence and gap identification
@@ -83,18 +89,18 @@ console.log(`Generated ${result.metadata.wordCount} words`);
 
 The library includes 10 pre-built templates optimized for different content types:
 
-| Template | Use Case | Typical Length |
-|----------|----------|----------------|
-| `howto` | Step-by-step guides | 800-2500 words |
-| `listicle` | List-based articles | 1000-3000 words |
-| `comparison` | Product/service comparisons | 1200-2500 words |
-| `tutorial` | In-depth educational content | 1500-3500 words |
-| `news` | News and announcements | 600-2000 words |
-| `review` | Product/service reviews | 800-2000 words |
-| `guide` | Comprehensive guides | 2000-5000 words |
+| Template     | Use Case                     | Typical Length  |
+| ------------ | ---------------------------- | --------------- |
+| `howto`      | Step-by-step guides          | 800-2500 words  |
+| `listicle`   | List-based articles          | 1000-3000 words |
+| `comparison` | Product/service comparisons  | 1200-2500 words |
+| `tutorial`   | In-depth educational content | 1500-3500 words |
+| `news`       | News and announcements       | 600-2000 words  |
+| `review`     | Product/service reviews      | 800-2000 words  |
+| `guide`      | Comprehensive guides         | 2000-5000 words |
 | `case-study` | Success stories and analysis | 1200-2500 words |
-| `opinion` | Editorial and opinion pieces | 1000-2500 words |
-| `interview` | Q&A format content | 1200-3000 words |
+| `opinion`    | Editorial and opinion pieces | 1000-2500 words |
+| `interview`  | Q&A format content           | 1200-3000 words |
 
 ## Content Research
 
@@ -139,12 +145,12 @@ const result = await advancedWriter.generateAdvancedContent({
   targetLength: 2000,
   contentType: 'article',
   targetAudience: 'Technology professionals',
-  
+
   // Multi-section options
   generateOutline: true,
   contextAwareness: true,
   includeTransitions: true,
-  
+
   // Quality requirements
   enableFactChecking: true,
   targetKeywords: ['artificial intelligence', 'AI future', 'technology trends'],
@@ -152,7 +158,9 @@ const result = await advancedWriter.generateAdvancedContent({
 });
 
 console.log(`Generated ${result.sections.length} sections`);
-console.log(`Quality score: ${(result.metrics.overallQualityScore * 100).toFixed(1)}%`);
+console.log(
+  `Quality score: ${(result.metrics.overallQualityScore * 100).toFixed(1)}%`,
+);
 ```
 
 ### Tone & Style Consistency
@@ -167,22 +175,27 @@ const toneService = new ToneStyleConsistencyService({
 });
 
 // Create brand voice profile
-const brandVoice = await toneService.createBrandVoiceProfile([
-  "We believe technology should empower everyone",
-  "Let's dive into how this works",
-  "This approach offers several key advantages"
-], 'Tech-Friendly Professional');
+const brandVoice = await toneService.createBrandVoiceProfile(
+  [
+    'We believe technology should empower everyone',
+    "Let's dive into how this works",
+    'This approach offers several key advantages',
+  ],
+  'Tech-Friendly Professional',
+);
 
 // Analyze content tone
 const toneAnalysis = await toneService.analyzeTone({
   blogPostId: 'post-123',
   content: yourContent,
   brandVoice,
-  analysisDepth: 'comprehensive'
+  analysisDepth: 'comprehensive',
 });
 
 console.log(`Primary tone: ${toneAnalysis.primaryTone}`);
-console.log(`Brand alignment: ${(toneAnalysis.brandVoiceScore * 100).toFixed(1)}%`);
+console.log(
+  `Brand alignment: ${(toneAnalysis.brandVoiceScore * 100).toFixed(1)}%`,
+);
 ```
 
 ### Fact-Checking & Source Verification
@@ -201,7 +214,7 @@ const factChecks = await factChecker.performFactCheck({
   blogPostId: 'post-123',
   autoDetectClaims: true,
   verificationThreshold: 0.8,
-  requireReliableSources: true
+  requireReliableSources: true,
 });
 
 // Generate fact-checking report
@@ -226,13 +239,15 @@ const optimization = await optimizer.optimizeContent({
   blogPostId: 'post-123',
   targetKeywords: ['AI optimization', 'content improvement'],
   categories: ['SEO', 'READABILITY', 'ENGAGEMENT'],
-  prioritizeHighImpact: true
+  prioritizeHighImpact: true,
 });
 
 console.log(`Generated ${optimization.suggestions.length} suggestions`);
 console.log('Quick wins:');
 optimization.implementationGuide.quickWins.forEach((task, i) => {
-  console.log(`${i + 1}. ${task.task} (${task.impact} impact, ${task.effort} effort)`);
+  console.log(
+    `${i + 1}. ${task.task} (${task.impact} impact, ${task.effort} effort)`,
+  );
 });
 ```
 
@@ -241,10 +256,10 @@ optimization.implementationGuide.quickWins.forEach((task, i) => {
 Here's how to use all features together in a complete content creation workflow:
 
 ```typescript
-import { 
+import {
   AdvancedWritingService,
   ContentStrategyService,
-  ContentManagementService 
+  ContentManagementService,
 } from '@ai-sdk/blog-writer';
 
 async function createComprehensiveContent() {
@@ -253,9 +268,9 @@ async function createComprehensiveContent() {
   const topicResearch = await strategy.researchTopics({
     niche: 'Technology',
     keywords: ['AI', 'automation', 'future tech'],
-    analysisDepth: 'detailed'
+    analysisDepth: 'detailed',
   });
-  
+
   // 2. Advanced Content Generation
   const writer = new AdvancedWritingService({ model: openai('gpt-4') });
   const content = await writer.generateAdvancedContent({
@@ -264,20 +279,20 @@ async function createComprehensiveContent() {
     enableFactChecking: true,
     generateOutline: true,
     targetKeywords: topicResearch.topics[0].primaryKeywords.slice(0, 3),
-    minQualityScore: 0.85
+    minQualityScore: 0.85,
   });
-  
+
   // 3. Content Management
   const manager = new ContentManagementService({ model: openai('gpt-4') });
   await manager.processContentWorkflow(content.blogPostId, {
     autoPublish: content.metrics.overallQualityScore >= 0.9,
-    qualityGate: true
+    qualityGate: true,
   });
-  
+
   // 4. Performance Insights
   const insights = await writer.generateInsightsReport(content.blogPostId);
   console.log(`Content quality: ${insights.overallScore.toFixed(1)}/100`);
-  
+
   return content;
 }
 ```
@@ -332,20 +347,16 @@ const customBlog = await generateBlog({
 ```typescript
 import { generateBlog } from '@ai-sdk/blog-writer';
 
-const topics = [
-  'Topic 1',
-  'Topic 2', 
-  'Topic 3',
-];
+const topics = ['Topic 1', 'Topic 2', 'Topic 3'];
 
 const blogs = await Promise.all(
-  topics.map(topic => 
+  topics.map(topic =>
     generateBlog({
       model: openai('gpt-4'),
       topic,
       template: 'howto',
-    })
-  )
+    }),
+  ),
 );
 ```
 
@@ -375,9 +386,11 @@ for (const item of seriesTopics) {
 ### Core Functions
 
 #### `generateBlog(options)`
+
 Generates a complete blog post with the specified options.
 
 **Options:**
+
 - `model` - Language model to use
 - `topic` - Blog post topic
 - `template` - Template type (optional, defaults to 'howto')
@@ -390,19 +403,23 @@ Generates a complete blog post with the specified options.
 **Returns:** `GenerateBlogResult` with blog post, metadata, and suggestions.
 
 #### `researchTopic(model, config)`
+
 Conducts comprehensive research on a given topic.
 
 **Parameters:**
+
 - `model` - Language model to use
 - `config` - Research configuration object
 
 **Returns:** `ContentResearchResult` with research insights.
 
 #### `analyzeSEO(model, blogPost)`
+
 Analyzes SEO performance of a blog post.
 
 **Parameters:**
-- `model` - Language model to use  
+
+- `model` - Language model to use
 - `blogPost` - Blog post to analyze
 
 **Returns:** `SEOAnalysis` with scores and recommendations.
@@ -445,6 +462,7 @@ const gemini = await generateBlog({
 The AI SDK Blog Writer now includes enterprise-grade content management capabilities:
 
 ### 📝 Version Control System
+
 Complete version control with branching, merging, and rollbacks:
 
 ```typescript
@@ -462,14 +480,14 @@ const result = await contentManager.createBlogPost({
   tags: ['react', 'javascript', 'patterns'],
   seoMetadata: {
     metaTitle: 'Advanced React Patterns | Developer Guide',
-    focusKeywords: ['react patterns', 'advanced react']
-  }
+    focusKeywords: ['react patterns', 'advanced react'],
+  },
 });
 
 // Create version branch
 const branch = await contentManager.createBranch(
   result.blogPost.id,
-  'feature/seo-improvements'
+  'feature/seo-improvements',
 );
 
 // Compare versions
@@ -479,11 +497,12 @@ console.log('Similarity:', comparison.similarityScore);
 // Rollback if needed
 await contentManager.rollbackToVersion(postId, targetVersionId, {
   createBranch: true,
-  branchName: 'rollback-safe'
+  branchName: 'rollback-safe',
 });
 ```
 
 ### 🔄 Workflow Management System
+
 Multi-step approval workflows with notifications:
 
 ```typescript
@@ -491,14 +510,14 @@ Multi-step approval workflows with notifications:
 const contentManager = new ContentManagementService(prisma, {
   requireApproval: true,
   approvalMatrix: {
-    'technical': ['tech-lead@company.com'],
-    'marketing': ['marketing@company.com']
+    technical: ['tech-lead@company.com'],
+    marketing: ['marketing@company.com'],
   },
   notifications: {
     onSubmission: true,
     onApproval: true,
-    reminderDays: [1, 3, 7]
-  }
+    reminderDays: [1, 3, 7],
+  },
 });
 
 // Submit for review
@@ -509,14 +528,14 @@ const workflow = await contentManager.submitForReview(
     reviewers: ['reviewer1', 'reviewer2'],
     dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
     priority: 'high',
-    message: 'Please review for technical accuracy'
-  }
+    message: 'Please review for technical accuracy',
+  },
 );
 
 // Process approval
 await contentManager.processApproval(workflow.id, 1, 'reviewer1', {
   action: 'approve',
-  comment: 'Excellent technical content!'
+  comment: 'Excellent technical content!',
 });
 
 // Schedule publication
@@ -524,12 +543,13 @@ await contentManager.publishBlogPost(blogPostId, 'author-123', {
   scheduleOptions: {
     scheduledFor: new Date('2024-12-01T10:00:00Z'),
     autoPromote: true,
-    promotionChannels: ['twitter', 'linkedin']
-  }
+    promotionChannels: ['twitter', 'linkedin'],
+  },
 });
 ```
 
 ### 🏷️ Advanced Metadata Management
+
 SEO metadata, custom fields, and comprehensive validation:
 
 ```typescript
@@ -543,7 +563,7 @@ const difficultyField = await metadataManager.createMetadataField({
   displayName: 'Difficulty Level',
   fieldType: 'STRING',
   validation: { options: ['Beginner', 'Intermediate', 'Advanced'] },
-  isRequired: true
+  isRequired: true,
 });
 
 // Comprehensive SEO metadata
@@ -557,8 +577,8 @@ await metadataManager.updateSeoMetadata(blogPostId, {
   twitterCard: 'summary_large_image',
   structuredData: {
     '@type': 'Article',
-    headline: 'Article Headline'
-  }
+    headline: 'Article Headline',
+  },
 });
 
 // Advanced SEO analysis
@@ -568,6 +588,7 @@ console.log('Suggestions:', seoAnalysis.suggestions.length);
 ```
 
 ### 📂 Content Organization System
+
 Hierarchical categories, flexible tagging, and content relationships:
 
 ```typescript
@@ -580,19 +601,19 @@ const techCategory = await categorizationManager.createCategory({
   name: 'Technology',
   description: 'Tech content',
   color: '#3B82F6',
-  icon: 'laptop'
+  icon: 'laptop',
 });
 
 const aiCategory = await categorizationManager.createCategory({
   name: 'Artificial Intelligence',
   parentId: techCategory.id,
-  color: '#8B5CF6'
+  color: '#8B5CF6',
 });
 
 // Auto-classify content
 const classification = await categorizationManager.autoClassifyContent({
   title: 'Machine Learning Fundamentals',
-  content: 'Content about ML concepts...'
+  content: 'Content about ML concepts...',
 });
 
 // Advanced content search
@@ -601,18 +622,19 @@ const results = await categorizationManager.searchContent({
   categories: [aiCategory.id],
   tags: ['ml', 'ai'],
   dateRange: { from: lastMonth, to: now },
-  sortBy: 'relevance'
+  sortBy: 'relevance',
 });
 
 // Create content series
 const series = await categorizationManager.createSeries(
   'AI Fundamentals Series',
-  'Complete guide to AI concepts'
+  'Complete guide to AI concepts',
 );
 await categorizationManager.addToSeries(blogPostId, series.id, 1);
 ```
 
 ### 🔔 Notification System
+
 Real-time workflow and content notifications:
 
 ```typescript
@@ -628,7 +650,7 @@ await notificationManager.createSeoNotification(
   'author-123',
   blogPostId,
   'low_score',
-  45 // SEO score
+  45, // SEO score
 );
 
 // Deadline reminders
@@ -636,17 +658,18 @@ await notificationManager.createDeadlineReminder(
   'reviewer-456',
   blogPostId,
   deadline,
-  'approaching'
+  'approaching',
 );
 
 // Get user notifications
 const notifications = await notificationManager.getUserNotifications(
   'user-123',
-  { unreadOnly: true, limit: 10 }
+  { unreadOnly: true, limit: 10 },
 );
 ```
 
 ### 📊 Analytics & Reporting
+
 Comprehensive content and workflow analytics:
 
 ```typescript
@@ -682,7 +705,7 @@ import { ContentStrategyService } from '@ai-sdk/blog-writer';
 const strategyService = new ContentStrategyService({
   model: openai('gpt-4'),
   prisma,
-  cacheResults: true
+  cacheResults: true,
 });
 
 // Generate comprehensive content strategy
@@ -691,23 +714,23 @@ const strategy = await strategyService.generateStrategy({
   targetKeywords: [
     'product management best practices',
     'SaaS product strategy',
-    'user feedback management'
+    'user feedback management',
   ],
   competitors: ['productplan.com', 'aha.io'],
   timeframe: {
     start: new Date(),
-    end: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days
+    end: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days
   },
   goals: {
     contentVolume: 12, // posts per month
     targetAudience: ['Product Managers', 'SaaS Founders'],
-    businessObjectives: ['Generate leads', 'Build authority']
+    businessObjectives: ['Generate leads', 'Build authority'],
   },
   constraints: {
     budget: 50000,
     teamSize: 3,
-    expertiseAreas: ['Product Management', 'Technical Writing']
-  }
+    expertiseAreas: ['Product Management', 'Technical Writing'],
+  },
 });
 
 console.log(`Strategy generated:`);
@@ -715,7 +738,9 @@ console.log(`- Topics: ${strategy.topics.length}`);
 console.log(`- Calendar entries: ${strategy.calendar.entries.length}`);
 console.log(`- Content briefs: ${strategy.contentBriefs.length}`);
 console.log(`- Opportunities: ${strategy.opportunities.length}`);
-console.log(`- Implementation time: ${strategy.overview.estimatedTimeToImplement} weeks`);
+console.log(
+  `- Implementation time: ${strategy.overview.estimatedTimeToImplement} weeks`,
+);
 ```
 
 ### 🔬 Topic Research & Trend Analysis
@@ -728,11 +753,14 @@ import { TopicResearchService } from '@ai-sdk/blog-writer';
 const topicService = new TopicResearchService({
   model: openai('gpt-4'),
   prisma,
-  cacheResults: true
+  cacheResults: true,
 });
 
 // Discover trending topics
-const trendingTopics = await topicService.discoverTrendingTopics('AI automation', 10);
+const trendingTopics = await topicService.discoverTrendingTopics(
+  'AI automation',
+  10,
+);
 
 // Research specific topic
 const topicResearch = await topicService.researchTopic({
@@ -740,7 +768,7 @@ const topicResearch = await topicService.researchTopic({
   includeKeywords: true,
   includeTrends: true,
   includeCompetitors: true,
-  depth: 'detailed'
+  depth: 'detailed',
 });
 
 console.log(`Topic: ${topicResearch.topic.title}`);
@@ -759,7 +787,7 @@ import { EditorialCalendarService } from '@ai-sdk/blog-writer';
 const calendarService = new EditorialCalendarService({
   model: openai('gpt-4'),
   prisma,
-  autoAssignment: true
+  autoAssignment: true,
 });
 
 // Generate editorial calendar
@@ -768,7 +796,7 @@ const calendar = await calendarService.generateCalendar({
   endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   topics: ['AI automation', 'Machine learning ROI'],
   contentTypes: ['BLOG', 'GUIDE'],
-  priority: 'medium'
+  priority: 'medium',
 });
 
 // Add calendar entry with milestones
@@ -783,13 +811,13 @@ const entry = await calendarService.addEntry({
   milestones: [
     {
       name: 'Research Complete',
-      dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
+      dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
     },
     {
       name: 'First Draft',
-      dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
-    }
-  ]
+      dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+    },
+  ],
 });
 
 // Track time spent
@@ -798,7 +826,7 @@ await calendarService.trackTime(
   'writer@company.com',
   'research',
   2.5, // hours
-  'Initial topic research and source gathering'
+  'Initial topic research and source gathering',
 );
 ```
 
@@ -812,13 +840,13 @@ import { CompetitorAnalysisService } from '@ai-sdk/blog-writer';
 const competitorService = new CompetitorAnalysisService({
   model: openai('gpt-4'),
   prisma,
-  cacheResults: true
+  cacheResults: true,
 });
 
 // Identify SERP competitors
 const competitors = await competitorService.identifySERPCompetitors([
   'AI automation',
-  'machine learning business'
+  'machine learning business',
 ]);
 
 // Analyze competitors
@@ -827,7 +855,7 @@ const analysis = await competitorService.analyzeCompetitors({
   keywords: ['AI automation', 'ML ROI'],
   includeContent: true,
   includeKeywords: true,
-  depth: 'detailed'
+  depth: 'detailed',
 });
 
 console.log(`Competitors Analyzed: ${analysis.analysis.length}`);
@@ -854,7 +882,7 @@ const briefService = new ContentBriefService({
   model: openai('gpt-4'),
   prisma,
   includeResearchByDefault: true,
-  includeCompetitorAnalysisByDefault: true
+  includeCompetitorAnalysisByDefault: true,
 });
 
 // Generate comprehensive content brief
@@ -866,7 +894,7 @@ const brief = await briefService.generateBrief({
   contentType: 'GUIDE',
   includeCompetitorAnalysis: true,
   includeResearch: true,
-  includeOutline: true
+  includeOutline: true,
 });
 
 console.log(`Brief Generated: ${brief.brief.title}`);
@@ -887,10 +915,10 @@ console.log(`Estimated Words: ${outline.estimatedWordCount}`);
 Complete workflow from strategy to publication:
 
 ```typescript
-import { 
-  ContentStrategyService, 
+import {
+  ContentStrategyService,
   ContentManagementService,
-  generateBlog 
+  generateBlog,
 } from '@ai-sdk/blog-writer';
 
 // 1. Generate comprehensive strategy
@@ -906,8 +934,8 @@ const blogResult = await generateBlog({
   template: 'guide',
   seo: {
     focusKeyword: selectedBrief.primaryKeyword,
-    metaDescription: selectedBrief.metaDescription
-  }
+    metaDescription: selectedBrief.metaDescription,
+  },
 });
 
 // 3. Create managed post with full workflow
@@ -918,17 +946,17 @@ const managedPost = await contentManagement.createBlogPost({
   contentBriefId: selectedBrief.id,
   workflowConfig: {
     requiresApproval: true,
-    approvers: ['editor@company.com', 'seo@company.com']
+    approvers: ['editor@company.com', 'seo@company.com'],
   },
   versioningConfig: {
     createBranch: true,
-    branchName: 'content/new-guide'
+    branchName: 'content/new-guide',
   },
   seoMetadata: {
     metaTitle: selectedBrief.metaTitle,
     metaDescription: selectedBrief.metaDescription,
-    focusKeywords: [selectedBrief.primaryKeyword]
-  }
+    focusKeywords: [selectedBrief.primaryKeyword],
+  },
 });
 
 console.log('✅ Complete workflow: Strategy → Brief → Content → Management');
@@ -952,6 +980,7 @@ npx prisma db seed
 The enhanced schema includes comprehensive tables for:
 
 **Content Management Foundation:**
+
 - Blog posts with versioning and branching
 - Hierarchical categories and tags
 - Workflow states and approval processes
@@ -961,6 +990,7 @@ The enhanced schema includes comprehensive tables for:
 - SEO metadata and analytics
 
 **Content Strategy Engine:**
+
 - Topic research and trend analysis
 - Editorial calendar and scheduling
 - Competitor analysis and tracking
@@ -973,15 +1003,18 @@ The enhanced schema includes comprehensive tables for:
 See the `/examples` directory for comprehensive usage examples:
 
 ### Traditional Examples
+
 - `basic-usage.ts` - Simple blog generation
 - `advanced-usage.ts` - Complex workflows and batch processing
 
 ### Content Management Examples 🆕
+
 - `advanced-content-management.ts` - Complete CMS workflow demonstration
 - `version-management-example.ts` - Branching, merging, and rollbacks
 - `workflow-automation-example.ts` - Approval workflows and notifications
 
 ### Content Strategy Engine Examples 🚀
+
 - `content-strategy-engine-demo.ts` - Complete strategy engine demonstration
 - `integrated-workflow-example.ts` - Strategy-to-publication workflow
 - `topic-research-advanced.ts` - Advanced topic research and trend analysis
@@ -1007,17 +1040,18 @@ Apache License 2.0 - see [LICENSE](LICENSE) for details.
 
 Built with ❤️ by the AI SDK team
 
-
 ## 🆕 NEW PLATFORM ADAPTERS
 
 ### Shopify Adapter
+
 - **E-commerce Integration**: Publish blog content directly to Shopify store blogs
 - **Product Linking**: Embed product recommendations using `[product:handle]` syntax
 - **Store Branding**: Automatic theme and branding consistency
 - **SEO Optimization**: Built-in e-commerce SEO best practices
 - **Analytics Support**: Track blog performance with Shopify analytics
 
-### Webflow Adapter  
+### Webflow Adapter
+
 - **Design-First CMS**: Rich text publishing with advanced design capabilities
 - **Custom Fields**: Support for complex CMS field types and structures
 - **Asset Management**: Automatic image optimization and CDN integration
@@ -1025,11 +1059,12 @@ Built with ❤️ by the AI SDK team
 - **Collection Management**: Automated blog collection setup and management
 
 ### Multi-Platform Publishing
+
 All platform adapters now work together through the unified `MultiPlatformPublisher`:
+
 - **Cross-Platform Publishing**: Publish to all 5 platforms simultaneously
 - **Content Adaptation**: Automatically optimize content for each platform
 - **Aggregated Analytics**: Combined performance metrics across all platforms
 - **Health Monitoring**: Real-time status tracking for all connected platforms
 
 See [PLATFORM-ADAPTERS.md](./PLATFORM-ADAPTERS.md) for detailed usage guides and examples.
-

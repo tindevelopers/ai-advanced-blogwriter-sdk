@@ -1,5 +1,3 @@
-
-
 /**
  * Platform Adapter Registry
  * Centralized registry for all platform adapters
@@ -34,10 +32,10 @@ export const AVAILABLE_PLATFORMS = [
   'medium',
   'linkedin',
   'shopify',
-  'webflow'
+  'webflow',
 ] as const;
 
-export type SupportedPlatform = typeof AVAILABLE_PLATFORMS[number];
+export type SupportedPlatform = (typeof AVAILABLE_PLATFORMS)[number];
 
 /**
  * Platform display information
@@ -48,36 +46,36 @@ export const PLATFORM_INFO = {
     description: 'WordPress.com and self-hosted WordPress sites',
     supportsScheduling: true,
     supportsAnalytics: false,
-    requiresAuth: ['application_password', 'oauth2']
+    requiresAuth: ['application_password', 'oauth2'],
   },
   medium: {
     name: 'Medium',
     description: 'Medium publishing platform',
     supportsScheduling: false,
     supportsAnalytics: true,
-    requiresAuth: ['integration_token']
+    requiresAuth: ['integration_token'],
   },
   linkedin: {
     name: 'LinkedIn',
     description: 'LinkedIn articles and posts',
     supportsScheduling: true,
     supportsAnalytics: true,
-    requiresAuth: ['oauth2']
+    requiresAuth: ['oauth2'],
   },
   shopify: {
     name: 'Shopify',
     description: 'Shopify store blog publishing',
     supportsScheduling: true,
     supportsAnalytics: true,
-    requiresAuth: ['private_app', 'oauth2']
+    requiresAuth: ['private_app', 'oauth2'],
   },
   webflow: {
     name: 'Webflow',
     description: 'Webflow CMS publishing',
     supportsScheduling: false,
     supportsAnalytics: false,
-    requiresAuth: ['api_token', 'oauth2']
-  }
+    requiresAuth: ['api_token', 'oauth2'],
+  },
 } as const;
 
 /**
@@ -85,7 +83,7 @@ export const PLATFORM_INFO = {
  */
 export function createPlatformAdapter(
   platform: SupportedPlatform,
-  config?: any
+  config?: any,
 ): BasePlatformAdapter {
   return globalPlatformRegistry.create(platform, config);
 }
@@ -93,7 +91,9 @@ export function createPlatformAdapter(
 /**
  * Check if a platform is supported
  */
-export function isPlatformSupported(platform: string): platform is SupportedPlatform {
+export function isPlatformSupported(
+  platform: string,
+): platform is SupportedPlatform {
   return globalPlatformRegistry.has(platform);
 }
 
@@ -110,7 +110,7 @@ export function getPlatformInfo(platform: SupportedPlatform) {
 export function getAllPlatforms() {
   return AVAILABLE_PLATFORMS.map(platform => ({
     key: platform,
-    ...PLATFORM_INFO[platform]
+    ...PLATFORM_INFO[platform],
   }));
 }
 
@@ -145,13 +145,13 @@ export interface PlatformConfigurations {
 export class PlatformAdapterFactory {
   static create(
     platform: SupportedPlatform,
-    config?: PlatformConfigurations[typeof platform]
+    config?: PlatformConfigurations[typeof platform],
   ): BasePlatformAdapter {
     const adapterConfig = {
       ...config,
       maxRetries: 3,
       retryDelay: 1000,
-      timeout: 30000
+      timeout: 30000,
     };
 
     return createPlatformAdapter(platform, adapterConfig);
@@ -161,7 +161,7 @@ export class PlatformAdapterFactory {
     platforms: Array<{
       name: SupportedPlatform;
       config?: PlatformConfigurations[SupportedPlatform];
-    }>
+    }>,
   ): Record<SupportedPlatform, BasePlatformAdapter> {
     const adapters = {} as Record<SupportedPlatform, BasePlatformAdapter>;
 
@@ -172,4 +172,3 @@ export class PlatformAdapterFactory {
     return adapters;
   }
 }
-

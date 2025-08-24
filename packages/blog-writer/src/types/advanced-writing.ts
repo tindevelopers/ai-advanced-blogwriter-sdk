@@ -1,4 +1,3 @@
-
 /**
  * Advanced Writing Features Type Definitions
  * Week 7-8 Implementation
@@ -51,7 +50,7 @@ export enum SectionType {
   SUMMARY = 'summary',
   RESOURCES = 'resources',
   PARAGRAPH = 'paragraph',
-  INFORMATIVE = 'informative' // Added missing type
+  INFORMATIVE = 'informative', // Added missing type
 }
 
 export interface ContentSection {
@@ -109,7 +108,7 @@ export interface BrandVoiceProfile {
   consistencyRules: ConsistencyRuleArray; // Updated to use the new type
   createdAt: Date;
   updatedAt: Date;
-  
+
   // Additional properties for backward compatibility
   primaryTone?: ToneCategory;
   secondaryTones?: ToneCategory[];
@@ -145,7 +144,7 @@ export enum ToneCategory {
   EMPATHETIC = 'empathetic',
   URGENT = 'urgent',
   CONFIDENT = 'confident',
-  HUMBLE = 'humble'
+  HUMBLE = 'humble',
 }
 
 export enum FormalityLevel {
@@ -157,7 +156,7 @@ export enum FormalityLevel {
   // Additional values for backward compatibility
   HIGH = 'high',
   MEDIUM = 'medium',
-  LOW = 'low'
+  LOW = 'low',
 }
 
 export enum EmotionalTone {
@@ -176,7 +175,7 @@ export enum EmotionalTone {
   CAUTIOUS = 'cautious',
   PASSIONATE = 'passionate',
   ANALYTICAL = 'analytical',
-  INSPIRING = 'inspiring'
+  INSPIRING = 'inspiring',
 }
 
 export interface PersonalityTraits {
@@ -304,7 +303,7 @@ export enum VerificationStatus {
   DISPUTED = 'disputed',
   FALSE = 'false', // Backward compatibility
   UNVERIFIABLE = 'unverifiable', // Backward compatibility
-  OUTDATED = 'outdated'
+  OUTDATED = 'outdated',
 }
 
 export interface FactSource {
@@ -334,7 +333,7 @@ export interface OptimizationSuggestion {
   position?: number;
   length?: number;
   metadata?: Record<string, any>;
-  
+
   // Additional properties for database compatibility
   impact?: number;
   currentValue?: string;
@@ -361,19 +360,19 @@ export enum OptimizationType {
   CONTENT_QUALITY = 'content_quality',
   USER_EXPERIENCE = 'user_experience',
   TECHNICAL_SEO = 'technical_seo',
-  SOCIAL_MEDIA = 'social_media'
+  SOCIAL_MEDIA = 'social_media',
 }
 
 export enum SuggestionPriority {
   HIGH = 'high',
   MEDIUM = 'medium',
-  LOW = 'low'
+  LOW = 'low',
 }
 
 export enum EffortLevel {
   MINIMAL = 'minimal',
   MODERATE = 'moderate',
-  SIGNIFICANT = 'significant'
+  SIGNIFICANT = 'significant',
 }
 
 export enum SuggestionCategory {
@@ -381,7 +380,7 @@ export enum SuggestionCategory {
   STYLE = 'style',
   SEO = 'seo',
   STRUCTURE = 'structure',
-  FACTUAL = 'factual'
+  FACTUAL = 'factual',
 }
 
 export interface OptimizationResult {
@@ -470,14 +469,14 @@ export enum StyleCheckType {
   TONE = 'tone',
   VOICE = 'voice',
   SENTENCE_LENGTH = 'sentence_length',
-  READABILITY = 'readability'
+  READABILITY = 'readability',
 }
 
 export enum StyleSeverity {
   MINOR = 'minor',
   MODERATE = 'moderate',
   MAJOR = 'major',
-  HIGH = 'high' // Backward compatibility
+  HIGH = 'high', // Backward compatibility
 }
 
 export interface StyleViolation {
@@ -584,8 +583,16 @@ export interface SEORequirements {
 // ===== STREAMING AND REAL-TIME =====
 
 export interface StreamingCallback {
-  onSectionStart?: (section: { id: string; title: string; type: SectionType }) => void;
-  onSectionProgress?: (progress: { sectionId: string; progress: number; currentText: string }) => void;
+  onSectionStart?: (section: {
+    id: string;
+    title: string;
+    type: SectionType;
+  }) => void;
+  onSectionProgress?: (progress: {
+    sectionId: string;
+    progress: number;
+    currentText: string;
+  }) => void;
   onSectionComplete?: (section: ContentSection) => void;
   onToneAnalysis?: (analysis: ToneAnalysis) => void;
   onFactCheck?: (factCheck: FactCheck) => void;
@@ -595,7 +602,9 @@ export interface StreamingCallback {
 }
 
 // Allow function as StreamingCallback for backward compatibility
-export type StreamingCallbackInput = StreamingCallback | ((progress: any) => void);
+export type StreamingCallbackInput =
+  | StreamingCallback
+  | ((progress: any) => void);
 
 export interface GenerationProgress {
   phase: GenerationPhase;
@@ -614,7 +623,7 @@ export enum GenerationPhase {
   TONE_ANALYSIS = 'tone_analysis',
   FACT_CHECKING = 'fact_checking',
   OPTIMIZATION = 'optimization',
-  FINALIZATION = 'finalization'
+  FINALIZATION = 'finalization',
 }
 
 // ===== REQUEST/RESPONSE INTERFACES =====
@@ -675,15 +684,32 @@ export interface QualityScore {
 // ===== SERVICE INTERFACES =====
 
 export interface MultiSectionGenerationService {
-  generateFromOutline(outline: ContentOutline, config: WritingConfig): Promise<ContentSection[]>;
-  generateSection(sectionSpec: OutlineSection, context: GenerationContext): Promise<ContentSection>;
-  regenerateSection(sectionId: string, feedback: string): Promise<ContentSection>;
+  generateFromOutline(
+    outline: ContentOutline,
+    config: WritingConfig,
+  ): Promise<ContentSection[]>;
+  generateSection(
+    sectionSpec: OutlineSection,
+    context: GenerationContext,
+  ): Promise<ContentSection>;
+  regenerateSection(
+    sectionId: string,
+    feedback: string,
+  ): Promise<ContentSection>;
 }
 
 export interface ToneStyleConsistencyService {
-  analyzeTone(content: string, brandVoice?: BrandVoiceProfile): Promise<ToneAnalysis>;
-  checkConsistency(sections: ContentSection[], brandVoice: BrandVoiceProfile): Promise<ToneAnalysis>;
-  suggestToneAdjustments(analysis: ToneAnalysis): Promise<OptimizationSuggestion[]>;
+  analyzeTone(
+    content: string,
+    brandVoice?: BrandVoiceProfile,
+  ): Promise<ToneAnalysis>;
+  checkConsistency(
+    sections: ContentSection[],
+    brandVoice: BrandVoiceProfile,
+  ): Promise<ToneAnalysis>;
+  suggestToneAdjustments(
+    analysis: ToneAnalysis,
+  ): Promise<OptimizationSuggestion[]>;
 }
 
 export interface FactCheckingService {
@@ -693,15 +719,29 @@ export interface FactCheckingService {
 }
 
 export interface ContentOptimizationService {
-  analyzeContent(content: string, requirements: SEORequirements): Promise<OptimizationSuggestion[]>;
+  analyzeContent(
+    content: string,
+    requirements: SEORequirements,
+  ): Promise<OptimizationSuggestion[]>;
   applySuggestion(suggestionId: string): Promise<OptimizationResult>;
-  generateOptimizedVersion(content: string, suggestions: OptimizationSuggestion[]): Promise<string>;
+  generateOptimizedVersion(
+    content: string,
+    suggestions: OptimizationSuggestion[],
+  ): Promise<string>;
 }
 
 export interface AdvancedWritingService {
-  generateComprehensive(request: ComprehensiveWritingRequest): Promise<ComprehensiveWritingResult>;
-  streamGeneration(request: ComprehensiveWritingRequest, callback: StreamingCallback): Promise<void>;
-  enhanceExistingContent(blogPostId: string, enhancements: string[]): Promise<ComprehensiveWritingResult>;
+  generateComprehensive(
+    request: ComprehensiveWritingRequest,
+  ): Promise<ComprehensiveWritingResult>;
+  streamGeneration(
+    request: ComprehensiveWritingRequest,
+    callback: StreamingCallback,
+  ): Promise<void>;
+  enhanceExistingContent(
+    blogPostId: string,
+    enhancements: string[],
+  ): Promise<ComprehensiveWritingResult>;
 }
 
 // ===== MISSING TYPE DEFINITIONS =====
@@ -741,7 +781,7 @@ export enum SourceType {
   INDUSTRY = 'industry',
   BLOG = 'blog',
   SOCIAL_MEDIA = 'social_media',
-  UNKNOWN = 'unknown'
+  UNKNOWN = 'unknown',
 }
 
 export enum BiasRating {
@@ -751,7 +791,7 @@ export enum BiasRating {
   LEAN_RIGHT = 'lean_right',
   RIGHT = 'right',
   MIXED = 'mixed',
-  UNKNOWN = 'unknown'
+  UNKNOWN = 'unknown',
 }
 
 export enum ExpertiseLevel {
@@ -760,7 +800,7 @@ export enum ExpertiseLevel {
   ACADEMIC = 'academic',
   JOURNALIST = 'journalist',
   GENERAL_PUBLIC = 'general_public',
-  UNKNOWN = 'unknown'
+  UNKNOWN = 'unknown',
 }
 
 export interface FactCheckRequest {
@@ -805,7 +845,7 @@ export enum ConnectionType {
   SUPPORTING = 'supporting',
   CONTRASTING = 'contrasting',
   SUMMARY = 'summary',
-  TRANSITION = 'transition'
+  TRANSITION = 'transition',
 }
 
 export interface MultiSectionGenerationRequest {

@@ -1,0 +1,12 @@
+# Build artifacts
+dist/
+node_modules/
+temp/
+
+# Generated files
+*.d.ts.map
+tsconfig.tsbuildinfo
+
+# Other
+*.pdf
+*.log

@@ -1,5 +1,3 @@
-
-
 /**
  * Base Platform Adapter
  * Provides common functionality for all platform adapters
@@ -33,7 +31,7 @@ import {
   AuthenticationError,
   RateLimitError,
   ContentValidationError,
-  PlatformError
+  PlatformError,
 } from '../types/platform-integration';
 import type { BlogPost } from '../types/blog-post';
 
@@ -73,10 +71,18 @@ export abstract class BasePlatformAdapter {
   abstract readonly capabilities: PlatformCapabilities;
 
   // Core methods
-  abstract authenticate(credentials: PlatformCredentials): Promise<AuthenticationResult>;
+  abstract authenticate(
+    credentials: PlatformCredentials,
+  ): Promise<AuthenticationResult>;
   abstract validateConnection(): Promise<ConnectionValidationResult>;
-  abstract formatContent(content: BlogPost, options?: FormatOptions): Promise<FormattedContent>;
-  abstract publish(content: FormattedContent, options?: PublishOptions): Promise<PublishResult>;
+  abstract formatContent(
+    content: BlogPost,
+    options?: FormatOptions,
+  ): Promise<FormattedContent>;
+  abstract publish(
+    content: FormattedContent,
+    options?: PublishOptions,
+  ): Promise<PublishResult>;
 
   // ===== COMMON HELPER METHODS =====
 
@@ -94,7 +100,7 @@ export abstract class BasePlatformAdapter {
   protected async handleRateLimit(response: Response): Promise<void> {
     const retryAfter = response.headers.get('Retry-After');
     const resetTime = response.headers.get('X-RateLimit-Reset');
-    
+
     if (retryAfter) {
       const delay = parseInt(retryAfter) * 1000;
       await this.delay(delay);
@@ -120,7 +126,10 @@ export abstract class BasePlatformAdapter {
     for (let attempt = 1; attempt <= this.config.retryAttempts!; attempt++) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
+        const timeoutId = setTimeout(
+          () => controller.abort(),
+          this.config.timeout,
+        );
 
         const response = await fetch(url, {
           ...options,
@@ -139,26 +148,27 @@ export abstract class BasePlatformAdapter {
             `HTTP ${response.status}: ${response.statusText}`,
             this.name,
             `HTTP_${response.status}`,
-            { response: response.clone() }
+            { response: response.clone() },
           );
         }
 
         return response;
       } catch (error) {
         lastError = error;
-        
+
         if (attempt < this.config.retryAttempts!) {
           await this.delay(this.config.retryDelay! * attempt);
         }
       }
     }
 
-    this.lastError = lastError instanceof Error ? lastError : new Error(String(lastError));
+    this.lastError =
+      lastError instanceof Error ? lastError : new Error(String(lastError));
     throw new PlatformError(
       `Request failed after ${this.config.retryAttempts} attempts: ${String(lastError)}`,
       this.name,
       'REQUEST_FAILED',
-      { originalError: lastError }
+      { originalError: lastError },
     );
   }
 
@@ -167,14 +177,14 @@ export abstract class BasePlatformAdapter {
    */
   protected validateContentFormat(content: FormattedContent): ValidationResult {
     const errors: ValidationError[] = [];
-    
+
     // Basic validation
     if (!content.title?.trim()) {
       errors.push({
         field: 'title',
         message: 'Title is required',
         code: 'MISSING_TITLE',
-        severity: 'error'
+        severity: 'error',
       });
     }
 
@@ -183,37 +193,47 @@ export abstract class BasePlatformAdapter {
         field: 'content',
         message: 'Content is required',
         code: 'MISSING_CONTENT',
-        severity: 'error'
+        severity: 'error',
       });
     }
 
     // Platform-specific validation
     const capabilities = this.capabilities;
-    
-    if (content.title && content.title.length > (capabilities.maxTitleLength || 200)) {
+
+    if (
+      content.title &&
+      content.title.length > (capabilities.maxTitleLength || 200)
+    ) {
       errors.push({
         field: 'title',
         message: `Title exceeds maximum length of ${capabilities.maxTitleLength} characters`,
         code: 'TITLE_TOO_LONG',
-        severity: 'error'
+        severity: 'error',
       });
     }
 
-    if (content.content && content.content.length > capabilities.maxContentLength) {
+    if (
+      content.content &&
+      content.content.length > capabilities.maxContentLength
+    ) {
       errors.push({
         field: 'content',
         message: `Content exceeds maximum length of ${capabilities.maxContentLength} characters`,
         code: 'CONTENT_TOO_LONG',
-        severity: 'error'
+        severity: 'error',
       });
     }
 
-    if (capabilities.maxTagsCount && content.metadata.tags && content.metadata.tags.length > capabilities.maxTagsCount) {
+    if (
+      capabilities.maxTagsCount &&
+      content.metadata.tags &&
+      content.metadata.tags.length > capabilities.maxTagsCount
+    ) {
       errors.push({
         field: 'tags',
         message: `Too many tags. Maximum allowed: ${capabilities.maxTagsCount}`,
         code: 'TOO_MANY_TAGS',
-        severity: 'error'
+        severity: 'error',
       });
     }
 
@@ -221,7 +241,7 @@ export abstract class BasePlatformAdapter {
       isValid: errors.length === 0,
       errors,
       warnings: [],
-      suggestions: []
+      suggestions: [],
     };
   }
 
@@ -247,7 +267,7 @@ export abstract class BasePlatformAdapter {
     throw new PlatformError(
       'Refresh authentication not supported',
       this.name,
-      'NOT_SUPPORTED'
+      'NOT_SUPPORTED',
     );
   }
 
@@ -268,7 +288,7 @@ export abstract class BasePlatformAdapter {
     throw new PlatformError(
       'Scheduling not supported',
       this.name,
-      'NOT_SUPPORTED'
+      'NOT_SUPPORTED',
     );
   }
 
@@ -280,7 +300,7 @@ export abstract class BasePlatformAdapter {
     throw new PlatformError(
       'Content updates not supported',
       this.name,
-      'NOT_SUPPORTED'
+      'NOT_SUPPORTED',
     );
   }
 
@@ -288,7 +308,7 @@ export abstract class BasePlatformAdapter {
     throw new PlatformError(
       'Content deletion not supported',
       this.name,
-      'NOT_SUPPORTED'
+      'NOT_SUPPORTED',
     );
   }
 
@@ -311,7 +331,7 @@ export abstract class BasePlatformAdapter {
 
         const result = await this.publish(contents[i], options);
         results.push(result);
-        
+
         if (result.success) {
           successCount++;
         } else {
@@ -328,10 +348,10 @@ export abstract class BasePlatformAdapter {
         failureCount++;
         const errorMessage = String(error);
         errors.push(errorMessage);
-        
+
         results.push({
           success: false,
-          error: errorMessage
+          error: errorMessage,
         });
 
         if (options?.stopOnError) {
@@ -346,7 +366,7 @@ export abstract class BasePlatformAdapter {
       failureCount,
       results,
       errors,
-      duration: (Date.now() - startTime) / 1000
+      duration: (Date.now() - startTime) / 1000,
     };
   }
 
@@ -357,7 +377,7 @@ export abstract class BasePlatformAdapter {
     throw new PlatformError(
       'Analytics not supported',
       this.name,
-      'NOT_SUPPORTED'
+      'NOT_SUPPORTED',
     );
   }
 
@@ -368,7 +388,7 @@ export abstract class BasePlatformAdapter {
     throw new PlatformError(
       'Content analytics not supported',
       this.name,
-      'NOT_SUPPORTED'
+      'NOT_SUPPORTED',
     );
   }
 
@@ -386,24 +406,24 @@ export abstract class BasePlatformAdapter {
 
   async healthCheck(): Promise<HealthCheckResult> {
     const startTime = Date.now();
-    
+
     try {
       const connectionValid = await this.validateConnection();
       const responseTime = Date.now() - startTime;
-      
+
       return {
         status: connectionValid.isValid ? 'healthy' : 'unhealthy',
         responseTime,
         errors: connectionValid.error ? [connectionValid.error] : [],
         warnings: connectionValid.warnings || [],
-        lastChecked: new Date()
+        lastChecked: new Date(),
       };
     } catch (error) {
       return {
         status: 'unhealthy',
         responseTime: Date.now() - startTime,
         errors: [String(error)],
-        lastChecked: new Date()
+        lastChecked: new Date(),
       };
     }
   }
@@ -433,7 +453,11 @@ export abstract class BasePlatformAdapter {
 
   // ===== ERROR HANDLING =====
 
-  protected createError(message: string, code?: string, details?: any): PlatformError {
+  protected createError(
+    message: string,
+    code?: string,
+    details?: any,
+  ): PlatformError {
     return new PlatformError(message, this.name, code, details);
   }
 

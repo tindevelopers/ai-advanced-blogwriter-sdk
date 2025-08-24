@@ -27,10 +27,12 @@ describe('AI Model Performance Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     const mockModel = {} as any;
-    const mockPrisma = new (vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient)();
-    
+    const mockPrisma = new (vi.mocked(
+      await import('../../src/generated/prisma-client'),
+    ).PrismaClient)();
+
     blogGenerator = new BlogGenerator();
     contentOptimization = new ContentOptimizationService({
       model: mockModel,
@@ -52,7 +54,7 @@ describe('AI Model Performance Tests', () => {
       });
 
       const startTime = Date.now();
-      
+
       const result = await blogGenerator.generateBlog({
         model: {} as any,
         topic: 'Performance Testing',
@@ -77,7 +79,7 @@ describe('AI Model Performance Tests', () => {
       });
 
       const startTime = Date.now();
-      
+
       const result = await blogGenerator.generateBlog({
         model: {} as any,
         topic: 'Large Content Generation',
@@ -95,7 +97,7 @@ describe('AI Model Performance Tests', () => {
     test('should measure token usage accurately', async () => {
       const mockGenerateText = vi.mocked(await import('ai')).generateText;
       const expectedTokens = { promptTokens: 150, completionTokens: 300 };
-      
+
       mockGenerateText.mockResolvedValue({
         text: '# Token Usage Test\n\nContent for token measurement.',
         finishReason: 'stop',
@@ -115,7 +117,9 @@ describe('AI Model Performance Tests', () => {
 
   describe('Content Optimization Performance', () => {
     test('should optimize content within reasonable time', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
       mockPrisma.prototype.blogPost.findUnique.mockResolvedValue({
         id: 'perf-test-123',
         content: 'Content to optimize for performance testing.',
@@ -126,7 +130,7 @@ describe('AI Model Performance Tests', () => {
       } as any);
 
       const startTime = Date.now();
-      
+
       const result = await contentOptimization.optimizeContent({
         blogPostId: 'perf-test-123',
         categories: ['seo', 'readability'],
@@ -144,14 +148,16 @@ describe('AI Model Performance Tests', () => {
     });
 
     test('should handle concurrent optimization requests', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
       mockPrisma.prototype.blogPost.findUnique.mockResolvedValue({
         id: 'concurrent-test',
         content: 'Content for concurrent testing.',
       } as any);
 
       const startTime = Date.now();
-      
+
       // Run multiple optimization requests concurrently
       const promises = Array.from({ length: 5 }, (_, i) =>
         contentOptimization.optimizeContent({
@@ -159,7 +165,7 @@ describe('AI Model Performance Tests', () => {
           categories: ['seo'],
           priority: 'medium',
           maxRecommendations: 5,
-        })
+        }),
       );
 
       const results = await Promise.all(promises);
@@ -178,14 +184,16 @@ describe('AI Model Performance Tests', () => {
 
   describe('Advanced Writing Service Performance', () => {
     test('should generate advanced content within time limits', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
       mockPrisma.prototype.blogPost.findUnique.mockResolvedValue({
         id: 'advanced-test',
         content: 'Base content for advanced generation.',
       } as any);
 
       const startTime = Date.now();
-      
+
       const result = await advancedWriting.generateAdvancedContent({
         blogPostId: 'advanced-test',
         enhancements: ['seo', 'readability', 'engagement'],
@@ -201,7 +209,9 @@ describe('AI Model Performance Tests', () => {
     });
 
     test('should handle complex content transformations efficiently', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
       mockPrisma.prototype.blogPost.findUnique.mockResolvedValue({
         id: 'complex-test',
         content: 'Complex content requiring multiple transformations.',
@@ -212,7 +222,7 @@ describe('AI Model Performance Tests', () => {
       } as any);
 
       const startTime = Date.now();
-      
+
       const result = await advancedWriting.generateAdvancedContent({
         blogPostId: 'complex-test',
         enhancements: ['seo', 'readability', 'engagement', 'fact-checking'],
@@ -239,7 +249,7 @@ describe('AI Model Performance Tests', () => {
       });
 
       const initialMemory = process.memoryUsage().heapUsed;
-      
+
       // Perform multiple operations
       for (let i = 0; i < 10; i++) {
         await blogGenerator.generateBlog({
@@ -256,14 +266,16 @@ describe('AI Model Performance Tests', () => {
     });
 
     test('should handle large datasets without performance degradation', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
       mockPrisma.prototype.blogPost.findUnique.mockResolvedValue({
         id: 'large-dataset-test',
         content: 'A'.repeat(10000), // Large content
       } as any);
 
       const startTime = Date.now();
-      
+
       const result = await contentOptimization.optimizeContent({
         blogPostId: 'large-dataset-test',
         categories: ['seo', 'readability', 'engagement'],
@@ -283,7 +295,7 @@ describe('AI Model Performance Tests', () => {
   describe('Error Recovery Performance', () => {
     test('should recover from AI service failures quickly', async () => {
       const mockGenerateText = vi.mocked(await import('ai')).generateText;
-      
+
       // First call fails, second succeeds
       mockGenerateText
         .mockRejectedValueOnce(new Error('AI service temporarily unavailable'))
@@ -294,7 +306,7 @@ describe('AI Model Performance Tests', () => {
         });
 
       const startTime = Date.now();
-      
+
       // Should handle the failure and retry
       const result = await blogGenerator.generateBlog({
         model: {} as any,

@@ -1,11 +1,10 @@
-
 /**
  * Week 11-12 Performance Tracking Service
  * Comprehensive analytics system for blog content performance tracking,
  * real-time metrics collection, and cross-platform analytics integration
  */
 
-import { 
+import {
   PerformanceMetrics,
   PerformanceTrackingRequest,
   PerformanceTrackingResponse,
@@ -18,7 +17,7 @@ import {
   DeviceMetrics,
   DemographicMetrics,
   KeywordRanking,
-  PerformanceOptimizationError
+  PerformanceOptimizationError,
 } from '../types/performance-optimization';
 import { PrismaClient } from '../generated/prisma-client';
 
@@ -27,7 +26,7 @@ export class PerformanceTrackingService {
   private analyticsProviders: Map<string, AnalyticsIntegration> = new Map();
   private metricsCache: Map<string, CachedMetrics> = new Map();
   private realTimeUpdates: Set<string> = new Set(); // Blog post IDs with real-time tracking
-  
+
   constructor(prisma: PrismaClient) {
     this.prisma = prisma;
     this.initializeAnalyticsProviders();
@@ -40,7 +39,7 @@ export class PerformanceTrackingService {
   private async initializeAnalyticsProviders(): Promise<void> {
     try {
       const providers = await this.prisma.analyticsProvider.findMany({
-        where: { enabled: true }
+        where: { enabled: true },
       });
 
       for (const provider of providers) {
@@ -53,7 +52,7 @@ export class PerformanceTrackingService {
         'Failed to initialize analytics providers',
         'INIT_PROVIDERS_FAILED',
         'analytics',
-        { originalError: error }
+        { originalError: error },
       );
     }
   }
@@ -61,7 +60,9 @@ export class PerformanceTrackingService {
   /**
    * Track performance metrics for a specific blog post
    */
-  public async trackPerformance(request: PerformanceTrackingRequest): Promise<PerformanceTrackingResponse> {
+  public async trackPerformance(
+    request: PerformanceTrackingRequest,
+  ): Promise<PerformanceTrackingResponse> {
     try {
       const { blogPostId, timeRange, metrics, includeSegmentation } = request;
 
@@ -69,21 +70,21 @@ export class PerformanceTrackingService {
       const performanceMetrics = await this.getOrCreatePerformanceMetrics(
         blogPostId,
         timeRange?.start || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Default: 30 days ago
-        timeRange?.end || new Date()
+        timeRange?.end || new Date(),
       );
 
       // Collect metrics from all enabled providers
       const collectedMetrics = await this.collectMetricsFromProviders(
         blogPostId,
         timeRange,
-        metrics
+        metrics,
       );
 
       // Update database with collected metrics
       const updatedMetrics = await this.updatePerformanceMetrics(
         performanceMetrics.id,
         collectedMetrics,
-        includeSegmentation
+        includeSegmentation,
       );
 
       return {
@@ -92,10 +93,9 @@ export class PerformanceTrackingService {
         metadata: {
           lastUpdated: new Date(),
           dataFreshness: this.calculateDataFreshness(collectedMetrics),
-          sources: Array.from(this.analyticsProviders.keys())
-        }
+          sources: Array.from(this.analyticsProviders.keys()),
+        },
       };
-
     } catch (error) {
       console.error('Performance tracking failed:', error);
       return {
@@ -104,9 +104,10 @@ export class PerformanceTrackingService {
         metadata: {
           lastUpdated: new Date(),
           dataFreshness: 0,
-          sources: []
+          sources: [],
         },
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error:
+          error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -117,19 +118,19 @@ export class PerformanceTrackingService {
   public async getHistoricalPerformance(
     blogPostId: string,
     timeRange: { start: Date; end: Date },
-    granularity: 'hour' | 'day' | 'week' | 'month' = 'day'
+    granularity: 'hour' | 'day' | 'week' | 'month' = 'day',
   ): Promise<HistoricalPerformanceData> {
     try {
       const metrics = await this.prisma.performanceMetric.findMany({
         where: {
           blogPostId,
           periodStart: { gte: timeRange.start },
-          periodEnd: { lte: timeRange.end }
+          periodEnd: { lte: timeRange.end },
         },
         include: {
-          keywordRankings: true
+          keywordRankings: true,
         },
-        orderBy: { periodStart: 'asc' }
+        orderBy: { periodStart: 'asc' },
       });
 
       const timeSeriesData = this.aggregateByGranularity(metrics, granularity);
@@ -142,15 +143,14 @@ export class PerformanceTrackingService {
         insights,
         aggregatedMetrics: this.calculateAggregatedMetrics(metrics),
         topKeywords: this.getTopPerformingKeywords(metrics),
-        comparisonData: await this.getComparisonData(blogPostId, timeRange)
+        comparisonData: await this.getComparisonData(blogPostId, timeRange),
       };
-
     } catch (error) {
       throw new PerformanceOptimizationError(
         'Failed to retrieve historical performance data',
         'HISTORICAL_DATA_FAILED',
         'analytics',
-        { blogPostId, timeRange, error }
+        { blogPostId, timeRange, error },
       );
     }
   }
@@ -161,7 +161,7 @@ export class PerformanceTrackingService {
   public async enableRealTimeTracking(blogPostId: string): Promise<void> {
     try {
       this.realTimeUpdates.add(blogPostId);
-      
+
       // Configure real-time data collection with analytics providers
       for (const [name, provider] of this.analyticsProviders) {
         if (provider.supportsRealTime) {
@@ -175,7 +175,7 @@ export class PerformanceTrackingService {
         'Failed to enable real-time tracking',
         'REALTIME_ENABLE_FAILED',
         'analytics',
-        { blogPostId, error }
+        { blogPostId, error },
       );
     }
   }
@@ -185,56 +185,65 @@ export class PerformanceTrackingService {
    */
   public async generatePerformanceReport(
     blogPostId: string,
-    timeRange: { start: Date; end: Date }
+    timeRange: { start: Date; end: Date },
   ): Promise<PerformanceReport> {
     try {
-      const [currentMetrics, historicalData, competitorData] = await Promise.all([
-        this.getCurrentMetrics(blogPostId),
-        this.getHistoricalPerformance(blogPostId, timeRange),
-        this.getCompetitorBenchmarks(blogPostId)
-      ]);
+      const [currentMetrics, historicalData, competitorData] =
+        await Promise.all([
+          this.getCurrentMetrics(blogPostId),
+          this.getHistoricalPerformance(blogPostId, timeRange),
+          this.getCompetitorBenchmarks(blogPostId),
+        ]);
 
       const report: PerformanceReport = {
         blogPostId,
         reportPeriod: timeRange,
         generatedAt: new Date(),
-        
+
         // Executive summary
         executiveSummary: {
           totalViews: currentMetrics.views,
           engagementRate: currentMetrics.engagementRate,
           conversionRate: currentMetrics.conversionRate,
           trendDirection: this.calculateTrendDirection(historicalData.trends),
-          keyInsights: historicalData.insights.slice(0, 5)
+          keyInsights: historicalData.insights.slice(0, 5),
         },
 
         // Detailed metrics
         detailedMetrics: currentMetrics,
         historicalTrends: historicalData.trends,
-        
+
         // Performance analysis
         strengths: this.identifyStrengths(currentMetrics, competitorData),
-        opportunities: this.identifyOpportunities(currentMetrics, competitorData),
-        
+        opportunities: this.identifyOpportunities(
+          currentMetrics,
+          competitorData,
+        ),
+
         // Benchmarks
         industryBenchmarks: competitorData,
-        performanceScore: this.calculatePerformanceScore(currentMetrics, competitorData),
-        
+        performanceScore: this.calculatePerformanceScore(
+          currentMetrics,
+          competitorData,
+        ),
+
         // Actionable recommendations
-        recommendations: await this.generateRecommendations(currentMetrics, historicalData)
+        recommendations: await this.generateRecommendations(
+          currentMetrics,
+          historicalData,
+        ),
       };
 
       // Cache the report
       await this.cacheReport(blogPostId, report);
 
       return report;
-
     } catch (error) {
       throw new PerformanceOptimizationError(
         'Failed to generate performance report',
         'REPORT_GENERATION_FAILED',
         'analytics',
-        { blogPostId, timeRange, error }
+        { blogPostId, timeRange, error },
       );
     }
   }
@@ -246,7 +255,7 @@ export class PerformanceTrackingService {
     name: string,
     type: string,
     configuration: Record<string, any>,
-    apiKey?: string
+    apiKey?: string,
   ): Promise<void> {
     try {
       // Save to database
@@ -258,7 +267,7 @@ export class PerformanceTrackingService {
           apiKey,
           enabled: true,
           lastSync: new Date(),
-          syncStatus: 'active'
+          syncStatus: 'active',
         },
         create: {
           name,
@@ -266,8 +275,8 @@ export class PerformanceTrackingService {
           configuration,
           apiKey,
           enabled: true,
-          syncStatus: 'active'
-        }
+          syncStatus: 'active',
+        },
       });
 
       // Create integration instance
@@ -276,20 +285,19 @@ export class PerformanceTrackingService {
         type,
         configuration,
         apiKey,
-        enabled: true
+        enabled: true,
       } as AnalyticsProviderType;
 
       const integration = this.createAnalyticsIntegration(providerConfig);
       this.analyticsProviders.set(name, integration);
 
       console.log(`Analytics provider configured: ${name}`);
-
     } catch (error) {
       throw new PerformanceOptimizationError(
         'Failed to configure analytics provider',
         'PROVIDER_CONFIG_FAILED',
         'configuration',
-        { name, type, error }
+        { name, type, error },
       );
     }
   }
@@ -300,40 +308,39 @@ export class PerformanceTrackingService {
   public async exportPerformanceData(
     blogPostId: string,
     timeRange: { start: Date; end: Date },
-    format: 'json' | 'csv' | 'excel' = 'json'
+    format: 'json' | 'csv' | 'excel' = 'json',
   ): Promise<ExportedData> {
     try {
       const data = await this.getHistoricalPerformance(blogPostId, timeRange);
-      
+
       switch (format) {
         case 'csv':
           return {
             format: 'csv',
             data: this.convertToCSV(data),
-            filename: `performance-${blogPostId}-${Date.now()}.csv`
+            filename: `performance-${blogPostId}-${Date.now()}.csv`,
           };
-        
+
         case 'excel':
           return {
             format: 'excel',
             data: await this.convertToExcel(data),
-            filename: `performance-${blogPostId}-${Date.now()}.xlsx`
+            filename: `performance-${blogPostId}-${Date.now()}.xlsx`,
           };
-        
+
         default:
           return {
             format: 'json',
             data: JSON.stringify(data, null, 2),
-            filename: `performance-${blogPostId}-${Date.now()}.json`
+            filename: `performance-${blogPostId}-${Date.now()}.json`,
           };
       }
-
     } catch (error) {
       throw new PerformanceOptimizationError(
         'Failed to export performance data',
         'EXPORT_FAILED',
         'analytics',
-        { blogPostId, timeRange, format, error }
+        { blogPostId, timeRange, format, error },
       );
     }
   }
@@ -346,16 +353,16 @@ export class PerformanceTrackingService {
   private async getOrCreatePerformanceMetrics(
     blogPostId: string,
     periodStart: Date,
-    periodEnd: Date
+    periodEnd: Date,
   ): Promise<any> {
     const existing = await this.prisma.performanceMetric.findUnique({
       where: {
         blogPostId_periodStart_periodEnd: {
           blogPostId,
           periodStart,
-          periodEnd
-        }
-      }
+          periodEnd,
+        },
+      },
     });
 
     if (existing) {
@@ -408,8 +415,8 @@ export class PerformanceTrackingService {
         scrollDepth50: 0,
         scrollDepth75: 0,
         scrollDepth100: 0,
-        avgScrollDepth: 0
-      }
+        avgScrollDepth: 0,
+      },
     });
   }
 
@@ -419,35 +426,39 @@ export class PerformanceTrackingService {
   private async collectMetricsFromProviders(
     blogPostId: string,
     timeRange?: { start: Date; end: Date },
-    specificMetrics?: string[]
+    specificMetrics?: string[],
   ): Promise<CollectedMetrics> {
     const collected: CollectedMetrics = {
       webAnalytics: {},
       socialMedia: {},
       emailMarketing: {},
       seoMetrics: {},
-      conversionData: {}
+      conversionData: {},
     };
 
     const promises = Array.from(this.analyticsProviders.entries()).map(
       async ([name, provider]) => {
         try {
-          const metrics = await provider.collectMetrics(blogPostId, timeRange, specificMetrics);
+          const metrics = await provider.collectMetrics(
+            blogPostId,
+            timeRange,
+            specificMetrics,
+          );
           return { name, metrics };
         } catch (error) {
           console.error(`Failed to collect metrics from ${name}:`, error);
           return { name, metrics: null };
         }
-      }
+      },
     );
 
     const results = await Promise.allSettled(promises);
 
-    results.forEach((result) => {
+    results.forEach(result => {
       if (result.status === 'fulfilled' && result.value.metrics) {
         const { name, metrics } = result.value;
         const provider = this.analyticsProviders.get(name);
-        
+
         if (provider) {
           switch (provider.type) {
             case 'web_analytics':
@@ -475,10 +486,10 @@ export class PerformanceTrackingService {
   private async updatePerformanceMetrics(
     metricsId: string,
     collectedMetrics: CollectedMetrics,
-    includeSegmentation?: boolean
+    includeSegmentation?: boolean,
   ): Promise<PerformanceMetrics> {
     const aggregated = this.aggregateCollectedMetrics(collectedMetrics);
-    
+
     const updated = await this.prisma.performanceMetric.update({
       where: { id: metricsId },
       data: {
@@ -487,11 +498,11 @@ export class PerformanceTrackingService {
         rawData: includeSegmentation ? collectedMetrics : undefined,
         heatmapData: this.extractHeatmapData(collectedMetrics),
         demographicData: this.extractDemographicData(collectedMetrics),
-        platformMetrics: this.extractPlatformMetrics(collectedMetrics)
+        platformMetrics: this.extractPlatformMetrics(collectedMetrics),
       },
       include: {
-        keywordRankings: true
-      }
+        keywordRankings: true,
+      },
     });
 
     return this.convertToPerformanceMetrics(updated);
@@ -500,7 +511,9 @@ export class PerformanceTrackingService {
   /**
    * Create analytics integration instance
    */
-  private createAnalyticsIntegration(provider: AnalyticsProviderType): AnalyticsIntegration {
+  private createAnalyticsIntegration(
+    provider: AnalyticsProviderType,
+  ): AnalyticsIntegration {
     switch (provider.name) {
       case 'google_analytics':
         return new GoogleAnalyticsIntegration(provider);
@@ -531,16 +544,16 @@ export class PerformanceTrackingService {
    * Collect real-time metrics for tracked content
    */
   private async collectRealTimeMetrics(): Promise<void> {
-    const promises = Array.from(this.realTimeUpdates).map(async (blogPostId) => {
+    const promises = Array.from(this.realTimeUpdates).map(async blogPostId => {
       try {
         const request: PerformanceTrackingRequest = {
           blogPostId,
           timeRange: {
             start: new Date(Date.now() - 60 * 60 * 1000), // Last hour
-            end: new Date()
-          }
+            end: new Date(),
+          },
         };
-        
+
         await this.trackPerformance(request);
       } catch (error) {
         console.error(`Real-time collection failed for ${blogPostId}:`, error);
@@ -574,10 +587,12 @@ export class PerformanceTrackingService {
   /**
    * Aggregate metrics from multiple providers
    */
-  private aggregateCollectedMetrics(collected: CollectedMetrics): Record<string, any> {
+  private aggregateCollectedMetrics(
+    collected: CollectedMetrics,
+  ): Record<string, any> {
     // Implement aggregation logic that combines data from multiple sources
     // This would include deduplication, weighted averages, and data reconciliation
-    
+
     const aggregated: Record<string, any> = {
       views: 0,
       uniqueViews: 0,
@@ -620,7 +635,7 @@ export class PerformanceTrackingService {
       scrollDepth50: 0,
       scrollDepth75: 0,
       scrollDepth100: 0,
-      avgScrollDepth: 0
+      avgScrollDepth: 0,
     };
 
     // Aggregate web analytics data
@@ -648,8 +663,10 @@ export class PerformanceTrackingService {
     const providerCount = Object.keys(collected.webAnalytics).length;
     if (providerCount > 0) {
       aggregated.bounceRate /= providerCount;
-      aggregated.engagementRate = (aggregated.totalEngagements / aggregated.views) * 100;
-      aggregated.conversionRate = (aggregated.totalConversions / aggregated.views) * 100;
+      aggregated.engagementRate =
+        (aggregated.totalEngagements / aggregated.views) * 100;
+      aggregated.conversionRate =
+        (aggregated.totalConversions / aggregated.views) * 100;
     }
 
     return aggregated;
@@ -678,9 +695,11 @@ export class PerformanceTrackingService {
           depth50Percent: dbRecord.scrollDepth50,
           depth75Percent: dbRecord.scrollDepth75,
           depth100Percent: dbRecord.scrollDepth100,
-          averageScrollDepth: dbRecord.avgScrollDepth
+          averageScrollDepth: dbRecord.avgScrollDepth,
         },
-        heatmapData: dbRecord.heatmapData ? JSON.parse(dbRecord.heatmapData) : undefined
+        heatmapData: dbRecord.heatmapData
+          ? JSON.parse(dbRecord.heatmapData)
+          : undefined,
       },
       conversions: {
         totalConversions: dbRecord.totalConversions,
@@ -690,29 +709,30 @@ export class PerformanceTrackingService {
           totalLeads: 0, // Calculate from rawData
           qualifiedLeads: 0,
           leadScore: 0,
-          leadQuality: 'medium'
+          leadQuality: 'medium',
         },
         subscriptions: dbRecord.subscriptions,
         downloads: dbRecord.downloads,
-        revenue: dbRecord.revenue
+        revenue: dbRecord.revenue,
       },
       seoPerformance: {
         organicTraffic: dbRecord.organicTraffic,
-        keywordRankings: dbRecord.keywordRankings?.map((kr: any) => ({
-          keyword: kr.keyword,
-          position: kr.position,
-          previousPosition: kr.previousPosition,
-          searchVolume: kr.searchVolume,
-          clicks: kr.clicks,
-          impressions: kr.impressions,
-          ctr: kr.ctr
-        })) || [],
+        keywordRankings:
+          dbRecord.keywordRankings?.map((kr: any) => ({
+            keyword: kr.keyword,
+            position: kr.position,
+            previousPosition: kr.previousPosition,
+            searchVolume: kr.searchVolume,
+            clicks: kr.clicks,
+            impressions: kr.impressions,
+            ctr: kr.ctr,
+          })) || [],
         backlinks: dbRecord.backlinks,
         domainAuthority: 0, // Calculate if available
         clickThroughRateFromSERP: dbRecord.ctr,
         impressions: dbRecord.impressions,
         avgPosition: dbRecord.avgPosition || 0,
-        featuredSnippets: dbRecord.featuredSnippets
+        featuredSnippets: dbRecord.featuredSnippets,
       },
       socialShares: {
         totalShares: dbRecord.totalShares,
@@ -721,13 +741,17 @@ export class PerformanceTrackingService {
         socialTraffic: dbRecord.socialTraffic,
         mentions: dbRecord.mentions,
         sentiment: {
-          overallSentiment: dbRecord.sentimentScore > 0.1 ? 'positive' : 
-                           dbRecord.sentimentScore < -0.1 ? 'negative' : 'neutral',
+          overallSentiment:
+            dbRecord.sentimentScore > 0.1
+              ? 'positive'
+              : dbRecord.sentimentScore < -0.1
+                ? 'negative'
+                : 'neutral',
           positiveScore: Math.max(0, dbRecord.sentimentScore),
           negativeScore: Math.max(0, -dbRecord.sentimentScore),
           neutralScore: 1 - Math.abs(dbRecord.sentimentScore),
-          confidenceScore: 0.8
-        }
+          confidenceScore: 0.8,
+        },
       },
       timeOnPage: dbRecord.timeOnPage,
       bounceRate: dbRecord.bounceRate,
@@ -738,25 +762,25 @@ export class PerformanceTrackingService {
         email: dbRecord.emailTraffic,
         referral: dbRecord.referralTraffic,
         paid: dbRecord.paidTraffic,
-        other: dbRecord.otherTraffic
+        other: dbRecord.otherTraffic,
       },
       deviceMetrics: {
         desktop: dbRecord.desktopViews,
         mobile: dbRecord.mobileViews,
         tablet: dbRecord.tabletViews,
         browsers: [], // Extract from rawData if available
-        operatingSystems: []
+        operatingSystems: [],
       },
       demographicMetrics: {
         ageGroups: [],
         genderDistribution: { male: 0, female: 0, other: 0, unknown: 0 },
         geographicDistribution: [],
-        interests: []
+        interests: [],
       },
       periodStart: dbRecord.periodStart,
       periodEnd: dbRecord.periodEnd,
       recordedAt: dbRecord.recordedAt,
-      lastUpdated: dbRecord.lastUpdated
+      lastUpdated: dbRecord.lastUpdated,
     };
   }
 
@@ -767,7 +791,7 @@ export class PerformanceTrackingService {
   }
 
   private extractDemographicData(collected: CollectedMetrics): any {
-    // Implementation for extracting demographic data  
+    // Implementation for extracting demographic data
     return null;
   }
 
@@ -776,12 +800,14 @@ export class PerformanceTrackingService {
     return null;
   }
 
-  private async getCurrentMetrics(blogPostId: string): Promise<PerformanceMetrics> {
+  private async getCurrentMetrics(
+    blogPostId: string,
+  ): Promise<PerformanceMetrics> {
     // Implementation for getting current metrics
     const latest = await this.prisma.performanceMetric.findFirst({
       where: { blogPostId },
       orderBy: { recordedAt: 'desc' },
-      include: { keywordRankings: true }
+      include: { keywordRankings: true },
     });
 
     if (!latest) {
@@ -816,7 +842,10 @@ export class PerformanceTrackingService {
     return [];
   }
 
-  private async getComparisonData(blogPostId: string, timeRange: any): Promise<any> {
+  private async getComparisonData(
+    blogPostId: string,
+    timeRange: any,
+  ): Promise<any> {
     // Implementation for getting comparison data
     return {};
   }
@@ -826,12 +855,18 @@ export class PerformanceTrackingService {
     return 'stable';
   }
 
-  private identifyStrengths(metrics: PerformanceMetrics, benchmarks: any): string[] {
+  private identifyStrengths(
+    metrics: PerformanceMetrics,
+    benchmarks: any,
+  ): string[] {
     // Implementation for identifying strengths
     return [];
   }
 
-  private identifyOpportunities(metrics: PerformanceMetrics, benchmarks: any): string[] {
+  private identifyOpportunities(
+    metrics: PerformanceMetrics,
+    benchmarks: any,
+  ): string[] {
     // Implementation for identifying opportunities
     return [];
   }
@@ -841,12 +876,18 @@ export class PerformanceTrackingService {
     return {};
   }
 
-  private calculatePerformanceScore(metrics: PerformanceMetrics, benchmarks: any): number {
+  private calculatePerformanceScore(
+    metrics: PerformanceMetrics,
+    benchmarks: any,
+  ): number {
     // Implementation for calculating performance score
     return 75;
   }
 
-  private async generateRecommendations(metrics: PerformanceMetrics, historical: any): Promise<any[]> {
+  private async generateRecommendations(
+    metrics: PerformanceMetrics,
+    historical: any,
+  ): Promise<any[]> {
     // Implementation for generating recommendations
     return [];
   }
@@ -932,12 +973,14 @@ abstract class AnalyticsIntegration {
   abstract collectMetrics(
     blogPostId: string,
     timeRange?: { start: Date; end: Date },
-    specificMetrics?: string[]
+    specificMetrics?: string[],
   ): Promise<any>;
 
   async enableRealTimeTracking(blogPostId: string): Promise<void> {
     if (!this.supportsRealTime) {
-      throw new Error(`${this.config.name} does not support real-time tracking`);
+      throw new Error(
+        `${this.config.name} does not support real-time tracking`,
+      );
     }
   }
 }
@@ -948,7 +991,7 @@ class GoogleAnalyticsIntegration extends AnalyticsIntegration {
   async collectMetrics(
     blogPostId: string,
     timeRange?: { start: Date; end: Date },
-    specificMetrics?: string[]
+    specificMetrics?: string[],
   ): Promise<any> {
     // Implementation for Google Analytics data collection
     try {
@@ -958,7 +1001,7 @@ class GoogleAnalyticsIntegration extends AnalyticsIntegration {
         uniqueViews: Math.floor(Math.random() * 8000),
         timeOnPage: Math.floor(Math.random() * 300),
         bounceRate: Math.random() * 0.8,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       };
     } catch (error) {
       console.error('Google Analytics collection failed:', error);
@@ -971,7 +1014,7 @@ class AdobeAnalyticsIntegration extends AnalyticsIntegration {
   async collectMetrics(
     blogPostId: string,
     timeRange?: { start: Date; end: Date },
-    specificMetrics?: string[]
+    specificMetrics?: string[],
   ): Promise<any> {
     // Implementation for Adobe Analytics data collection
     try {
@@ -981,7 +1024,7 @@ class AdobeAnalyticsIntegration extends AnalyticsIntegration {
         uniqueViews: Math.floor(Math.random() * 9000),
         timeOnPage: Math.floor(Math.random() * 280),
         bounceRate: Math.random() * 0.7,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       };
     } catch (error) {
       console.error('Adobe Analytics collection failed:', error);
@@ -994,7 +1037,7 @@ class FacebookInsightsIntegration extends AnalyticsIntegration {
   async collectMetrics(
     blogPostId: string,
     timeRange?: { start: Date; end: Date },
-    specificMetrics?: string[]
+    specificMetrics?: string[],
   ): Promise<any> {
     // Implementation for Facebook Insights data collection
     try {
@@ -1004,7 +1047,7 @@ class FacebookInsightsIntegration extends AnalyticsIntegration {
         likes: Math.floor(Math.random() * 1000),
         comments: Math.floor(Math.random() * 200),
         reach: Math.floor(Math.random() * 5000),
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       };
     } catch (error) {
       console.error('Facebook Insights collection failed:', error);
@@ -1017,7 +1060,7 @@ class TwitterAnalyticsIntegration extends AnalyticsIntegration {
   async collectMetrics(
     blogPostId: string,
     timeRange?: { start: Date; end: Date },
-    specificMetrics?: string[]
+    specificMetrics?: string[],
   ): Promise<any> {
     // Implementation for Twitter Analytics data collection
     try {
@@ -1027,7 +1070,7 @@ class TwitterAnalyticsIntegration extends AnalyticsIntegration {
         likes: Math.floor(Math.random() * 800),
         retweets: Math.floor(Math.random() * 150),
         impressions: Math.floor(Math.random() * 3000),
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       };
     } catch (error) {
       console.error('Twitter Analytics collection failed:', error);
@@ -1040,7 +1083,7 @@ class GenericAnalyticsIntegration extends AnalyticsIntegration {
   async collectMetrics(
     blogPostId: string,
     timeRange?: { start: Date; end: Date },
-    specificMetrics?: string[]
+    specificMetrics?: string[],
   ): Promise<any> {
     // Generic implementation for custom analytics providers
     try {
@@ -1048,7 +1091,7 @@ class GenericAnalyticsIntegration extends AnalyticsIntegration {
       return {
         views: Math.floor(Math.random() * 5000),
         engagement: Math.random() * 0.1,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       };
     } catch (error) {
       console.error('Generic analytics collection failed:', error);
@@ -1056,4 +1099,3 @@ class GenericAnalyticsIntegration extends AnalyticsIntegration {
     }
   }
 }
-

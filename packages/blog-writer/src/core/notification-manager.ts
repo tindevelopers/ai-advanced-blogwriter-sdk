@@ -1,5 +1,3 @@
-
-
 import { PrismaClient } from '../generated/prisma-client';
 import type {
   Notification,
@@ -8,7 +6,7 @@ import type {
   NotificationPreferences,
   CreateNotificationOptions,
   NotificationTemplate,
-  NotificationBatch
+  NotificationBatch,
 } from '../types/notifications';
 
 /**
@@ -21,7 +19,9 @@ export class NotificationManager {
   /**
    * Create a notification
    */
-  async createNotification(options: CreateNotificationOptions): Promise<Notification> {
+  async createNotification(
+    options: CreateNotificationOptions,
+  ): Promise<Notification> {
     const notification = await this.prisma.notification.create({
       data: {
         userId: options.userId,
@@ -32,9 +32,9 @@ export class NotificationManager {
         priority: options.priority || 'medium',
         metadata: options.metadata,
         expiresAt: options.expiresAt,
-        blogPostId: options.blogPostId
+        blogPostId: options.blogPostId,
       },
-      include: { blogPost: true }
+      include: { blogPost: true },
     });
 
     return notification as Notification;
@@ -50,7 +50,7 @@ export class NotificationManager {
       types?: NotificationType[];
       limit?: number;
       offset?: number;
-    } = {}
+    } = {},
   ): Promise<Notification[]> {
     const where: any = { userId };
 
@@ -63,21 +63,15 @@ export class NotificationManager {
     }
 
     // Filter out expired notifications
-    where.OR = [
-      { expiresAt: null },
-      { expiresAt: { gt: new Date() } }
-    ];
+    where.OR = [{ expiresAt: null }, { expiresAt: { gt: new Date() } }];
 
-    return await this.prisma.notification.findMany({
+    return (await this.prisma.notification.findMany({
       where,
       include: { blogPost: true },
-      orderBy: [
-        { priority: 'desc' },
-        { createdAt: 'desc' }
-      ],
+      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
       take: options.limit,
-      skip: options.offset
-    }) as Notification[];
+      skip: options.offset,
+    })) as Notification[];
   }
 
   /**
@@ -85,14 +79,14 @@ export class NotificationManager {
    */
   async markAsRead(notificationId: string, userId: string): Promise<void> {
     await this.prisma.notification.updateMany({
-      where: { 
+      where: {
         id: notificationId,
-        userId: userId
+        userId: userId,
       },
-      data: { 
+      data: {
         isRead: true,
-        readAt: new Date()
-      }
+        readAt: new Date(),
+      },
     });
   }
 
@@ -101,26 +95,29 @@ export class NotificationManager {
    */
   async markAllAsRead(userId: string): Promise<void> {
     await this.prisma.notification.updateMany({
-      where: { 
+      where: {
         userId: userId,
-        isRead: false
+        isRead: false,
       },
-      data: { 
+      data: {
         isRead: true,
-        readAt: new Date()
-      }
+        readAt: new Date(),
+      },
     });
   }
 
   /**
    * Delete notification
    */
-  async deleteNotification(notificationId: string, userId: string): Promise<void> {
+  async deleteNotification(
+    notificationId: string,
+    userId: string,
+  ): Promise<void> {
     await this.prisma.notification.deleteMany({
-      where: { 
+      where: {
         id: notificationId,
-        userId: userId
-      }
+        userId: userId,
+      },
     });
   }
 
@@ -135,33 +132,27 @@ export class NotificationManager {
   }> {
     const [total, unread, byType, byPriority] = await Promise.all([
       this.prisma.notification.count({
-        where: { 
+        where: {
           userId,
-          OR: [
-            { expiresAt: null },
-            { expiresAt: { gt: new Date() } }
-          ]
-        }
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
       }),
       this.prisma.notification.count({
-        where: { 
+        where: {
           userId,
           isRead: false,
-          OR: [
-            { expiresAt: null },
-            { expiresAt: { gt: new Date() } }
-          ]
-        }
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
       }),
       this.getNotificationsByType(userId),
-      this.getNotificationsByPriority(userId)
+      this.getNotificationsByPriority(userId),
     ]);
 
     return {
       total,
       unread,
       byType,
-      byPriority
+      byPriority,
     };
   }
 
@@ -171,40 +162,45 @@ export class NotificationManager {
   async createWorkflowNotification(
     userId: string,
     blogPostId: string,
-    workflowType: 'submitted' | 'approved' | 'rejected' | 'published' | 'scheduled',
-    metadata?: Record<string, any>
+    workflowType:
+      | 'submitted'
+      | 'approved'
+      | 'rejected'
+      | 'published'
+      | 'scheduled',
+    metadata?: Record<string, any>,
   ): Promise<Notification> {
     const blogPost = await this.prisma.blogPost.findUnique({
       where: { id: blogPostId },
-      select: { title: true }
+      select: { title: true },
     });
 
     const templates = {
       submitted: {
         title: 'Content Submitted for Review',
         message: `"${blogPost?.title}" has been submitted for your review`,
-        priority: 'medium' as NotificationPriority
+        priority: 'medium' as NotificationPriority,
       },
       approved: {
         title: 'Content Approved',
         message: `"${blogPost?.title}" has been approved`,
-        priority: 'medium' as NotificationPriority
+        priority: 'medium' as NotificationPriority,
       },
       rejected: {
         title: 'Content Rejected',
         message: `"${blogPost?.title}" has been rejected and requires changes`,
-        priority: 'high' as NotificationPriority
+        priority: 'high' as NotificationPriority,
       },
       published: {
         title: 'Content Published',
         message: `"${blogPost?.title}" has been published successfully`,
-        priority: 'low' as NotificationPriority
+        priority: 'low' as NotificationPriority,
       },
       scheduled: {
         title: 'Content Scheduled',
         message: `"${blogPost?.title}" has been scheduled for publishing`,
-        priority: 'low' as NotificationPriority
-      }
+        priority: 'low' as NotificationPriority,
+      },
     };
 
     const template = templates[workflowType];
@@ -217,7 +213,7 @@ export class NotificationManager {
       priority: template.priority,
       blogPostId,
       metadata,
-      actionUrl: `/blog/${blogPostId}`
+      actionUrl: `/blog/${blogPostId}`,
     });
   }
 
@@ -228,14 +224,14 @@ export class NotificationManager {
     approverId: string,
     blogPostId: string,
     workflowId: string,
-    dueDate?: Date
+    dueDate?: Date,
   ): Promise<Notification> {
     const blogPost = await this.prisma.blogPost.findUnique({
       where: { id: blogPostId },
-      select: { title: true }
+      select: { title: true },
     });
 
-    const message = dueDate 
+    const message = dueDate
       ? `"${blogPost?.title}" requires your approval by ${dueDate.toLocaleDateString()}`
       : `"${blogPost?.title}" requires your approval`;
 
@@ -248,7 +244,7 @@ export class NotificationManager {
       blogPostId,
       actionUrl: `/approval/${workflowId}`,
       expiresAt: dueDate,
-      metadata: { workflowId }
+      metadata: { workflowId },
     });
   }
 
@@ -259,29 +255,29 @@ export class NotificationManager {
     userId: string,
     blogPostId: string,
     seoIssue: 'low_score' | 'missing_metadata' | 'keyword_issues',
-    score?: number
+    score?: number,
   ): Promise<Notification> {
     const blogPost = await this.prisma.blogPost.findUnique({
       where: { id: blogPostId },
-      select: { title: true }
+      select: { title: true },
     });
 
     const templates = {
       low_score: {
         title: 'SEO Score Needs Improvement',
         message: `"${blogPost?.title}" has an SEO score of ${score}%. Consider optimizing.`,
-        priority: 'medium' as NotificationPriority
+        priority: 'medium' as NotificationPriority,
       },
       missing_metadata: {
         title: 'Missing SEO Metadata',
         message: `"${blogPost?.title}" is missing important SEO metadata`,
-        priority: 'high' as NotificationPriority
+        priority: 'high' as NotificationPriority,
       },
       keyword_issues: {
         title: 'Keyword Optimization Issues',
         message: `"${blogPost?.title}" has keyword density issues that need attention`,
-        priority: 'medium' as NotificationPriority
-      }
+        priority: 'medium' as NotificationPriority,
+      },
     };
 
     const template = templates[seoIssue];
@@ -294,7 +290,7 @@ export class NotificationManager {
       priority: template.priority,
       blogPostId,
       actionUrl: `/blog/${blogPostId}/seo`,
-      metadata: { seoIssue, score }
+      metadata: { seoIssue, score },
     });
   }
 
@@ -305,11 +301,11 @@ export class NotificationManager {
     userId: string,
     blogPostId: string,
     deadline: Date,
-    reminderType: 'approaching' | 'overdue'
+    reminderType: 'approaching' | 'overdue',
   ): Promise<Notification> {
     const blogPost = await this.prisma.blogPost.findUnique({
       where: { id: blogPostId },
-      select: { title: true }
+      select: { title: true },
     });
 
     const isOverdue = reminderType === 'overdue';
@@ -325,7 +321,7 @@ export class NotificationManager {
       priority: isOverdue ? 'urgent' : 'high',
       blogPostId,
       actionUrl: `/blog/${blogPostId}`,
-      metadata: { deadline: deadline.toISOString(), reminderType }
+      metadata: { deadline: deadline.toISOString(), reminderType },
     });
   }
 
@@ -334,19 +330,22 @@ export class NotificationManager {
    */
   async sendBulkNotifications(
     userIds: string[],
-    notificationData: Omit<CreateNotificationOptions, 'userId'>
+    notificationData: Omit<CreateNotificationOptions, 'userId'>,
   ): Promise<NotificationBatch> {
     const notifications: Notification[] = [];
-    
+
     for (const userId of userIds) {
       try {
         const notification = await this.createNotification({
           ...notificationData,
-          userId
+          userId,
         });
         notifications.push(notification);
       } catch (error) {
-        console.error(`Failed to create notification for user ${userId}:`, error);
+        console.error(
+          `Failed to create notification for user ${userId}:`,
+          error,
+        );
       }
     }
 
@@ -357,7 +356,7 @@ export class NotificationManager {
       sentCount: notifications.length,
       failedCount: userIds.length - notifications.length,
       createdAt: new Date(),
-      sentAt: new Date()
+      sentAt: new Date(),
     };
 
     return batch;
@@ -369,8 +368,8 @@ export class NotificationManager {
   async cleanupExpiredNotifications(): Promise<number> {
     const result = await this.prisma.notification.deleteMany({
       where: {
-        expiresAt: { lt: new Date() }
-      }
+        expiresAt: { lt: new Date() },
+      },
     });
 
     return result.count;
@@ -386,8 +385,8 @@ export class NotificationManager {
     const result = await this.prisma.notification.deleteMany({
       where: {
         isRead: true,
-        readAt: { lt: thirtyDaysAgo }
-      }
+        readAt: { lt: thirtyDaysAgo },
+      },
     });
 
     return result.count;
@@ -396,7 +395,9 @@ export class NotificationManager {
   /**
    * Get notification preferences for a user
    */
-  async getNotificationPreferences(userId: string): Promise<NotificationPreferences> {
+  async getNotificationPreferences(
+    userId: string,
+  ): Promise<NotificationPreferences> {
     // This would typically be stored in a separate user preferences system
     // For now, returning default preferences
     return {
@@ -405,15 +406,50 @@ export class NotificationManager {
       pushNotifications: true,
       inAppNotifications: true,
       preferences: {
-        workflow: { email: true, push: true, inApp: true, priority: ['high', 'urgent'] },
-        approval: { email: true, push: true, inApp: true, priority: ['high', 'urgent'] },
-        comment: { email: true, push: false, inApp: true, priority: ['medium', 'high', 'urgent'] },
-        schedule: { email: true, push: false, inApp: true, priority: ['medium', 'high', 'urgent'] },
-        seo: { email: false, push: false, inApp: true, priority: ['high', 'urgent'] },
+        workflow: {
+          email: true,
+          push: true,
+          inApp: true,
+          priority: ['high', 'urgent'],
+        },
+        approval: {
+          email: true,
+          push: true,
+          inApp: true,
+          priority: ['high', 'urgent'],
+        },
+        comment: {
+          email: true,
+          push: false,
+          inApp: true,
+          priority: ['medium', 'high', 'urgent'],
+        },
+        schedule: {
+          email: true,
+          push: false,
+          inApp: true,
+          priority: ['medium', 'high', 'urgent'],
+        },
+        seo: {
+          email: false,
+          push: false,
+          inApp: true,
+          priority: ['high', 'urgent'],
+        },
         system: { email: true, push: true, inApp: true, priority: ['urgent'] },
-        reminder: { email: true, push: true, inApp: true, priority: ['high', 'urgent'] },
-        deadline: { email: true, push: true, inApp: true, priority: ['high', 'urgent'] }
-      }
+        reminder: {
+          email: true,
+          push: true,
+          inApp: true,
+          priority: ['high', 'urgent'],
+        },
+        deadline: {
+          email: true,
+          push: true,
+          inApp: true,
+          priority: ['high', 'urgent'],
+        },
+      },
     };
   }
 
@@ -422,7 +458,7 @@ export class NotificationManager {
    */
   async updateNotificationPreferences(
     userId: string,
-    preferences: Partial<NotificationPreferences>
+    preferences: Partial<NotificationPreferences>,
   ): Promise<NotificationPreferences> {
     // In a real implementation, this would update user preferences in the database
     // For now, just return the current preferences
@@ -432,20 +468,28 @@ export class NotificationManager {
   /**
    * Get notifications by type
    */
-  private async getNotificationsByType(userId: string): Promise<Record<NotificationType, number>> {
-    const types: NotificationType[] = ['workflow', 'approval', 'comment', 'schedule', 'seo', 'system', 'reminder', 'deadline'];
+  private async getNotificationsByType(
+    userId: string,
+  ): Promise<Record<NotificationType, number>> {
+    const types: NotificationType[] = [
+      'workflow',
+      'approval',
+      'comment',
+      'schedule',
+      'seo',
+      'system',
+      'reminder',
+      'deadline',
+    ];
     const counts: Record<NotificationType, number> = {} as any;
 
     for (const type of types) {
       counts[type] = await this.prisma.notification.count({
-        where: { 
+        where: {
           userId,
           type,
-          OR: [
-            { expiresAt: null },
-            { expiresAt: { gt: new Date() } }
-          ]
-        }
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
       });
     }
 
@@ -455,24 +499,27 @@ export class NotificationManager {
   /**
    * Get notifications by priority
    */
-  private async getNotificationsByPriority(userId: string): Promise<Record<NotificationPriority, number>> {
-    const priorities: NotificationPriority[] = ['low', 'medium', 'high', 'urgent'];
+  private async getNotificationsByPriority(
+    userId: string,
+  ): Promise<Record<NotificationPriority, number>> {
+    const priorities: NotificationPriority[] = [
+      'low',
+      'medium',
+      'high',
+      'urgent',
+    ];
     const counts: Record<NotificationPriority, number> = {} as any;
 
     for (const priority of priorities) {
       counts[priority] = await this.prisma.notification.count({
-        where: { 
+        where: {
           userId,
           priority,
-          OR: [
-            { expiresAt: null },
-            { expiresAt: { gt: new Date() } }
-          ]
-        }
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
       });
     }
 
     return counts;
   }
 }
-

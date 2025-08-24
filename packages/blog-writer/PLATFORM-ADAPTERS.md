@@ -1,4 +1,3 @@
-
 # Platform Adapters Guide
 
 This document provides comprehensive guidance on using the platform adapters in the Blog Writer SDK, including the newly added Shopify and Webflow adapters.
@@ -7,13 +6,13 @@ This document provides comprehensive guidance on using the platform adapters in 
 
 The Blog Writer SDK now supports **5 major platforms** for multi-platform content publishing:
 
-| Platform | Description | Scheduling | Analytics | Key Features |
-|----------|-------------|------------|-----------|--------------|
-| **WordPress** | WordPress.com and self-hosted sites | ✅ | ❌ | Categories, Tags, Media, Revisions |
-| **Medium** | Medium publishing platform | ❌ | ✅ | Publications, Tags, Analytics |
-| **LinkedIn** | Professional network articles | ❌ | ✅ | Professional audience, Analytics |
-| **Shopify** | E-commerce store blogs | ✅ | ✅ | Product integration, Store branding |
-| **Webflow** | Design-focused CMS | ❌ | ❌ | Rich design, Custom fields, Visual editor |
+| Platform      | Description                         | Scheduling | Analytics | Key Features                              |
+| ------------- | ----------------------------------- | ---------- | --------- | ----------------------------------------- |
+| **WordPress** | WordPress.com and self-hosted sites | ✅         | ❌        | Categories, Tags, Media, Revisions        |
+| **Medium**    | Medium publishing platform          | ❌         | ✅        | Publications, Tags, Analytics             |
+| **LinkedIn**  | Professional network articles       | ❌         | ✅        | Professional audience, Analytics          |
+| **Shopify**   | E-commerce store blogs              | ✅         | ✅        | Product integration, Store branding       |
+| **Webflow**   | Design-focused CMS                  | ❌         | ❌        | Rich design, Custom fields, Visual editor |
 
 ## Quick Start
 
@@ -24,7 +23,7 @@ import {
   ShopifyAdapter,
   WebflowAdapter,
   MultiPlatformPublisher,
-  createPlatformCredentials
+  createPlatformCredentials,
 } from '@vercel/ai-blog-writer';
 ```
 
@@ -34,19 +33,19 @@ import {
 // Initialize adapters
 const shopifyAdapter = new ShopifyAdapter({
   storeUrl: 'mystore.myshopify.com',
-  apiVersion: '2024-01'
+  apiVersion: '2024-01',
 });
 
 const webflowAdapter = new WebflowAdapter({
   siteId: 'your-site-id',
-  apiVersion: 'v1'
+  apiVersion: 'v1',
 });
 
 // Set up credentials
 const shopifyCredentials = createPlatformCredentials('shopify', {
   type: 'private_app',
   storeUrl: 'mystore.myshopify.com',
-  accessToken: 'your-access-token'
+  accessToken: 'your-access-token',
 });
 
 // Authenticate and publish
@@ -59,6 +58,7 @@ const publishResult = await shopifyAdapter.publish(formattedContent);
 ## Shopify Adapter
 
 ### Features
+
 - **Blog Publishing**: Publish to Shopify store blogs
 - **Product Integration**: Link products within blog content using `[product:handle]` syntax
 - **Store Branding**: Automatically inherit store branding and theme
@@ -68,42 +68,46 @@ const publishResult = await shopifyAdapter.publish(formattedContent);
 ### Authentication Options
 
 #### Private App (Recommended)
+
 ```typescript
 const credentials: ShopifyCredentials = {
   type: 'private_app',
   storeUrl: 'mystore.myshopify.com',
   accessToken: 'shpat_your_private_app_token',
-  scopes: ['write_content', 'read_content', 'read_products']
+  scopes: ['write_content', 'read_content', 'read_products'],
 };
 ```
 
 #### OAuth2
+
 ```typescript
 const credentials: ShopifyCredentials = {
   type: 'oauth2',
   storeUrl: 'mystore.myshopify.com',
   accessToken: 'your_oauth_token',
-  scopes: ['write_content', 'read_content']
+  scopes: ['write_content', 'read_content'],
 };
 ```
 
 ### Shopify-Specific Features
 
 #### Product Linking
+
 ```typescript
 const blogPost: BlogPost = {
-  title: "Summer Collection Highlights",
+  title: 'Summer Collection Highlights',
   content: `
     Check out our featured products:
     - [product:summer-dress] - Perfect for beach days
     - [product:sandals-leather] - Comfortable and stylish
     
     Shop the full collection now!
-  `
+  `,
 };
 ```
 
 #### Blog Management
+
 ```typescript
 // Get available tags
 const tags = await shopifyAdapter.getTags();
@@ -111,7 +115,7 @@ const tags = await shopifyAdapter.getTags();
 // Check blog analytics
 const analytics = await shopifyAdapter.getAnalytics({
   startDate: new Date('2024-01-01'),
-  endDate: new Date()
+  endDate: new Date(),
 });
 ```
 
@@ -120,16 +124,17 @@ const analytics = await shopifyAdapter.getAnalytics({
 ```typescript
 const shopifyConfig: ShopifyConfig = {
   storeUrl: 'mystore.myshopify.com',
-  apiVersion: '2024-01',        // Shopify API version
-  maxRetries: 3,               // Request retry attempts
-  retryDelay: 1000,           // Delay between retries (ms)
-  timeout: 30000              // Request timeout (ms)
+  apiVersion: '2024-01', // Shopify API version
+  maxRetries: 3, // Request retry attempts
+  retryDelay: 1000, // Delay between retries (ms)
+  timeout: 30000, // Request timeout (ms)
 };
 ```
 
 ## Webflow Adapter
 
 ### Features
+
 - **CMS Publishing**: Publish to Webflow CMS collections
 - **Rich Text Support**: Advanced rich text formatting and styling
 - **Asset Management**: Upload and manage images and media files
@@ -140,30 +145,33 @@ const shopifyConfig: ShopifyConfig = {
 ### Authentication Options
 
 #### API Token (Recommended for simple setups)
+
 ```typescript
 const credentials: WebflowCredentials = {
   type: 'api_token',
   apiToken: 'your_webflow_api_token',
   siteId: 'your_site_id',
-  collectionId: 'optional_blog_collection_id'
+  collectionId: 'optional_blog_collection_id',
 };
 ```
 
 #### OAuth2 (Recommended for apps)
+
 ```typescript
 const credentials: WebflowCredentials = {
   type: 'oauth2',
   accessToken: 'your_oauth_access_token',
-  siteId: 'your_site_id'
+  siteId: 'your_site_id',
 };
 ```
 
 ### Webflow-Specific Features
 
 #### Rich Text Content
+
 ```typescript
 const blogPost: BlogPost = {
-  title: "Design System Fundamentals",
+  title: 'Design System Fundamentals',
   content: `
     <div class="hero-section">
       <h1>Building Scalable Design Systems</h1>
@@ -177,11 +185,12 @@ const blogPost: BlogPost = {
       </div>
     </div>
   `,
-  format: 'html' // Webflow supports rich HTML
+  format: 'html', // Webflow supports rich HTML
 };
 ```
 
 #### Custom Fields Integration
+
 ```typescript
 // Get available fields in the collection
 const customFields = await webflowAdapter.getCustomFields();
@@ -190,27 +199,28 @@ const customFields = await webflowAdapter.getCustomFields();
 await webflowAdapter.publish(formattedContent, {
   status: 'published',
   customFields: {
-    'featured': true,
-    'category': 'design-theory',
+    featured: true,
+    category: 'design-theory',
     'difficulty-level': 'intermediate',
-    'reading-time': '8 min'
-  }
+    'reading-time': '8 min',
+  },
 });
 ```
 
 #### Asset Upload
+
 ```typescript
 // Images are automatically processed and uploaded to Webflow
 const blogPost: BlogPost = {
-  title: "Visual Design Trends",
+  title: 'Visual Design Trends',
   images: [
     {
       filename: 'hero-image.jpg',
       url: 'https://i.pinimg.com/736x/03/fc/2a/03fc2a27982625f2ae3490a3bff461a8.jpg',
       altText: 'Design trends visualization',
-      caption: 'Modern design approaches'
-    }
-  ]
+      caption: 'Modern design approaches',
+    },
+  ],
 };
 ```
 
@@ -219,10 +229,10 @@ const blogPost: BlogPost = {
 ```typescript
 const webflowConfig: WebflowConfig = {
   siteId: 'your_webflow_site_id',
-  apiVersion: 'v1',            // Webflow API version
-  maxRetries: 3,               // Request retry attempts
-  retryDelay: 1000,           // Delay between retries (ms)
-  timeout: 30000              // Request timeout (ms)
+  apiVersion: 'v1', // Webflow API version
+  maxRetries: 3, // Request retry attempts
+  retryDelay: 1000, // Delay between retries (ms)
+  timeout: 30000, // Request timeout (ms)
 };
 ```
 
@@ -247,16 +257,16 @@ const result = await multiPublisher.publishToSelected(
     platformSpecificOptions: {
       shopify: {
         tags: ['product-guide', 'ecommerce'],
-        status: 'published'
+        status: 'published',
       },
       webflow: {
         customFields: {
           featured: true,
-          category: 'business'
-        }
-      }
-    }
-  }
+          category: 'business',
+        },
+      },
+    },
+  },
 );
 ```
 
@@ -266,19 +276,19 @@ const result = await multiPublisher.publishToSelected(
 const publishOptions: MultiPlatformPublishOptions = {
   adaptContentPerPlatform: true,
   publishOrder: ['webflow', 'shopify', 'wordpress'],
-  
+
   adaptationRules: {
     shopify: {
-      targetWordCount: 800,     // Optimize for e-commerce attention spans
-      includeImages: true,      // Include product images
-      preserveFormatting: false // Allow HTML to Markdown conversion
+      targetWordCount: 800, // Optimize for e-commerce attention spans
+      includeImages: true, // Include product images
+      preserveFormatting: false, // Allow HTML to Markdown conversion
     },
     webflow: {
       preserveFormatting: true, // Maintain rich text formatting
-      includeImages: true,      // Upload images to Webflow
-      adaptForSEO: true        // Optimize for Webflow SEO fields
-    }
-  }
+      includeImages: true, // Upload images to Webflow
+      adaptForSEO: true, // Optimize for Webflow SEO fields
+    },
+  },
 };
 ```
 
@@ -304,8 +314,8 @@ const analytics = await multiPublisher.getAggregatedAnalytics(
   ['shopify', 'webflow', 'wordpress'],
   {
     startDate: new Date('2024-01-01'),
-    endDate: new Date()
-  }
+    endDate: new Date(),
+  },
 );
 
 console.log('Total views:', analytics.totalViews);
@@ -318,11 +328,13 @@ console.log('Best performing platform:', analytics.topPerformingPlatform);
 ```typescript
 const comparative = await multiPublisher.getComparativeAnalytics(
   ['shopify', 'webflow'],
-  { startDate: monthAgo, endDate: now }
+  { startDate: monthAgo, endDate: now },
 );
 
 comparative.comparisons.forEach(comparison => {
-  console.log(`${comparison.metric}: ${comparison.winner} leads by ${comparison.difference}%`);
+  console.log(
+    `${comparison.metric}: ${comparison.winner} leads by ${comparison.difference}%`,
+  );
 });
 ```
 
@@ -331,11 +343,13 @@ comparative.comparisons.forEach(comparison => {
 ### SEO Best Practices
 
 #### Shopify SEO
+
 ```typescript
 const shopifyOptimizedPost = {
-  title: "Best Summer Products 2024 - Free Shipping",
-  seoTitle: "Top Summer Products 2024 | Free Shipping | MyStore",
-  seoDescription: "Discover the best summer products with free shipping. Shop our curated collection of trending items.",
+  title: 'Best Summer Products 2024 - Free Shipping',
+  seoTitle: 'Top Summer Products 2024 | Free Shipping | MyStore',
+  seoDescription:
+    'Discover the best summer products with free shipping. Shop our curated collection of trending items.',
   tags: ['summer', 'trending', 'free-shipping'],
   content: `
     // Include product recommendations
@@ -343,23 +357,25 @@ const shopifyOptimizedPost = {
     
     // Add clear call-to-actions
     Shop now and get free shipping on orders over $50!
-  `
+  `,
 };
 ```
 
 #### Webflow SEO
+
 ```typescript
 const webflowOptimizedPost = {
-  title: "Complete Guide to Responsive Design",
-  seoTitle: "Responsive Web Design Guide 2024 | Best Practices",
-  seoDescription: "Learn responsive design principles, techniques, and best practices for creating mobile-friendly websites.",
+  title: 'Complete Guide to Responsive Design',
+  seoTitle: 'Responsive Web Design Guide 2024 | Best Practices',
+  seoDescription:
+    'Learn responsive design principles, techniques, and best practices for creating mobile-friendly websites.',
   content: `
     <div class="seo-optimized-content">
       <h1>Responsive Design Mastery</h1>
       // Properly structured HTML with semantic elements
       // Optimized for Webflow's design capabilities
     </div>
-  `
+  `,
 };
 ```
 
@@ -371,14 +387,14 @@ const adaptationConfig = {
     // Optimize for e-commerce
     focusOnProducts: true,
     includeCallToActions: true,
-    optimizeForConversion: true
+    optimizeForConversion: true,
   },
   webflow: {
     // Optimize for design showcase
     preserveVisualHierarchy: true,
     enhanceTypography: true,
-    maintainBrandConsistency: true
-  }
+    maintainBrandConsistency: true,
+  },
 };
 ```
 
@@ -387,6 +403,7 @@ const adaptationConfig = {
 ### Common Authentication Issues
 
 #### Shopify
+
 ```typescript
 // Validate credentials
 const validation = CredentialValidator.validateShopifyCredentials(credentials);
@@ -401,6 +418,7 @@ if (!credentials.storeUrl.includes('.myshopify.com')) {
 ```
 
 #### Webflow
+
 ```typescript
 // Check site permissions
 const connectionResult = await webflowAdapter.validateConnection();
@@ -410,7 +428,9 @@ if (!connectionResult.isValid) {
 
 // Verify collection access
 if (!credentials.collectionId) {
-  console.info('Collection ID not specified - will auto-detect blog collection');
+  console.info(
+    'Collection ID not specified - will auto-detect blog collection',
+  );
 }
 ```
 
@@ -454,30 +474,35 @@ if (validation.warnings.length > 0) {
 ## Best Practices
 
 ### 1. Authentication Management
+
 - Use environment variables for API tokens and credentials
 - Implement token refresh for OAuth2 flows
 - Monitor authentication status and handle expiration gracefully
 - Use the most appropriate authentication method for each platform
 
 ### 2. Content Strategy
+
 - Adapt content for each platform's audience and strengths
 - Use Shopify for product-focused content with clear CTAs
 - Use Webflow for design-heavy content with rich visual elements
 - Maintain consistent branding while optimizing for platform-specific features
 
 ### 3. Performance Optimization
+
 - Monitor rate limits and implement backoff strategies
 - Use bulk operations when supported by the platform
 - Implement proper error handling and retry logic
 - Cache platform configuration and metadata when possible
 
 ### 4. SEO Optimization
+
 - Customize meta titles and descriptions for each platform
 - Use platform-specific SEO features (Shopify collections, Webflow custom fields)
 - Implement proper heading structure and semantic markup
 - Optimize images with appropriate alt text and captions
 
 ### 5. Analytics and Monitoring
+
 - Set up regular health checks for all platforms
 - Monitor publishing success rates and error patterns
 - Track cross-platform performance metrics
@@ -488,7 +513,7 @@ if (validation.warnings.length > 0) {
 See the following example files for comprehensive usage patterns:
 
 - [`examples/shopify-adapter-demo.ts`](./examples/shopify-adapter-demo.ts) - Complete Shopify integration examples
-- [`examples/webflow-adapter-demo.ts`](./examples/webflow-adapter-demo.ts) - Webflow CMS publishing examples  
+- [`examples/webflow-adapter-demo.ts`](./examples/webflow-adapter-demo.ts) - Webflow CMS publishing examples
 - [`examples/multi-platform-integration-demo.ts`](./examples/multi-platform-integration-demo.ts) - Cross-platform publishing workflows
 
 ## Support and Contributing
@@ -501,4 +526,3 @@ For issues, feature requests, or contributions related to the platform adapters:
 4. Submit detailed bug reports with reproduction steps
 
 The platform adapters are actively maintained and new platforms can be added following the established `BasePlatformAdapter` pattern.
-

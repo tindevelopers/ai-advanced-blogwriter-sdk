@@ -1,5 +1,3 @@
-
-
 import { PrismaClient } from '../generated/prisma-client';
 import type {
   WorkflowHistory,
@@ -13,7 +11,7 @@ import type {
   ApprovalDecision,
   PublishingSchedule,
   SchedulePublishingOptions,
-  BlogPostStatus
+  BlogPostStatus,
 } from '../types/workflow';
 
 /**
@@ -23,7 +21,7 @@ import type {
 export class WorkflowManager {
   constructor(
     private prisma: PrismaClient,
-    private config: WorkflowConfig = {}
+    private config: WorkflowConfig = {},
   ) {}
 
   /**
@@ -32,11 +30,11 @@ export class WorkflowManager {
   async submitForReview(
     blogPostId: string,
     userId: string,
-    options: SubmitForReviewOptions = {}
+    options: SubmitForReviewOptions = {},
   ): Promise<ApprovalWorkflow> {
     const blogPost = await this.prisma.blogPost.findUnique({
       where: { id: blogPostId },
-      include: { versions: { orderBy: { createdAt: 'desc' }, take: 1 } }
+      include: { versions: { orderBy: { createdAt: 'desc' }, take: 1 } },
     });
 
     if (!blogPost) {
@@ -50,7 +48,7 @@ export class WorkflowManager {
     // Update blog post status
     await this.prisma.blogPost.update({
       where: { id: blogPostId },
-      data: { status: 'PENDING_REVIEW' }
+      data: { status: 'PENDING_REVIEW' },
     });
 
     // Create workflow history entry
@@ -63,12 +61,13 @@ export class WorkflowManager {
       options.message,
       userId,
       undefined,
-      options.dueDate
+      options.dueDate,
     );
 
     // Determine reviewers
-    const reviewers = options.reviewers || await this.getDefaultReviewers(blogPost);
-    
+    const reviewers =
+      options.reviewers || (await this.getDefaultReviewers(blogPost));
+
     if (reviewers.length === 0) {
       throw new Error('No reviewers available for this content');
     }
@@ -85,11 +84,11 @@ export class WorkflowManager {
           create: reviewers.map((reviewerId, index) => ({
             stepNumber: index + 1,
             approverId: reviewerId,
-            status: 'pending'
-          }))
-        }
+            status: 'pending',
+          })),
+        },
       },
-      include: { approvals: true }
+      include: { approvals: true },
     });
 
     // Convert Prisma workflow to custom interface
@@ -111,8 +110,8 @@ export class WorkflowManager {
         approverId: approval.approverId,
         status: approval.status,
         comment: approval.comment,
-        submittedAt: approval.submittedAt
-      }))
+        submittedAt: approval.submittedAt,
+      })),
     };
 
     // Send notifications to reviewers
@@ -128,15 +127,15 @@ export class WorkflowManager {
     workflowId: string,
     stepNumber: number,
     approverId: string,
-    decision: ApprovalDecision
+    decision: ApprovalDecision,
   ): Promise<ApprovalWorkflow> {
     const workflow = await this.prisma.approvalWorkflow.findUnique({
       where: { id: workflowId },
-      include: { 
+      include: {
         approvals: true,
         blogPost: true,
-        version: true
-      }
+        version: true,
+      },
     });
 
     if (!workflow) {
@@ -158,8 +157,8 @@ export class WorkflowManager {
       data: {
         status: decision.action === 'approve' ? 'approved' : 'rejected',
         comment: decision.comment,
-        submittedAt: new Date()
-      }
+        submittedAt: new Date(),
+      },
     });
 
     let newStatus: BlogPostStatus;
@@ -167,52 +166,52 @@ export class WorkflowManager {
 
     if (decision.action === 'approve') {
       // Check if this is the final approval
-      const remainingSteps = workflow.approvals.filter(s => 
-        s.stepNumber > stepNumber && s.status === 'pending'
+      const remainingSteps = workflow.approvals.filter(
+        s => s.stepNumber > stepNumber && s.status === 'pending',
       );
 
       if (remainingSteps.length === 0) {
         // All approvals complete
         newStatus = 'APPROVED';
         workflowAction = 'APPROVED';
-        
+
         await this.prisma.approvalWorkflow.update({
           where: { id: workflowId },
-          data: { 
-            isComplete: true, 
+          data: {
+            isComplete: true,
             isApproved: true,
-            completedAt: new Date()
-          }
+            completedAt: new Date(),
+          },
         });
       } else {
         // Move to next step
         newStatus = 'IN_REVIEW';
         workflowAction = 'APPROVED';
-        
+
         await this.prisma.approvalWorkflow.update({
           where: { id: workflowId },
-          data: { currentStep: stepNumber + 1 }
+          data: { currentStep: stepNumber + 1 },
         });
       }
     } else {
       // Rejected
       newStatus = decision.action === 'request_changes' ? 'DRAFT' : 'REJECTED';
       workflowAction = 'REJECTED';
-      
+
       await this.prisma.approvalWorkflow.update({
         where: { id: workflowId },
-        data: { 
-          isComplete: true, 
+        data: {
+          isComplete: true,
           isApproved: false,
-          completedAt: new Date()
-        }
+          completedAt: new Date(),
+        },
       });
     }
 
     // Update blog post status
     await this.prisma.blogPost.update({
       where: { id: workflow.blogPostId },
-      data: { status: newStatus }
+      data: { status: newStatus },
     });
 
     // Create workflow history
@@ -224,13 +223,13 @@ export class WorkflowManager {
       workflowAction,
       decision.comment,
       approverId,
-      decision.assignBackTo
+      decision.assignBackTo,
     );
 
     // Send notifications
     const updatedWorkflow = await this.prisma.approvalWorkflow.findUnique({
       where: { id: workflowId },
-      include: { approvals: true }
+      include: { approvals: true },
     });
 
     // Convert Prisma workflow to custom interface
@@ -252,11 +251,15 @@ export class WorkflowManager {
         approverId: approval.approverId,
         status: approval.status,
         comment: approval.comment,
-        submittedAt: approval.submittedAt
-      }))
+        submittedAt: approval.submittedAt,
+      })),
     };
 
-    await this.notifyWorkflowUpdate(customWorkflow, decision.action, approverId);
+    await this.notifyWorkflowUpdate(
+      customWorkflow,
+      decision.action,
+      approverId,
+    );
 
     return customWorkflow;
   }
@@ -267,10 +270,10 @@ export class WorkflowManager {
   async publishBlogPost(
     blogPostId: string,
     userId: string,
-    scheduleOptions?: SchedulePublishingOptions
+    scheduleOptions?: SchedulePublishingOptions,
   ): Promise<void> {
     const blogPost = await this.prisma.blogPost.findUnique({
-      where: { id: blogPostId }
+      where: { id: blogPostId },
     });
 
     if (!blogPost) {
@@ -284,13 +287,13 @@ export class WorkflowManager {
     if (scheduleOptions) {
       // Schedule for later publishing
       await this.schedulePublishing(blogPostId, scheduleOptions);
-      
+
       await this.prisma.blogPost.update({
         where: { id: blogPostId },
-        data: { 
+        data: {
           status: 'SCHEDULED',
-          scheduledAt: scheduleOptions.scheduledFor
-        }
+          scheduledAt: scheduleOptions.scheduledFor,
+        },
       });
 
       await this.createWorkflowHistory(
@@ -300,16 +303,16 @@ export class WorkflowManager {
         'SCHEDULED',
         'SCHEDULED',
         `Scheduled for ${scheduleOptions.scheduledFor.toISOString()}`,
-        userId
+        userId,
       );
     } else {
       // Publish immediately
       await this.prisma.blogPost.update({
         where: { id: blogPostId },
-        data: { 
+        data: {
           status: 'PUBLISHED',
-          publishedAt: new Date()
-        }
+          publishedAt: new Date(),
+        },
       });
 
       await this.createWorkflowHistory(
@@ -319,7 +322,7 @@ export class WorkflowManager {
         'PUBLISHED',
         'PUBLISHED',
         'Published immediately',
-        userId
+        userId,
       );
 
       // TODO: Trigger publishing hooks (notifications, social media, etc.)
@@ -331,7 +334,7 @@ export class WorkflowManager {
    */
   async schedulePublishing(
     blogPostId: string,
-    options: SchedulePublishingOptions
+    options: SchedulePublishingOptions,
   ): Promise<PublishingSchedule> {
     const schedule = await this.prisma.publishingSchedule.create({
       data: {
@@ -340,8 +343,8 @@ export class WorkflowManager {
         timezone: options.timezone || 'UTC',
         autoPromote: options.autoPromote || false,
         promotionChannels: options.promotionChannels || [],
-        notifySubscribers: options.notifySubscribers !== false
-      }
+        notifySubscribers: options.notifySubscribers !== false,
+      },
     });
 
     return schedule as PublishingSchedule;
@@ -352,34 +355,34 @@ export class WorkflowManager {
    */
   async processScheduledPublications(): Promise<void> {
     const now = new Date();
-    
+
     const schedules = await this.prisma.publishingSchedule.findMany({
       where: {
         status: 'scheduled',
-        scheduledFor: { lte: now }
+        scheduledFor: { lte: now },
       },
-      include: { blogPost: true }
+      include: { blogPost: true },
     });
 
     for (const schedule of schedules) {
       try {
-        await this.prisma.$transaction(async (tx) => {
+        await this.prisma.$transaction(async tx => {
           // Update blog post status
           await tx.blogPost.update({
             where: { id: schedule.blogPostId },
-            data: { 
+            data: {
               status: 'PUBLISHED',
-              publishedAt: new Date()
-            }
+              publishedAt: new Date(),
+            },
           });
 
           // Update schedule status
           await tx.publishingSchedule.update({
             where: { id: schedule.id },
-            data: { 
+            data: {
               status: 'published',
-              publishedAt: new Date()
-            }
+              publishedAt: new Date(),
+            },
           });
 
           // Create workflow history
@@ -390,22 +393,22 @@ export class WorkflowManager {
               toStatus: 'PUBLISHED',
               action: 'PUBLISHED',
               comment: 'Automatically published via schedule',
-              performedAt: new Date()
-            }
+              performedAt: new Date(),
+            },
           });
         });
 
         // TODO: Trigger post-publish actions (notifications, social media, etc.)
-        
       } catch (error) {
         // Mark schedule as failed
         await this.prisma.publishingSchedule.update({
           where: { id: schedule.id },
-          data: { 
+          data: {
             status: 'failed',
-            errorMessage: error instanceof Error ? error.message : 'Unknown error',
-            retryCount: schedule.retryCount + 1
-          }
+            errorMessage:
+              error instanceof Error ? error.message : 'Unknown error',
+            retryCount: schedule.retryCount + 1,
+          },
         });
       }
     }
@@ -415,31 +418,31 @@ export class WorkflowManager {
    * Get workflow history for a blog post
    */
   async getWorkflowHistory(blogPostId: string): Promise<WorkflowHistory[]> {
-    return await this.prisma.workflowHistory.findMany({
+    return (await this.prisma.workflowHistory.findMany({
       where: { blogPostId },
-      orderBy: { performedAt: 'desc' }
-    }) as WorkflowHistory[];
+      orderBy: { performedAt: 'desc' },
+    })) as WorkflowHistory[];
   }
 
   /**
    * Get pending approvals for a user
    */
   async getPendingApprovals(userId: string): Promise<ApprovalWorkflow[]> {
-    return await this.prisma.approvalWorkflow.findMany({
+    return (await this.prisma.approvalWorkflow.findMany({
       where: {
         isComplete: false,
         approvals: {
           some: {
             approverId: userId,
-            status: 'pending'
-          }
-        }
+            status: 'pending',
+          },
+        },
       },
-      include: { 
+      include: {
         approvals: true,
-        blogPost: true
-      }
-    }) as ApprovalWorkflow[];
+        blogPost: true,
+      },
+    })) as ApprovalWorkflow[];
   }
 
   /**
@@ -455,9 +458,9 @@ export class WorkflowManager {
     performedBy?: string,
     assignedTo?: string,
     dueDate?: Date,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): Promise<WorkflowHistory> {
-    return await this.prisma.workflowHistory.create({
+    return (await this.prisma.workflowHistory.create({
       data: {
         blogPostId,
         versionId,
@@ -468,9 +471,9 @@ export class WorkflowManager {
         metadata,
         performedBy,
         assignedTo,
-        dueDate
-      }
-    }) as WorkflowHistory;
+        dueDate,
+      },
+    })) as WorkflowHistory;
   }
 
   /**
@@ -487,7 +490,7 @@ export class WorkflowManager {
    */
   private async notifyReviewers(
     workflow: ApprovalWorkflow,
-    type: 'submitted' | 'reminder'
+    type: 'submitted' | 'reminder',
   ): Promise<void> {
     // Implementation would depend on your notification system
     // This is a placeholder for the notification logic
@@ -500,10 +503,9 @@ export class WorkflowManager {
   private async notifyWorkflowUpdate(
     workflow: ApprovalWorkflow,
     action: string,
-    performedBy: string
+    performedBy: string,
   ): Promise<void> {
     // Implementation would depend on your notification system
     console.log(`Workflow ${workflow.id} updated: ${action} by ${performedBy}`);
   }
 }
-

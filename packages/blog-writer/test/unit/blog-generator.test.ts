@@ -81,7 +81,9 @@ describe('Blog Generator Unit Tests', () => {
         usage: { promptTokens: 100, completionTokens: 50 },
       });
 
-      const mockValidateBlogPost = vi.mocked(await import('../../src/core/validation')).validateBlogPost;
+      const mockValidateBlogPost = vi.mocked(
+        await import('../../src/core/validation'),
+      ).validateBlogPost;
 
       const options = {
         model: {} as any,
@@ -102,7 +104,9 @@ describe('Blog Generator Unit Tests', () => {
         topic: 'Test Topic',
       };
 
-      await expect(generateBlog(options)).rejects.toThrow('AI service unavailable');
+      await expect(generateBlog(options)).rejects.toThrow(
+        'AI service unavailable',
+      );
     });
 
     test('should respect word count constraints', async () => {
@@ -147,7 +151,9 @@ describe('Blog Generator Unit Tests', () => {
 
       expect(result.blogPost.metadata.seo).toBeDefined();
       expect(result.blogPost.metadata.seo.focusKeyword).toBe('test keyword');
-      expect(result.blogPost.metadata.seo.metaDescription).toBe('Test meta description');
+      expect(result.blogPost.metadata.seo.metaDescription).toBe(
+        'Test meta description',
+      );
     });
   });
 });

@@ -1,4 +1,3 @@
-
 /**
  * Advanced Writing Service
  * Week 7-8 Implementation
@@ -42,7 +41,7 @@ import {
   OptimizationCategory,
   ImpactLevel,
   EffortLevel,
-  OptimizationStatus
+  OptimizationStatus,
 } from '../types/advanced-writing';
 import type { BlogPost } from '../types/blog-post';
 
@@ -114,20 +113,32 @@ export class AdvancedWritingService {
 
       // Phase 3: Tone analysis
       await this.updateProgress(GenerationPhase.TONE_ANALYSIS, 0.7);
-      const toneAnalysis = await this.analyzeToneConsistency(sections, request.brandVoice);
+      const toneAnalysis = await this.analyzeToneConsistency(
+        sections,
+        request.brandVoice,
+      );
 
       // Phase 4: Fact checking (if enabled)
       let factChecks: FactCheck[] = [];
-      if (this.config.enableFactChecking && request.factCheckingEnabled !== false) {
+      if (
+        this.config.enableFactChecking &&
+        request.factCheckingEnabled !== false
+      ) {
         await this.updateProgress(GenerationPhase.FACT_CHECKING, 0.8);
         factChecks = await this.performFactChecking(sections);
       }
 
       // Phase 5: Content optimization
       let optimizationSuggestions: OptimizationSuggestion[] = [];
-      if (this.config.enableOptimization && request.optimizationEnabled !== false) {
+      if (
+        this.config.enableOptimization &&
+        request.optimizationEnabled !== false
+      ) {
         await this.updateProgress(GenerationPhase.OPTIMIZATION, 0.9);
-        optimizationSuggestions = await this.generateOptimizationSuggestions(sections, request);
+        optimizationSuggestions = await this.generateOptimizationSuggestions(
+          sections,
+          request,
+        );
       }
 
       // Phase 6: Finalize and create blog post
@@ -171,7 +182,10 @@ export class AdvancedWritingService {
       return result;
     } catch (error) {
       if (this.streamingCallback?.onError) {
-        this.streamingCallback.onError(error as Error, 'comprehensive_generation');
+        this.streamingCallback.onError(
+          error as Error,
+          'comprehensive_generation',
+        );
       }
       throw error;
     }
@@ -213,11 +227,12 @@ export class AdvancedWritingService {
 
     // Get existing sections
     const sections = await this.getSections(blogPostId);
-    
+
     // Get existing analysis data
     const toneAnalysis = await this.getToneAnalysis(blogPostId);
     const factChecks = await this.getFactChecks(blogPostId);
-    const optimizationSuggestions = await this.getOptimizationSuggestions(blogPostId);
+    const optimizationSuggestions =
+      await this.getOptimizationSuggestions(blogPostId);
 
     // Apply enhancements based on requested improvements
     const enhancedResult = await this.applyEnhancements(
@@ -225,7 +240,8 @@ export class AdvancedWritingService {
         blogPost: this.convertPrismaToBlogPost(existingPost),
         contentOutline: await this.generateOutlineFromSections(sections),
         sections,
-        toneAnalysis: toneAnalysis || await this.generateDefaultToneAnalysis(blogPostId),
+        toneAnalysis:
+          toneAnalysis || (await this.generateDefaultToneAnalysis(blogPostId)),
         factChecks,
         optimizationSuggestions,
         generationMetrics: this.generateDefaultMetrics(),
@@ -239,7 +255,9 @@ export class AdvancedWritingService {
 
   // Private helper methods
 
-  private async generateOutline(request: ComprehensiveWritingRequest): Promise<ContentOutline> {
+  private async generateOutline(
+    request: ComprehensiveWritingRequest,
+  ): Promise<ContentOutline> {
     // This would typically call an LLM to generate the outline
     // For now, returning a basic structure
     const sections: OutlineSection[] = [
@@ -320,12 +338,16 @@ export class AdvancedWritingService {
 
       const context: GenerationContext = {
         overallTheme: request.topic,
-        targetTone: request.brandVoice?.toneCharacteristics.primary || 'professional',
+        targetTone:
+          request.brandVoice?.toneCharacteristics.primary || 'professional',
         keywordFocus: request.seoRequirements?.secondaryKeywords || [],
         brandVoice: request.brandVoice,
       };
 
-      const section = await this.generateSectionContent(outlineSection, context);
+      const section = await this.generateSectionContent(
+        outlineSection,
+        context,
+      );
       sections.push(section);
 
       completedSections++;
@@ -333,7 +355,8 @@ export class AdvancedWritingService {
         ...this.currentProgress!,
         sectionsCompleted: completedSections,
         totalSections: outline.sections.length,
-        overallProgress: 0.2 + (completedSections / outline.sections.length) * 0.5,
+        overallProgress:
+          0.2 + (completedSections / outline.sections.length) * 0.5,
       };
 
       if (this.streamingCallback?.onSectionComplete) {
@@ -387,19 +410,26 @@ export class AdvancedWritingService {
     return {
       id: `tone-${Date.now()}`,
       blogPostId,
-      primaryTone: brandVoice?.toneCharacteristics.primary as ToneCategory || ToneCategory.PROFESSIONAL,
+      primaryTone:
+        (brandVoice?.toneCharacteristics.primary as ToneCategory) ||
+        ToneCategory.PROFESSIONAL,
       secondaryTones: brandVoice?.toneCharacteristics.secondary || [],
       confidence: 0.85,
       formalityScore: 0.7,
-      emotionalTone: brandVoice?.toneCharacteristics.emotion as EmotionalTone || EmotionalTone.NEUTRAL,
+      emotionalTone:
+        (brandVoice?.toneCharacteristics.emotion as EmotionalTone) ||
+        EmotionalTone.NEUTRAL,
       emotionIntensity: 0.6,
       authorityLevel: 0.8,
       personalityTraits: {
         warmth: brandVoice?.toneCharacteristics.personality.warmth || 0.7,
-        competence: brandVoice?.toneCharacteristics.personality.competence || 0.8,
+        competence:
+          brandVoice?.toneCharacteristics.personality.competence || 0.8,
         sincerity: brandVoice?.toneCharacteristics.personality.sincerity || 0.8,
-        excitement: brandVoice?.toneCharacteristics.personality.excitement || 0.5,
-        sophistication: brandVoice?.toneCharacteristics.personality.sophistication || 0.7,
+        excitement:
+          brandVoice?.toneCharacteristics.personality.excitement || 0.5,
+        sophistication:
+          brandVoice?.toneCharacteristics.personality.sophistication || 0.7,
       },
       brandVoiceScore: brandVoice ? 0.82 : undefined,
       consistencyScore: 0.88,
@@ -409,9 +439,11 @@ export class AdvancedWritingService {
     };
   }
 
-  private async performFactChecking(sections: ContentSection[]): Promise<FactCheck[]> {
+  private async performFactChecking(
+    sections: ContentSection[],
+  ): Promise<FactCheck[]> {
     const factChecks: FactCheck[] = [];
-    
+
     for (const section of sections) {
       // This would typically call fact-checking APIs
       // For now, creating placeholder fact checks
@@ -460,7 +492,8 @@ export class AdvancedWritingService {
       suggestedValue: 'Mix of short, medium, and long sentences',
       reasoning: 'Varied sentence length improves reading flow and engagement',
       evidenceLinks: [],
-      implementationGuide: 'Review each paragraph and vary sentence beginnings and lengths',
+      implementationGuide:
+        'Review each paragraph and vary sentence beginnings and lengths',
       affectedSections: [sections[0]?.id || ''],
       estimatedImprovement: 15,
       status: OptimizationStatus.PENDING,
@@ -536,9 +569,16 @@ export class AdvancedWritingService {
     startTime: number,
   ): GenerationMetrics {
     const totalWords = sections.reduce((sum, s) => sum + s.wordCount, 0);
-    const averageQuality = sections.reduce((sum, s) => {
-      return sum + ((s.readabilityScore || 0) + (s.coherenceScore || 0) + (s.relevanceScore || 0)) / 3;
-    }, 0) / sections.length;
+    const averageQuality =
+      sections.reduce((sum, s) => {
+        return (
+          sum +
+          ((s.readabilityScore || 0) +
+            (s.coherenceScore || 0) +
+            (s.relevanceScore || 0)) /
+            3
+        );
+      }, 0) / sections.length;
 
     return {
       totalWords,
@@ -560,17 +600,30 @@ export class AdvancedWritingService {
   ): Promise<QualityScore> {
     const readability = blogPost.metadata.seo.readabilityScore || 80;
     const coherence = toneAnalysis.consistencyScore;
-    const factualAccuracy = factChecks.length > 0 ? 
-      factChecks.filter(f => f.verificationStatus === VerificationStatus.VERIFIED).length / factChecks.length : 
-      0.8;
+    const factualAccuracy =
+      factChecks.length > 0
+        ? factChecks.filter(
+            f => f.verificationStatus === VerificationStatus.VERIFIED,
+          ).length / factChecks.length
+        : 0.8;
     const seoOptimization = (blogPost.metadata.seo.seoScore || 80) / 100;
     const brandVoiceAlignment = toneAnalysis.brandVoiceScore || 0.8;
-    
+
     // Penalty for optimization suggestions (more suggestions = lower initial quality)
-    const engagementPotential = Math.max(0.3, 1 - (optimizationSuggestions.length * 0.05));
+    const engagementPotential = Math.max(
+      0.3,
+      1 - optimizationSuggestions.length * 0.05,
+    );
 
     return {
-      overall: (readability/100 + coherence + factualAccuracy + seoOptimization + brandVoiceAlignment + engagementPotential) / 6,
+      overall:
+        (readability / 100 +
+          coherence +
+          factualAccuracy +
+          seoOptimization +
+          brandVoiceAlignment +
+          engagementPotential) /
+        6,
       readability: readability / 100,
       coherence,
       factualAccuracy,
@@ -580,11 +633,15 @@ export class AdvancedWritingService {
     };
   }
 
-  private async updateProgress(phase: GenerationPhase, progress: number): Promise<void> {
+  private async updateProgress(
+    phase: GenerationPhase,
+    progress: number,
+  ): Promise<void> {
     if (this.currentProgress) {
       this.currentProgress.phase = phase;
       this.currentProgress.overallProgress = progress;
-      this.currentProgress.timeElapsed = Date.now() - (this.currentProgress.timeElapsed || Date.now());
+      this.currentProgress.timeElapsed =
+        Date.now() - (this.currentProgress.timeElapsed || Date.now());
     }
 
     if (this.streamingCallback?.onProgress) {
@@ -602,7 +659,9 @@ export class AdvancedWritingService {
 
   // Database interaction methods
 
-  private async persistResult(result: ComprehensiveWritingResult): Promise<void> {
+  private async persistResult(
+    result: ComprehensiveWritingResult,
+  ): Promise<void> {
     if (!this.config.prisma) return;
 
     try {
@@ -670,7 +729,7 @@ export class AdvancedWritingService {
         relevanceScore: s.relevanceScore || undefined, // Convert null to undefined
         children: [],
         createdAt: s.createdAt,
-        updatedAt: s.updatedAt
+        updatedAt: s.updatedAt,
       }));
     } catch (error) {
       console.error('Failed to get sections:', error);
@@ -678,13 +737,15 @@ export class AdvancedWritingService {
     }
   }
 
-  private async getToneAnalysis(blogPostId: string): Promise<ToneAnalysis | undefined> {
+  private async getToneAnalysis(
+    blogPostId: string,
+  ): Promise<ToneAnalysis | undefined> {
     if (!this.config.prisma) return undefined;
 
     try {
       const analysis = await this.config.prisma.toneAnalysis.findFirst({
         where: { blogPostId },
-        orderBy: { analyzedAt: 'desc' }
+        orderBy: { analyzedAt: 'desc' },
       });
 
       if (!analysis) return undefined;
@@ -705,7 +766,7 @@ export class AdvancedWritingService {
         consistencyScore: analysis.consistencyScore,
         deviations: analysis.deviations as any,
         analyzedAt: analysis.analyzedAt,
-        modelUsed: analysis.modelUsed || ''
+        modelUsed: analysis.modelUsed || '',
       };
     } catch (error) {
       console.error('Failed to get tone analysis:', error);
@@ -719,7 +780,7 @@ export class AdvancedWritingService {
     try {
       const factChecks = await this.config.prisma.factCheck.findMany({
         where: { blogPostId },
-        include: { citations: true }
+        include: { citations: true },
       });
 
       return factChecks.map((fc: any) => ({
@@ -749,7 +810,7 @@ export class AdvancedWritingService {
         expiresAt: fc.expiresAt || undefined,
         modelUsed: fc.modelUsed || '',
         humanReviewed: fc.humanReviewed || false,
-        reviewedBy: fc.reviewedBy || undefined
+        reviewedBy: fc.reviewedBy || undefined,
       }));
     } catch (error) {
       console.error('Failed to get fact checks:', error);
@@ -757,14 +818,17 @@ export class AdvancedWritingService {
     }
   }
 
-  private async getOptimizationSuggestions(blogPostId: string): Promise<OptimizationSuggestion[]> {
+  private async getOptimizationSuggestions(
+    blogPostId: string,
+  ): Promise<OptimizationSuggestion[]> {
     if (!this.config.prisma) return [];
 
     try {
-      const suggestions = await this.config.prisma.optimizationSuggestion.findMany({
-        where: { blogPostId },
-        orderBy: { priority: 'desc' }
-      });
+      const suggestions =
+        await this.config.prisma.optimizationSuggestion.findMany({
+          where: { blogPostId },
+          orderBy: { priority: 'desc' },
+        });
 
       return suggestions.map((s: any) => ({
         id: s.id,
@@ -789,7 +853,7 @@ export class AdvancedWritingService {
         appliedBy: s.appliedBy || undefined, // Convert null to undefined
         results: s.results as any,
         createdAt: s.createdAt,
-        updatedAt: s.updatedAt
+        updatedAt: s.updatedAt,
       }));
     } catch (error) {
       console.error('Failed to get optimization suggestions:', error);
@@ -797,9 +861,11 @@ export class AdvancedWritingService {
     }
   }
 
-  private async generateOutlineFromSections(sections: ContentSection[]): Promise<ContentOutline> {
+  private async generateOutlineFromSections(
+    sections: ContentSection[],
+  ): Promise<ContentOutline> {
     const totalWords = sections.reduce((sum, s) => sum + s.wordCount, 0);
-    
+
     return {
       id: `outline-${Date.now()}`,
       title: 'Generated from existing content',
@@ -820,7 +886,9 @@ export class AdvancedWritingService {
     };
   }
 
-  private async generateDefaultToneAnalysis(blogPostId: string): Promise<ToneAnalysis> {
+  private async generateDefaultToneAnalysis(
+    blogPostId: string,
+  ): Promise<ToneAnalysis> {
     return {
       id: `tone-default-${Date.now()}`,
       blogPostId,
@@ -856,10 +924,18 @@ export class AdvancedWritingService {
     };
   }
 
-  private async calculateQualityScoreFromSections(sections: ContentSection[]): Promise<QualityScore> {
-    const readability = sections.reduce((sum, s) => sum + (s.readabilityScore || 0.8), 0) / sections.length;
-    const coherence = sections.reduce((sum, s) => sum + (s.coherenceScore || 0.8), 0) / sections.length;
-    const relevance = sections.reduce((sum, s) => sum + (s.relevanceScore || 0.8), 0) / sections.length;
+  private async calculateQualityScoreFromSections(
+    sections: ContentSection[],
+  ): Promise<QualityScore> {
+    const readability =
+      sections.reduce((sum, s) => sum + (s.readabilityScore || 0.8), 0) /
+      sections.length;
+    const coherence =
+      sections.reduce((sum, s) => sum + (s.coherenceScore || 0.8), 0) /
+      sections.length;
+    const relevance =
+      sections.reduce((sum, s) => sum + (s.relevanceScore || 0.8), 0) /
+      sections.length;
 
     return {
       overall: (readability + coherence + relevance + 0.8 + 0.8 + 0.8) / 6,

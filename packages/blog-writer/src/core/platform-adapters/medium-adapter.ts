@@ -1,11 +1,12 @@
-
-
 /**
  * Medium Platform Adapter
  * Supports Medium's publishing API
  */
 
-import { BasePlatformAdapter, type PlatformAdapterConfig } from '../base-platform-adapter';
+import {
+  BasePlatformAdapter,
+  type PlatformAdapterConfig,
+} from '../base-platform-adapter';
 import type {
   PlatformCapabilities,
   ContentFormat,
@@ -22,7 +23,7 @@ import type {
   PublishOptions,
   AnalyticsOptions,
   DateRange,
-  ValidationError
+  ValidationError,
 } from '../../types/platform-integration';
 import type { BlogPost } from '../../types/blog-post';
 
@@ -103,7 +104,9 @@ export class MediumAdapter extends BasePlatformAdapter {
     };
   }
 
-  async authenticate(credentials: PlatformCredentials): Promise<AuthenticationResult> {
+  async authenticate(
+    credentials: PlatformCredentials,
+  ): Promise<AuthenticationResult> {
     try {
       this.credentials = credentials;
 
@@ -113,11 +116,11 @@ export class MediumAdapter extends BasePlatformAdapter {
         {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${credentials.data.accessToken}`,
-            'Accept': 'application/json',
-            'Accept-Charset': 'utf-8'
-          }
-        }
+            Authorization: `Bearer ${credentials.data.accessToken}`,
+            Accept: 'application/json',
+            'Accept-Charset': 'utf-8',
+          },
+        },
       );
 
       const userData = await response.json();
@@ -129,7 +132,7 @@ export class MediumAdapter extends BasePlatformAdapter {
           id: userData.data.id,
           name: userData.data.name || userData.data.username,
           email: userData.data.email,
-        }
+        },
       };
     } catch (error) {
       return this.handleAuthError(error);
@@ -143,7 +146,7 @@ export class MediumAdapter extends BasePlatformAdapter {
           isValid: false,
           isAuthenticated: false,
           capabilities: this.capabilities,
-          error: 'No credentials provided'
+          error: 'No credentials provided',
         };
       }
 
@@ -152,10 +155,10 @@ export class MediumAdapter extends BasePlatformAdapter {
         {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${this.credentials.data.accessToken}`,
-            'Accept': 'application/json'
-          }
-        }
+            Authorization: `Bearer ${this.credentials.data.accessToken}`,
+            Accept: 'application/json',
+          },
+        },
       );
 
       const userData = await response.json();
@@ -163,25 +166,25 @@ export class MediumAdapter extends BasePlatformAdapter {
       return {
         isValid: true,
         isAuthenticated: true,
-        capabilities: this.capabilities
+        capabilities: this.capabilities,
       };
     } catch (error) {
       return {
         isValid: false,
         isAuthenticated: false,
         capabilities: this.capabilities,
-        error: String(error)
+        error: String(error),
       };
     }
   }
 
   async formatContent(
     content: BlogPost,
-    options?: FormatOptions
+    options?: FormatOptions,
   ): Promise<FormattedContent> {
     // Convert content to Medium's format
     let formattedContent = content.content.content;
-    
+
     // Medium supports Markdown and HTML
     if (options?.preserveFormatting !== false) {
       // Convert to Markdown for better Medium compatibility
@@ -190,56 +193,64 @@ export class MediumAdapter extends BasePlatformAdapter {
 
     // Apply word count constraints if specified
     if (options?.targetWordCount) {
-      formattedContent = this.truncateContent(formattedContent, options.targetWordCount);
+      formattedContent = this.truncateContent(
+        formattedContent,
+        options.targetWordCount,
+      );
     }
 
     return {
       title: content.metadata.title,
       content: formattedContent,
       excerpt: content.content.excerpt,
-      
+
       metadata: {
         slug: content.metadata.slug,
         description: content.metadata.metaDescription,
-        tags: content.metadata.tags?.slice(0, this.capabilities.maxTagsCount) || [],
+        tags:
+          content.metadata.tags?.slice(0, this.capabilities.maxTagsCount) || [],
         categories: [],
         publishDate: content.metadata.publishedAt,
-        author: content.metadata.author ? {
-          name: content.metadata.author.name,
-          email: content.metadata.author.email,
-          bio: content.metadata.author.bio
-        } : undefined,
-        customFields: {}
+        author: content.metadata.author
+          ? {
+              name: content.metadata.author.name,
+              email: content.metadata.author.email,
+              bio: content.metadata.author.bio,
+            }
+          : undefined,
+        customFields: {},
       },
 
       seo: {
         metaTitle: content.metadata.title,
         metaDescription: content.metadata.metaDescription,
-        canonical: content.metadata.seo.focusKeyword ? 
-          `https://medium.com/@${content.metadata.author?.name || 'author'}/${content.metadata.slug}` : 
-          undefined
+        canonical: content.metadata.seo.focusKeyword
+          ? `https://medium.com/@${content.metadata.author?.name || 'author'}/${content.metadata.slug}`
+          : undefined,
       },
 
-      featuredImage: content.content.featuredImage ? {
-        id: content.content.featuredImage.url,
-        filename: 'featured-image',
-        url: content.content.featuredImage.url,
-        mimeType: 'image/jpeg',
-        size: 0,
-        altText: content.content.featuredImage.alt,
-        caption: content.content.featuredImage.caption
-      } : undefined,
+      featuredImage: content.content.featuredImage
+        ? {
+            id: content.content.featuredImage.url,
+            filename: 'featured-image',
+            url: content.content.featuredImage.url,
+            mimeType: 'image/jpeg',
+            size: 0,
+            altText: content.content.featuredImage.alt,
+            caption: content.content.featuredImage.caption,
+          }
+        : undefined,
 
       format: ContentFormat.MARKDOWN,
       originalWordCount: content.metadata.seo.wordCount,
       adaptedWordCount: this.countWords(formattedContent),
-      adaptationScore: this.calculateAdaptationScore(content, formattedContent)
+      adaptationScore: this.calculateAdaptationScore(content, formattedContent),
     };
   }
 
   async publish(
     content: FormattedContent,
-    options?: PublishOptions
+    options?: PublishOptions,
   ): Promise<PublishResult> {
     try {
       if (!this.credentials) {
@@ -256,10 +267,10 @@ export class MediumAdapter extends BasePlatformAdapter {
         {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${this.credentials.data.accessToken}`,
-            'Accept': 'application/json'
-          }
-        }
+            Authorization: `Bearer ${this.credentials.data.accessToken}`,
+            Accept: 'application/json',
+          },
+        },
       );
 
       const userData = await userResponse.json();
@@ -273,7 +284,7 @@ export class MediumAdapter extends BasePlatformAdapter {
         tags: content.metadata.tags || [],
         publishStatus: options?.status === 'draft' ? 'draft' : 'public',
         notifyFollowers: true,
-        license: 'all-rights-reserved'
+        license: 'all-rights-reserved',
       };
 
       // Publish to Medium
@@ -282,12 +293,12 @@ export class MediumAdapter extends BasePlatformAdapter {
         {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${this.credentials.data.accessToken}`,
+            Authorization: `Bearer ${this.credentials.data.accessToken}`,
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            Accept: 'application/json',
           },
-          body: JSON.stringify(postData)
-        }
+          body: JSON.stringify(postData),
+        },
       );
 
       const result = await response.json();
@@ -297,13 +308,12 @@ export class MediumAdapter extends BasePlatformAdapter {
         externalId: result.data.id,
         externalUrl: result.data.url,
         publishedAt: new Date(),
-        platformResponse: result
+        platformResponse: result,
       };
-
     } catch (error) {
       return {
         success: false,
-        error: String(error)
+        error: String(error),
       };
     }
   }
@@ -341,10 +351,13 @@ export class MediumAdapter extends BasePlatformAdapter {
     return content.split(/\s+/).filter(word => word.length > 0).length;
   }
 
-  private calculateAdaptationScore(originalContent: BlogPost, adaptedContent: string): number {
+  private calculateAdaptationScore(
+    originalContent: BlogPost,
+    adaptedContent: string,
+  ): number {
     const originalWordCount = originalContent.metadata.seo.wordCount;
     const adaptedWordCount = this.countWords(adaptedContent);
-    
+
     // Simple scoring based on content preservation
     const wordCountRatio = Math.min(adaptedWordCount / originalWordCount, 1);
     return wordCountRatio * 0.8 + 0.2; // Base score of 0.2 plus up to 0.8 based on word preservation

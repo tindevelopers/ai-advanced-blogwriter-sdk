@@ -1,4 +1,3 @@
-
 /**
  * Performance Optimization Types
  * Week 11-12 Implementation
@@ -15,27 +14,27 @@ import type { SEOAnalysis } from './seo-engine';
 export interface ContentPerformance {
   contentId: string;
   blogPostId: string;
-  
+
   // Basic metrics
   metrics: PerformanceMetrics;
   engagement: EngagementMetrics;
   conversions: ConversionMetrics;
   seo: SEOMetrics;
   social: SocialMetrics;
-  
+
   // Analysis
   trafficSources: TrafficSourceMetrics;
   deviceMetrics: DeviceMetrics;
   demographics: DemographicMetrics;
-  
+
   // Time-based data
   timeRange: DateRange;
   collectedAt: Date;
-  
+
   // Optimization data
   suggestions: OptimizationSuggestion[];
   predictions: EngagementPrediction[];
-  
+
   // Comparison data
   benchmarks: BenchmarkData[];
 }
@@ -47,19 +46,19 @@ export interface PerformanceMetrics {
   sessions: number;
   bounceRate: number; // 0-1
   avgSessionDuration: number; // seconds
-  
+
   // Engagement metrics
   avgTimeOnPage: number; // seconds
   scrollDepth: ScrollDepthMetrics;
   heatmapData?: HeatmapData[];
   exitPoints?: ExitPointData[];
-  
+
   // Performance metrics
   loadTime: number; // milliseconds
   firstContentfulPaint: number; // milliseconds
   largestContentfulPaint: number; // milliseconds
   cumulativeLayoutShift: number;
-  
+
   // Quality metrics
   readabilityScore?: number;
   contentQualityScore?: number;
@@ -71,16 +70,16 @@ export interface EngagementMetrics {
   totalEngagements: number;
   engagementRate: number; // 0-1
   clickThroughRate?: number; // 0-1
-  
+
   // Content interactions
   shares: number;
   likes: number;
   comments: number;
   saves: number;
-  
+
   // Platform-specific data
   socialPlatforms: SocialPlatformEngagement[];
-  
+
   // Advanced metrics
   viralityCoefficient?: number;
   engagementVelocity: number; // engagements per hour
@@ -136,23 +135,23 @@ export interface ConversionMetrics {
   totalConversions: number;
   conversionRate: number; // 0-1
   goalCompletions: GoalCompletionData[];
-  
+
   // Revenue data
   revenue?: number;
   revenuePerVisitor?: number;
   averageOrderValue?: number;
-  
+
   // Funnel analysis
   funnelStages: FunnelStageData[];
   dropOffAnalysis: DropOffAnalysis[];
-  
+
   // Attribution
   conversionPaths: ConversionPathData[];
   attributionData: AttributionData[];
-  
+
   // Segmentation
   segmentConversions: SegmentConversionData[];
-  
+
   // Call-to-Action performance
   ctaPerformance: CTAPerformanceData[];
 }
@@ -228,12 +227,12 @@ export interface SEOMetrics {
   keywordRankings: KeywordRanking[];
   averagePosition: number;
   visibilityScore: number; // 0-1
-  
+
   // Traffic data
   organicTraffic: number;
   organicClickThroughRate: number; // 0-1
   organicConversions: number;
-  
+
   // Technical SEO
   pageSpeedScore: number; // 0-100
   coreWebVitals: {
@@ -241,12 +240,12 @@ export interface SEOMetrics {
     fid: number; // First Input Delay
     cls: number; // Cumulative Layout Shift
   };
-  
+
   // Content metrics
   contentScore: number; // 0-100
   readabilityScore: number; // 0-100
   keywordDensity: Record<string, number>;
-  
+
   // Backlink data
   backlinks?: {
     totalLinks: number;
@@ -302,7 +301,7 @@ export enum SocialPlatform {
   PINTEREST = 'pinterest',
   TIKTOK = 'tiktok',
   YOUTUBE = 'youtube',
-  REDDIT = 'reddit'
+  REDDIT = 'reddit',
 }
 
 export interface SentimentAnalysis {
@@ -462,7 +461,7 @@ export interface ContentVariant {
   structure: ContentVariantStructure;
   weight: number; // traffic percentage 0-1
   trafficAllocation?: number; // Added missing property
-  
+
   // Added missing properties for direct access
   headline?: string;
   subheadline?: string;
@@ -519,7 +518,7 @@ export enum MetricType {
   CLICK_THROUGH_RATE = 'click_through_rate',
   SOCIAL_SHARES = 'social_shares',
   REVENUE = 'revenue',
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 export interface AudienceFilter {
@@ -555,7 +554,7 @@ export enum ABTestStatus {
   RUNNING = 'running',
   PAUSED = 'paused',
   COMPLETED = 'completed',
-  CANCELLED = 'cancelled'
+  CANCELLED = 'cancelled',
 }
 
 export interface ABTestResult {
@@ -603,7 +602,11 @@ export interface SegmentAnalysisResult {
 }
 
 export interface TestRecommendation {
-  action: 'implement_winner' | 'continue_testing' | 'inconclusive' | 'test_failed';
+  action:
+    | 'implement_winner'
+    | 'continue_testing'
+    | 'inconclusive'
+    | 'test_failed';
   reasoning: string;
   confidence: number;
   nextSteps?: string[];
@@ -635,7 +638,7 @@ export enum PredictionType {
   VIRAL_POTENTIAL = 'viral_potential',
   AUDIENCE_ENGAGEMENT = 'audience_engagement',
   CONVERSION_PROBABILITY = 'conversion_probability',
-  SEO_RANKING_POTENTIAL = 'seo_ranking_potential'
+  SEO_RANKING_POTENTIAL = 'seo_ranking_potential',
 }
 
 export interface PredictedMetrics {
@@ -760,21 +763,21 @@ export enum OptimizationType {
   TIMING = 'timing',
   TARGETING = 'targeting',
   TECHNICAL = 'technical',
-  SOCIAL = 'social'
+  SOCIAL = 'social',
 }
 
 export enum SuggestionPriority {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical'
+  CRITICAL = 'critical',
 }
 
 export enum EffortLevel {
   MINIMAL = 'minimal',
   LOW = 'low',
   MEDIUM = 'medium',
-  HIGH = 'high'
+  HIGH = 'high',
 }
 
 export enum SuggestionCategory {
@@ -783,7 +786,7 @@ export enum SuggestionCategory {
   USER_EXPERIENCE = 'user_experience',
   PERFORMANCE = 'performance',
   ENGAGEMENT = 'engagement',
-  CONVERSION = 'conversion'
+  CONVERSION = 'conversion',
 }
 
 export interface RecommendationEvidence {
@@ -915,7 +918,7 @@ export enum RecommendationStatus {
   IN_PROGRESS = 'in_progress',
   IMPLEMENTED = 'implemented',
   REJECTED = 'rejected',
-  OUTDATED = 'outdated'
+  OUTDATED = 'outdated',
 }
 
 export interface ActualImpact {
@@ -990,7 +993,7 @@ export enum AnalyticsProvider {
   ADOBE_ANALYTICS = 'adobe_analytics',
   MIXPANEL = 'mixpanel',
   SEGMENT = 'segment',
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 export interface ABTestingConfig {
@@ -1173,7 +1176,12 @@ export class PredictionError extends PerformanceOptimizationError {
  */
 export interface OptimizationRequest {
   blogPostId: string;
-  optimizationType: 'content' | 'seo' | 'engagement' | 'conversion' | 'comprehensive';
+  optimizationType:
+    | 'content'
+    | 'seo'
+    | 'engagement'
+    | 'conversion'
+    | 'comprehensive';
   targetMetrics?: string[];
   constraints?: {
     maxWordCount?: number;
@@ -1190,5 +1198,3 @@ export interface OptimizationRequest {
   includeSuggestions?: boolean;
   includeMetrics?: boolean;
 }
-
-

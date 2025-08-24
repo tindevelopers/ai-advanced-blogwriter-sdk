@@ -1,5 +1,7 @@
-
-import type { BlogTemplateConfig, BlogTemplateContext } from '../types/templates';
+import type {
+  BlogTemplateConfig,
+  BlogTemplateContext,
+} from '../types/templates';
 
 /**
  * Blog prompt creation options
@@ -7,26 +9,26 @@ import type { BlogTemplateConfig, BlogTemplateContext } from '../types/templates
 export interface BlogPromptOptions {
   /** Blog topic */
   topic: string;
-  
+
   /** Template configuration */
   template: BlogTemplateConfig;
-  
+
   /** Template variables */
   variables?: Record<string, any>;
-  
+
   /** Target keywords */
   keywords?: string[];
-  
+
   /** Content constraints */
   constraints?: {
     wordCount?: { min?: number; max?: number };
     tone?: string;
     style?: string;
   };
-  
+
   /** Target audience */
   audience?: string;
-  
+
   /** Additional context */
   context?: string;
 }
@@ -44,7 +46,7 @@ export function createBlogPrompt(options: BlogPromptOptions): string {
     audience,
     context,
   } = options;
-  
+
   let prompt = `You are an expert content writer tasked with creating a comprehensive ${template.name.toLowerCase()} about "${topic}".
 
 ## Content Requirements
@@ -74,7 +76,7 @@ Follow this structure for the ${template.name}:
 
 `;
   });
-  
+
   // Add word count constraints
   if (constraints.wordCount?.min || constraints.wordCount?.max) {
     prompt += `## Word Count Requirements
@@ -91,7 +93,7 @@ Follow this structure for the ${template.name}:
 
 `;
   }
-  
+
   // Add SEO guidelines
   if (keywords.length > 0) {
     prompt += `## SEO Guidelines
@@ -102,7 +104,7 @@ Follow this structure for the ${template.name}:
 
 `;
   }
-  
+
   // Add quality guidelines
   if (template.guidelines) {
     prompt += `## Quality Guidelines
@@ -113,7 +115,7 @@ ${template.guidelines.optionalSections?.length ? `- **Optional Sections**: ${tem
 
 `;
   }
-  
+
   // Add template variables if provided
   if (Object.keys(variables).length > 0) {
     prompt += `## Template Variables
@@ -124,7 +126,7 @@ Use these specific values in your content:
     });
     prompt += '\n';
   }
-  
+
   // Add final instructions
   prompt += `## Output Requirements
 
@@ -207,7 +209,7 @@ export function createResearchPrompt(options: {
   depth?: 'basic' | 'detailed' | 'comprehensive';
 }): string {
   const depth = options.depth || 'detailed';
-  
+
   return `Conduct ${depth} research for the following topic: "${options.topic}"
 
 **Research Parameters**:
@@ -242,7 +244,9 @@ export function createResearchPrompt(options: {
    - Information needs and preferences
    - Content consumption patterns
 
-${depth === 'comprehensive' ? `
+${
+  depth === 'comprehensive'
+    ? `
 5. **Competitive Analysis**:
    - Top-performing content in this space
    - Common content structures
@@ -254,7 +258,9 @@ ${depth === 'comprehensive' ? `
    - Authoritative sources to reference
    - Current debates or discussions
    - Future trends and predictions
-` : ''}
+`
+    : ''
+}
 
 Provide comprehensive research that will inform the creation of high-quality, competitive content on this topic.`;
 }

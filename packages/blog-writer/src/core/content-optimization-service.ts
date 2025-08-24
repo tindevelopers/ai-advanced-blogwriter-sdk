@@ -1,5 +1,3 @@
-
-
 /**
  * Content Optimization Service
  * Real-time optimization suggestions, readability analysis, SEO enhancement, and engagement optimization
@@ -13,7 +11,7 @@ import {
   OptimizationType,
   SuggestionPriority,
   EffortLevel,
-  SuggestionCategory
+  SuggestionCategory,
 } from '../types/advanced-writing';
 
 // Define missing interfaces locally
@@ -59,30 +57,47 @@ export interface OptimizationConfig {
 
 // Zod schemas for structured AI responses
 const OptimizationAnalysisSchema = z.object({
-  suggestions: z.array(z.object({
-    category: z.enum(['SEO', 'READABILITY', 'ENGAGEMENT', 'STRUCTURE', 'TONE_STYLE', 'FACT_ACCURACY', 'SOURCE_QUALITY', 'CTA_OPTIMIZATION', 'HEADLINE', 'META_DESCRIPTION', 'KEYWORDS', 'INTERNAL_LINKING', 'CONTENT_LENGTH', 'FORMATTING']),
-    title: z.string(),
-    description: z.string(),
-    impact: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']),
-    effort: z.enum(['LOW', 'MEDIUM', 'HIGH']),
-    priority: z.number().min(1).max(100),
-    currentValue: z.string().optional(),
-    suggestedValue: z.string().optional(),
-    beforeText: z.string().optional(),
-    afterText: z.string().optional(),
-    position: z.number().optional(),
-    seoImpact: z.number().min(0).max(100).optional(),
-    keywordTarget: z.string().optional(),
-    readabilityImpact: z.number().min(0).max(100).optional(),
-    engagementMetric: z.string().optional(),
-    expectedLift: z.number().min(0).max(100).optional()
-  })),
+  suggestions: z.array(
+    z.object({
+      category: z.enum([
+        'SEO',
+        'READABILITY',
+        'ENGAGEMENT',
+        'STRUCTURE',
+        'TONE_STYLE',
+        'FACT_ACCURACY',
+        'SOURCE_QUALITY',
+        'CTA_OPTIMIZATION',
+        'HEADLINE',
+        'META_DESCRIPTION',
+        'KEYWORDS',
+        'INTERNAL_LINKING',
+        'CONTENT_LENGTH',
+        'FORMATTING',
+      ]),
+      title: z.string(),
+      description: z.string(),
+      impact: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']),
+      effort: z.enum(['LOW', 'MEDIUM', 'HIGH']),
+      priority: z.number().min(1).max(100),
+      currentValue: z.string().optional(),
+      suggestedValue: z.string().optional(),
+      beforeText: z.string().optional(),
+      afterText: z.string().optional(),
+      position: z.number().optional(),
+      seoImpact: z.number().min(0).max(100).optional(),
+      keywordTarget: z.string().optional(),
+      readabilityImpact: z.number().min(0).max(100).optional(),
+      engagementMetric: z.string().optional(),
+      expectedLift: z.number().min(0).max(100).optional(),
+    }),
+  ),
   overallScores: z.object({
     seoScore: z.number().min(0).max(100),
     readabilityScore: z.number().min(0).max(100),
     engagementScore: z.number().min(0).max(100),
-    structureScore: z.number().min(0).max(100)
-  })
+    structureScore: z.number().min(0).max(100),
+  }),
 });
 
 const ReadabilityAnalysisSchema = z.object({
@@ -93,7 +108,7 @@ const ReadabilityAnalysisSchema = z.object({
   avgWordsPerSentence: z.number(),
   complexWordsPercentage: z.number().min(0).max(100),
   passiveVoicePercentage: z.number().min(0).max(100),
-  improvementSuggestions: z.array(z.string())
+  improvementSuggestions: z.array(z.string()),
 });
 
 const SEOAnalysisSchema = z.object({
@@ -102,26 +117,26 @@ const SEOAnalysisSchema = z.object({
   titleOptimization: z.object({
     score: z.number().min(0).max(100),
     issues: z.array(z.string()),
-    suggestions: z.array(z.string())
+    suggestions: z.array(z.string()),
   }),
   metaDescription: z.object({
     score: z.number().min(0).max(100),
     length: z.number(),
     issues: z.array(z.string()),
-    suggestions: z.array(z.string())
+    suggestions: z.array(z.string()),
   }),
   headingStructure: z.object({
     score: z.number().min(0).max(100),
     h1Count: z.number(),
     h2Count: z.number(),
     h3Count: z.number(),
-    issues: z.array(z.string())
+    issues: z.array(z.string()),
   }),
   internalLinking: z.object({
     score: z.number().min(0).max(100),
     linkCount: z.number(),
-    suggestions: z.array(z.string())
-  })
+    suggestions: z.array(z.string()),
+  }),
 });
 
 export class ContentOptimizationService {
@@ -141,7 +156,7 @@ export class ContentOptimizationService {
     };
   }> {
     const content = await this.getContentForOptimization(request.blogPostId);
-    
+
     // Perform different types of analysis
     const analyses = await Promise.all([
       this.performSEOAnalysis(content, request.keywords || []),
@@ -149,38 +164,42 @@ export class ContentOptimizationService {
       this.performEngagementAnalysis(content),
       this.performStructureAnalysis(content),
       this.performContentLengthAnalysis(content),
-      this.performCTAAnalysis(content)
+      this.performCTAAnalysis(content),
     ]);
 
     // Generate suggestions based on analyses
     const suggestions = await this.generateOptimizationSuggestions(
       content,
-      request
+      request,
     );
 
     // Filter by requested categories if specified
-    const filteredSuggestions = request.categories 
+    const filteredSuggestions = request.categories
       ? suggestions.filter(s => request.categories!.includes(s.category))
       : suggestions;
 
     // Limit suggestions if requested
-    const finalSuggestions = request.maxRecommendations 
+    const finalSuggestions = request.maxRecommendations
       ? filteredSuggestions
           .sort((a, b) => b.priority - a.priority)
           .slice(0, request.maxRecommendations)
       : filteredSuggestions;
 
     // Create metrics
-    const metrics = await this.generateContentMetrics(request.blogPostId, analyses);
+    const metrics = await this.generateContentMetrics(
+      request.blogPostId,
+      analyses,
+    );
 
     // Prioritize actions
     const prioritizedActions = this.prioritizeSuggestions(
-      finalSuggestions, 
-      request.priority === 'high'
+      finalSuggestions,
+      request.priority === 'high',
     );
 
     // Create implementation guide
-    const implementationGuide = this.createImplementationGuide(finalSuggestions);
+    const implementationGuide =
+      this.createImplementationGuide(finalSuggestions);
 
     // Save to database
     if (this.config.prisma) {
@@ -192,7 +211,7 @@ export class ContentOptimizationService {
       suggestions: finalSuggestions,
       metrics,
       prioritizedActions,
-      implementationGuide
+      implementationGuide,
     };
   }
 
@@ -202,7 +221,7 @@ export class ContentOptimizationService {
   async performSEOOptimization(
     blogPostId: string,
     targetKeywords: string[],
-    competitorUrls?: string[]
+    competitorUrls?: string[],
   ): Promise<{
     seoScore: number;
     keywordOptimization: OptimizationSuggestion[];
@@ -215,21 +234,21 @@ export class ContentOptimizationService {
   }> {
     const content = await this.getContentForOptimization(blogPostId);
     const seoAnalysis = await this.performSEOAnalysis(content, targetKeywords);
-    
+
     const suggestions: OptimizationSuggestion[] = [];
 
     // Generate keyword optimization suggestions
     const keywordOptimization = await this.generateKeywordSuggestions(
       content,
       targetKeywords,
-      seoAnalysis.keywordDensity
+      seoAnalysis.keywordDensity,
     );
     suggestions.push(...keywordOptimization);
 
     // Generate technical SEO suggestions
     const technicalSEO = await this.generateTechnicalSEOSuggestions(
       content,
-      seoAnalysis
+      seoAnalysis,
     );
     suggestions.push(...technicalSEO);
 
@@ -237,14 +256,17 @@ export class ContentOptimizationService {
     const contentSEO = await this.generateContentSEOSuggestions(
       content,
       seoAnalysis,
-      targetKeywords
+      targetKeywords,
     );
     suggestions.push(...contentSEO);
 
     // Competitor analysis if URLs provided
     let competitorInsights;
     if (competitorUrls && competitorUrls.length > 0) {
-      competitorInsights = await this.analyzeCompetitors(content, competitorUrls);
+      competitorInsights = await this.analyzeCompetitors(
+        content,
+        competitorUrls,
+      );
     }
 
     return {
@@ -252,7 +274,7 @@ export class ContentOptimizationService {
       keywordOptimization,
       technicalSEO,
       contentSEO,
-      competitorInsights
+      competitorInsights,
     };
   }
 
@@ -261,7 +283,7 @@ export class ContentOptimizationService {
    */
   async improveReadability(
     content: string,
-    targetGradeLevel?: number
+    targetGradeLevel?: number,
   ): Promise<{
     currentReadability: {
       gradeLevel: number;
@@ -281,23 +303,25 @@ export class ContentOptimizationService {
     const suggestions = await this.generateReadabilitySuggestions(
       content,
       readabilityAnalysis,
-      target
+      target,
     );
 
     const improvedExcerpts = await this.generateImprovedExcerpts(
       content,
       readabilityAnalysis,
-      target
+      target,
     );
 
     return {
       currentReadability: {
         gradeLevel: readabilityAnalysis.gradeLevel,
         readingEase: readabilityAnalysis.readingEase,
-        complexity: this.getComplexityDescription(readabilityAnalysis.gradeLevel)
+        complexity: this.getComplexityDescription(
+          readabilityAnalysis.gradeLevel,
+        ),
       },
       suggestions,
-      improvedExcerpts
+      improvedExcerpts,
     };
   }
 
@@ -306,7 +330,7 @@ export class ContentOptimizationService {
    */
   async optimizeEngagement(
     content: string,
-    targetAudience?: string
+    targetAudience?: string,
   ): Promise<{
     engagementScore: number;
     hooks: Array<{
@@ -324,20 +348,20 @@ export class ContentOptimizationService {
     suggestions: OptimizationSuggestion[];
   }> {
     const engagementAnalysis = await this.performEngagementAnalysis(content);
-    
+
     const hooks = await this.analyzeAndImproveHooks(content);
     const ctas = await this.analyzeCTAs(content);
     const suggestions = await this.generateEngagementSuggestions(
       content,
       engagementAnalysis,
-      targetAudience
+      targetAudience,
     );
 
     return {
       engagementScore: engagementAnalysis.score,
       hooks,
       ctas,
-      suggestions
+      suggestions,
     };
   }
 
@@ -346,7 +370,7 @@ export class ContentOptimizationService {
    */
   async generateABTestSuggestions(
     content: string,
-    elements: Array<'headline' | 'introduction' | 'cta' | 'conclusion'>
+    elements: Array<'headline' | 'introduction' | 'cta' | 'conclusion'>,
   ): Promise<{
     variations: Array<{
       element: string;
@@ -367,11 +391,14 @@ export class ContentOptimizationService {
     const variations: Array<any> = [];
 
     for (const element of elements) {
-      const elementVariations = await this.generateElementVariations(content, element);
+      const elementVariations = await this.generateElementVariations(
+        content,
+        element,
+      );
       variations.push({
         element,
         originalVersion: elementVariations.original,
-        variations: elementVariations.alternatives
+        variations: elementVariations.alternatives,
       });
     }
 
@@ -379,7 +406,7 @@ export class ContentOptimizationService {
 
     return {
       variations,
-      testPlan
+      testPlan,
     };
   }
 
@@ -391,7 +418,7 @@ export class ContentOptimizationService {
     metrics: {
       before: Record<string, number>;
       after: Record<string, number>;
-    }
+    },
   ): Promise<{
     results: Array<{
       suggestionId: string;
@@ -412,15 +439,20 @@ export class ContentOptimizationService {
     let totalImpactExpected = 0;
 
     for (const suggestionId of suggestionIds) {
-      const suggestion = await this.config.prisma.optimizationSuggestion.findUnique({
-        where: { id: suggestionId }
-      });
+      const suggestion =
+        await this.config.prisma.optimizationSuggestion.findUnique({
+          where: { id: suggestionId },
+        });
 
       if (!suggestion) continue;
 
-      const actualImpact = this.calculateActualImpact(suggestion, metrics.before, metrics.after);
+      const actualImpact = this.calculateActualImpact(
+        suggestion,
+        metrics.before,
+        metrics.after,
+      );
       const expectedImpact = suggestion.expectedLift || 0;
-      
+
       totalImpactAchieved += actualImpact;
       totalImpactExpected += expectedImpact;
 
@@ -429,7 +461,11 @@ export class ContentOptimizationService {
         actualImpact,
         expectedImpact,
         success: actualImpact >= expectedImpact * 0.8, // 80% of expected is considered success
-        insights: this.generateImpactInsights(suggestion, actualImpact, expectedImpact)
+        insights: this.generateImpactInsights(
+          suggestion,
+          actualImpact,
+          expectedImpact,
+        ),
       };
 
       results.push(result);
@@ -440,27 +476,34 @@ export class ContentOptimizationService {
         data: {
           isValidated: true,
           actualImpact,
-          validationScore: actualImpact / Math.max(expectedImpact, 1)
-        }
+          validationScore: actualImpact / Math.max(expectedImpact, 1),
+        },
       });
     }
 
-    const overallImprovement = totalImpactExpected > 0 
-      ? (totalImpactAchieved / totalImpactExpected) * 100 
-      : 0;
+    const overallImprovement =
+      totalImpactExpected > 0
+        ? (totalImpactAchieved / totalImpactExpected) * 100
+        : 0;
 
-    const recommendedNextSteps = this.generateNextStepRecommendations(results, metrics);
+    const recommendedNextSteps = this.generateNextStepRecommendations(
+      results,
+      metrics,
+    );
 
     return {
       results,
       overallImprovement,
-      recommendedNextSteps
+      recommendedNextSteps,
     };
   }
 
   // Private helper methods
 
-  private async performSEOAnalysis(content: string, keywords: string[]): Promise<any> {
+  private async performSEOAnalysis(
+    content: string,
+    keywords: string[],
+  ): Promise<any> {
     const prompt = `Perform comprehensive SEO analysis of this content:
 
 "${content.slice(0, 2000)}..."
@@ -481,7 +524,7 @@ Provide detailed analysis and specific improvement recommendations.`;
       const result = await generateObject({
         model: this.config.model,
         schema: SEOAnalysisSchema,
-        prompt
+        prompt,
       });
 
       return result.object;
@@ -492,8 +535,14 @@ Provide detailed analysis and specific improvement recommendations.`;
         keywordDensity: {},
         titleOptimization: { score: 70, issues: [], suggestions: [] },
         metaDescription: { score: 60, length: 0, issues: [], suggestions: [] },
-        headingStructure: { score: 75, h1Count: 1, h2Count: 0, h3Count: 0, issues: [] },
-        internalLinking: { score: 50, linkCount: 0, suggestions: [] }
+        headingStructure: {
+          score: 75,
+          h1Count: 1,
+          h2Count: 0,
+          h3Count: 0,
+          issues: [],
+        },
+        internalLinking: { score: 50, linkCount: 0, suggestions: [] },
       };
     }
   }
@@ -521,12 +570,12 @@ Focus on making the content more accessible and engaging.`;
       const result = await generateObject({
         model: this.config.model,
         schema: ReadabilityAnalysisSchema,
-        prompt
+        prompt,
       });
 
       return {
         ...result.object,
-        avgSentenceLength
+        avgSentenceLength,
       };
     } catch (error) {
       console.error('Failed to perform readability analysis:', error);
@@ -538,17 +587,25 @@ Focus on making the content more accessible and engaging.`;
         avgWordsPerSentence: avgSentenceLength,
         complexWordsPercentage: 20,
         passiveVoicePercentage: 25,
-        improvementSuggestions: ['Shorten sentences', 'Use simpler words', 'Reduce passive voice']
+        improvementSuggestions: [
+          'Shorten sentences',
+          'Use simpler words',
+          'Reduce passive voice',
+        ],
       };
     }
   }
 
-  private async performEngagementAnalysis(content: string): Promise<{ score: number; issues: string[]; strengths: string[] }> {
+  private async performEngagementAnalysis(
+    content: string,
+  ): Promise<{ score: number; issues: string[]; strengths: string[] }> {
     // Analyze content for engagement factors
     const wordCount = content.split(/\s+/).length;
-    const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+    const paragraphs = content
+      .split(/\n\s*\n/)
+      .filter(p => p.trim().length > 0);
     const avgParagraphLength = wordCount / paragraphs.length;
-    
+
     let score = 70; // Base score
     const issues: string[] = [];
     const strengths: string[] = [];
@@ -587,7 +644,9 @@ Focus on making the content more accessible and engaging.`;
     return { score: Math.max(0, Math.min(100, score)), issues, strengths };
   }
 
-  private async performStructureAnalysis(content: string): Promise<{ score: number; structure: any; suggestions: string[] }> {
+  private async performStructureAnalysis(
+    content: string,
+  ): Promise<{ score: number; structure: any; suggestions: string[] }> {
     const headings = content.match(/^#{1,6}\s+.+$/gm) || [];
     const h1Count = (content.match(/^#\s+/gm) || []).length;
     const h2Count = (content.match(/^##\s+/gm) || []).length;
@@ -598,7 +657,11 @@ Focus on making the content more accessible and engaging.`;
 
     if (h1Count !== 1) {
       score -= 15;
-      suggestions.push(h1Count === 0 ? 'Add a main heading (H1)' : 'Use only one main heading (H1)');
+      suggestions.push(
+        h1Count === 0
+          ? 'Add a main heading (H1)'
+          : 'Use only one main heading (H1)',
+      );
     }
 
     if (h2Count === 0) {
@@ -612,13 +675,16 @@ Focus on making the content more accessible and engaging.`;
       h2Count,
       h3Count,
       hasIntroduction: content.trim().split('\n')[0].length > 100,
-      hasConclusion: content.trim().split('\n').slice(-3).join(' ').length > 100
+      hasConclusion:
+        content.trim().split('\n').slice(-3).join(' ').length > 100,
     };
 
     return { score: Math.max(0, score), structure, suggestions };
   }
 
-  private async performContentLengthAnalysis(content: string): Promise<{ wordCount: number; score: number; recommendation: string }> {
+  private async performContentLengthAnalysis(
+    content: string,
+  ): Promise<{ wordCount: number; score: number; recommendation: string }> {
     const wordCount = content.split(/\s+/).filter(w => w.length > 0).length;
     let score = 80;
     let recommendation = 'Content length is appropriate';
@@ -628,10 +694,12 @@ Focus on making the content more accessible and engaging.`;
       recommendation = 'Content is too short. Add more value and depth.';
     } else if (wordCount < 500) {
       score = 60;
-      recommendation = 'Content is on the shorter side. Consider expanding key points.';
+      recommendation =
+        'Content is on the shorter side. Consider expanding key points.';
     } else if (wordCount > 3000) {
       score = 70;
-      recommendation = 'Content is quite long. Consider breaking into multiple pieces or sections.';
+      recommendation =
+        'Content is quite long. Consider breaking into multiple pieces or sections.';
     } else if (wordCount > 1500 && wordCount <= 2500) {
       score = 95;
       recommendation = 'Excellent content length for engagement and SEO.';
@@ -640,11 +708,13 @@ Focus on making the content more accessible and engaging.`;
     return { wordCount, score, recommendation };
   }
 
-  private async performCTAAnalysis(content: string): Promise<{ ctas: any[]; score: number; suggestions: string[] }> {
+  private async performCTAAnalysis(
+    content: string,
+  ): Promise<{ ctas: any[]; score: number; suggestions: string[] }> {
     // Simple CTA detection patterns
     const ctaPatterns = [
       /\b(click here|learn more|read more|get started|sign up|subscribe|download|contact us|buy now)\b/gi,
-      /\b(try|start|begin|explore|discover)\s+(now|today|free)\b/gi
+      /\b(try|start|begin|explore|discover)\s+(now|today|free)\b/gi,
     ];
 
     const ctas: any[] = [];
@@ -656,7 +726,7 @@ Focus on making the content more accessible and engaging.`;
         ctas.push({
           text: match,
           type: index === 0 ? 'direct' : 'action-oriented',
-          strength: index === 0 ? 0.6 : 0.8
+          strength: index === 0 ? 0.6 : 0.8,
         });
       });
     });
@@ -668,7 +738,9 @@ Focus on making the content more accessible and engaging.`;
       suggestions.push('Add clear calls-to-action to guide reader behavior');
     } else if (ctas.length > 5) {
       score = 60;
-      suggestions.push('Too many CTAs may dilute effectiveness. Focus on 1-3 primary actions.');
+      suggestions.push(
+        'Too many CTAs may dilute effectiveness. Focus on 1-3 primary actions.',
+      );
     }
 
     if (ctas.every(cta => cta.strength < 0.7)) {
@@ -680,7 +752,7 @@ Focus on making the content more accessible and engaging.`;
 
   private async generateOptimizationSuggestions(
     content: string,
-    request: OptimizationRequest
+    request: OptimizationRequest,
   ): Promise<OptimizationSuggestion[]> {
     const prompt = `Analyze the following content and provide optimization suggestions:
 
@@ -698,7 +770,7 @@ Please provide specific, actionable suggestions for improving the content.`;
       const result = await generateObject({
         model: this.config.model,
         schema: OptimizationAnalysisSchema,
-        prompt
+        prompt,
       });
 
       return result.object.suggestions.map((s, index) => ({
@@ -709,7 +781,8 @@ Please provide specific, actionable suggestions for improving the content.`;
         description: s.description,
         currentText: s.currentValue,
         suggestedText: s.suggestedValue,
-        reasoning: s.description || `Improve ${s.category} for better content quality`,
+        reasoning:
+          s.description || `Improve ${s.category} for better content quality`,
         expectedImpact: (s.expectedLift || 10) / 100, // Convert percentage to 0-1 scale
         category: this.mapCategory(s.category),
         position: s.position,
@@ -717,8 +790,8 @@ Please provide specific, actionable suggestions for improving the content.`;
           seoImpact: s.seoImpact,
           keywordTarget: s.keywordTarget,
           readabilityImpact: s.readabilityImpact,
-          engagementMetric: s.engagementMetric
-        }
+          engagementMetric: s.engagementMetric,
+        },
       }));
     } catch (error) {
       console.error('Failed to generate optimization suggestions:', error);
@@ -784,13 +857,13 @@ Please provide specific, actionable suggestions for improving the content.`;
   private async generateKeywordSuggestions(
     content: string,
     keywords: string[],
-    densities: Record<string, number>
+    densities: Record<string, number>,
   ): Promise<OptimizationSuggestion[]> {
     const suggestions: OptimizationSuggestion[] = [];
 
     keywords.forEach((keyword, index) => {
       const density = densities[keyword] || 0;
-      
+
       if (density < 0.5) {
         suggestions.push({
           id: `keyword_${index}`,
@@ -803,8 +876,8 @@ Please provide specific, actionable suggestions for improving the content.`;
           category: SuggestionCategory.SEO,
           metadata: {
             keywordTarget: keyword,
-            seoImpact: 15
-          }
+            seoImpact: 15,
+          },
         });
       } else if (density > 3) {
         suggestions.push({
@@ -818,8 +891,8 @@ Please provide specific, actionable suggestions for improving the content.`;
           category: SuggestionCategory.SEO,
           metadata: {
             keywordTarget: keyword,
-            seoImpact: -5
-          }
+            seoImpact: -5,
+          },
         });
       }
     });
@@ -829,7 +902,7 @@ Please provide specific, actionable suggestions for improving the content.`;
 
   private async generateTechnicalSEOSuggestions(
     content: string,
-    seoAnalysis: any
+    seoAnalysis: any,
   ): Promise<OptimizationSuggestion[]> {
     const suggestions: OptimizationSuggestion[] = [];
 
@@ -840,9 +913,10 @@ Please provide specific, actionable suggestions for improving the content.`;
         priority: SuggestionPriority.HIGH,
         effort: EffortLevel.MINIMAL,
         description: 'Optimize title for better SEO',
-        reasoning: 'Title optimization score is below 80. Improve for better search visibility.',
-        expectedImpact: 0.20,
-        category: SuggestionCategory.SEO
+        reasoning:
+          'Title optimization score is below 80. Improve for better search visibility.',
+        expectedImpact: 0.2,
+        category: SuggestionCategory.SEO,
       });
     }
 
@@ -853,9 +927,10 @@ Please provide specific, actionable suggestions for improving the content.`;
         priority: SuggestionPriority.MEDIUM,
         effort: EffortLevel.MINIMAL,
         description: 'Improve meta description',
-        reasoning: 'Meta description score is below 75. Enhance for better click-through rates.',
+        reasoning:
+          'Meta description score is below 75. Enhance for better click-through rates.',
         expectedImpact: 0.15,
-        category: SuggestionCategory.SEO
+        category: SuggestionCategory.SEO,
       });
     }
 
@@ -866,9 +941,10 @@ Please provide specific, actionable suggestions for improving the content.`;
         priority: SuggestionPriority.MEDIUM,
         effort: EffortLevel.MODERATE,
         description: 'Improve heading structure',
-        reasoning: 'Heading optimization score is below 70. Better structure improves readability and SEO.',
+        reasoning:
+          'Heading optimization score is below 70. Better structure improves readability and SEO.',
         expectedImpact: 0.12,
-        category: SuggestionCategory.STRUCTURE
+        category: SuggestionCategory.STRUCTURE,
       });
     }
 
@@ -879,9 +955,10 @@ Please provide specific, actionable suggestions for improving the content.`;
         priority: SuggestionPriority.HIGH,
         effort: EffortLevel.MODERATE,
         description: 'Optimize content structure',
-        reasoning: 'Content optimization score is below 75. Improve overall content quality.',
+        reasoning:
+          'Content optimization score is below 75. Improve overall content quality.',
         expectedImpact: 0.18,
-        category: SuggestionCategory.CONTENT
+        category: SuggestionCategory.CONTENT,
       });
     }
 
@@ -892,9 +969,10 @@ Please provide specific, actionable suggestions for improving the content.`;
         priority: SuggestionPriority.MEDIUM,
         effort: EffortLevel.MODERATE,
         description: 'Improve content readability',
-        reasoning: 'Readability score is below 70. Simplify language and structure.',
-        expectedImpact: 0.10,
-        category: SuggestionCategory.CONTENT
+        reasoning:
+          'Readability score is below 70. Simplify language and structure.',
+        expectedImpact: 0.1,
+        category: SuggestionCategory.CONTENT,
       });
     }
 
@@ -905,9 +983,10 @@ Please provide specific, actionable suggestions for improving the content.`;
         priority: SuggestionPriority.MEDIUM,
         effort: EffortLevel.MODERATE,
         description: 'Enhance content engagement',
-        reasoning: 'Engagement optimization score is below 75. Add interactive elements and compelling content.',
+        reasoning:
+          'Engagement optimization score is below 75. Add interactive elements and compelling content.',
         expectedImpact: 0.14,
-        category: SuggestionCategory.CONTENT
+        category: SuggestionCategory.CONTENT,
       });
     }
 
@@ -917,7 +996,7 @@ Please provide specific, actionable suggestions for improving the content.`;
   private async generateContentSEOSuggestions(
     content: string,
     seoAnalysis: any,
-    keywords: string[]
+    keywords: string[],
   ): Promise<OptimizationSuggestion[]> {
     const suggestions: OptimizationSuggestion[] = [];
 
@@ -935,7 +1014,7 @@ Please provide specific, actionable suggestions for improving the content.`;
         isImplemented: false,
         isValidated: false,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
     }
 
@@ -953,7 +1032,7 @@ Please provide specific, actionable suggestions for improving the content.`;
         isImplemented: false,
         isValidated: false,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
     }
 
@@ -963,7 +1042,7 @@ Please provide specific, actionable suggestions for improving the content.`;
   private async generateReadabilitySuggestions(
     content: string,
     analysis: any,
-    targetGradeLevel: number
+    targetGradeLevel: number,
   ): Promise<OptimizationSuggestion[]> {
     const suggestions: OptimizationSuggestion[] = [];
 
@@ -981,7 +1060,7 @@ Please provide specific, actionable suggestions for improving the content.`;
         isImplemented: false,
         isValidated: false,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
     }
 
@@ -999,7 +1078,7 @@ Please provide specific, actionable suggestions for improving the content.`;
         isImplemented: false,
         isValidated: false,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
     }
 
@@ -1009,7 +1088,7 @@ Please provide specific, actionable suggestions for improving the content.`;
   private async generateEngagementSuggestions(
     content: string,
     analysis: any,
-    targetAudience?: string
+    targetAudience?: string,
   ): Promise<OptimizationSuggestion[]> {
     const suggestions: OptimizationSuggestion[] = [];
 
@@ -1029,7 +1108,7 @@ Please provide specific, actionable suggestions for improving the content.`;
           isImplemented: false,
           isValidated: false,
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         });
       });
     }
@@ -1039,7 +1118,7 @@ Please provide specific, actionable suggestions for improving the content.`;
 
   private prioritizeSuggestions(
     suggestions: OptimizationSuggestion[],
-    prioritizeHighImpact: boolean
+    prioritizeHighImpact: boolean,
   ): OptimizationSuggestion[] {
     return suggestions.sort((a, b) => {
       if (prioritizeHighImpact) {
@@ -1048,25 +1127,46 @@ Please provide specific, actionable suggestions for improving the content.`;
         const impactDiff = impactWeight[b.impact] - impactWeight[a.impact];
         if (impactDiff !== 0) return impactDiff;
       }
-      
+
       return b.priority - a.priority;
     });
   }
 
-  private createImplementationGuide(suggestions: OptimizationSuggestion[]): any {
-    const quickWins = suggestions.filter(s => s.effort === EffortLevel.MINIMAL && s.impact !== OptimizationType.LOW);
-    const mediumEffort = suggestions.filter(s => s.effort === EffortLevel.MODERATE);
-    const highImpact = suggestions.filter(s => s.impact === OptimizationType.HIGH || s.impact === OptimizationType.CRITICAL);
+  private createImplementationGuide(
+    suggestions: OptimizationSuggestion[],
+  ): any {
+    const quickWins = suggestions.filter(
+      s =>
+        s.effort === EffortLevel.MINIMAL && s.impact !== OptimizationType.LOW,
+    );
+    const mediumEffort = suggestions.filter(
+      s => s.effort === EffortLevel.MODERATE,
+    );
+    const highImpact = suggestions.filter(
+      s =>
+        s.impact === OptimizationType.HIGH ||
+        s.impact === OptimizationType.CRITICAL,
+    );
 
     return {
       quickWins: quickWins.slice(0, 5),
       mediumEffort: mediumEffort.slice(0, 3),
-      highImpact: highImpact.slice(0, 3)
+      highImpact: highImpact.slice(0, 3),
     };
   }
 
-  private async generateContentMetrics(blogPostId: string, analyses: any[]): Promise<ContentMetrics> {
-    const [seoAnalysis, readabilityAnalysis, engagementAnalysis, structureAnalysis, lengthAnalysis, ctaAnalysis] = analyses;
+  private async generateContentMetrics(
+    blogPostId: string,
+    analyses: any[],
+  ): Promise<ContentMetrics> {
+    const [
+      seoAnalysis,
+      readabilityAnalysis,
+      engagementAnalysis,
+      structureAnalysis,
+      lengthAnalysis,
+      ctaAnalysis,
+    ] = analyses;
 
     return {
       wordCount: 0, // Will be updated by multi-section service
@@ -1080,16 +1180,25 @@ Please provide specific, actionable suggestions for improving the content.`;
 
   // Additional helper methods for advanced features
 
-  private async analyzeCompetitors(content: string, competitorUrls: string[]): Promise<any> {
+  private async analyzeCompetitors(
+    content: string,
+    competitorUrls: string[],
+  ): Promise<any> {
     // Mock competitor analysis - in practice, would scrape and analyze competitor content
     return {
       gaps: ['Missing FAQ section', 'No comparison tables', 'Limited examples'],
-      opportunities: ['Add video content', 'Include customer testimonials', 'Create downloadable resources']
+      opportunities: [
+        'Add video content',
+        'Include customer testimonials',
+        'Create downloadable resources',
+      ],
     };
   }
 
   private async analyzeAndImproveHooks(content: string): Promise<any[]> {
-    const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+    const paragraphs = content
+      .split(/\n\s*\n/)
+      .filter(p => p.trim().length > 0);
     const hooks: any[] = [];
 
     // Analyze first few paragraphs for engagement
@@ -1099,7 +1208,7 @@ Please provide specific, actionable suggestions for improving the content.`;
           position: index,
           current: paragraph.slice(0, 100) + '...',
           improved: `Did you know that ${paragraph.slice(20, 80)}? Here's what you need to know.`,
-          reason: 'Added curiosity gap and direct address to reader'
+          reason: 'Added curiosity gap and direct address to reader',
         });
       }
     });
@@ -1110,21 +1219,31 @@ Please provide specific, actionable suggestions for improving the content.`;
   private async analyzeCTAs(content: string): Promise<any[]> {
     // Simple CTA analysis - would be more sophisticated in practice
     const ctas: any[] = [];
-    const ctaMatches = content.match(/\b(click|try|start|get|download|subscribe|learn more)\b[^.!?]*[.!?]/gi) || [];
+    const ctaMatches =
+      content.match(
+        /\b(click|try|start|get|download|subscribe|learn more)\b[^.!?]*[.!?]/gi,
+      ) || [];
 
     ctaMatches.forEach((match, index) => {
       ctas.push({
         position: content.indexOf(match),
         text: match.trim(),
         strength: match.toLowerCase().includes('free') ? 0.8 : 0.6,
-        suggestions: ['Add urgency', 'Be more specific', 'Highlight value proposition']
+        suggestions: [
+          'Add urgency',
+          'Be more specific',
+          'Highlight value proposition',
+        ],
       });
     });
 
     return ctas;
   }
 
-  private async generateElementVariations(content: string, element: string): Promise<any> {
+  private async generateElementVariations(
+    content: string,
+    element: string,
+  ): Promise<any> {
     const prompt = `Generate 3 alternative versions for the ${element} element of this content:
 
 Original Content:
@@ -1139,19 +1258,20 @@ For each variation, explain the hypothesis and expected impact.`;
 
     // Mock implementation - would use AI generation in practice
     return {
-      original: element === 'headline' ? content.split('\n')[0] : `Original ${element}`,
+      original:
+        element === 'headline' ? content.split('\n')[0] : `Original ${element}`,
       alternatives: [
         {
           version: `Alternative ${element} version 1`,
           hypothesis: 'Testing emotional appeal vs logical approach',
-          expectedImpact: 'Higher click-through rate'
+          expectedImpact: 'Higher click-through rate',
         },
         {
           version: `Alternative ${element} version 2`,
           hypothesis: 'Testing longer vs shorter format',
-          expectedImpact: 'Better conversion rate'
-        }
-      ]
+          expectedImpact: 'Better conversion rate',
+        },
+      ],
     };
   }
 
@@ -1159,13 +1279,18 @@ For each variation, explain the hypothesis and expected impact.`;
     return {
       duration: '2-4 weeks',
       sampleSize: 'Minimum 1000 visitors per variation',
-      metrics: ['Click-through rate', 'Time on page', 'Conversion rate', 'Bounce rate'],
+      metrics: [
+        'Click-through rate',
+        'Time on page',
+        'Conversion rate',
+        'Bounce rate',
+      ],
       implementation: [
         'Set up A/B testing tool',
         'Define success metrics',
         'Run test for statistical significance',
-        'Analyze results and implement winner'
-      ]
+        'Analyze results and implement winner',
+      ],
     };
   }
 
@@ -1180,12 +1305,14 @@ For each variation, explain the hypothesis and expected impact.`;
   private async generateImprovedExcerpts(
     content: string,
     analysis: any,
-    targetGradeLevel: number
-  ): Promise<Array<{
-    original: string;
-    improved: string;
-    improvement: string;
-  }>> {
+    targetGradeLevel: number,
+  ): Promise<
+    Array<{
+      original: string;
+      improved: string;
+      improvement: string;
+    }>
+  > {
     // Mock implementation - would generate actual improved text using AI
     const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 50);
     const improvements: Array<any> = [];
@@ -1195,7 +1322,7 @@ For each variation, explain the hypothesis and expected impact.`;
         improvements.push({
           original: sentence.trim(),
           improved: `Simplified version: ${sentence.trim().slice(0, 50)}...`,
-          improvement: 'Shortened sentence length for better readability'
+          improvement: 'Shortened sentence length for better readability',
         });
       }
     });
@@ -1206,18 +1333,27 @@ For each variation, explain the hypothesis and expected impact.`;
   private calculateActualImpact(
     suggestion: any,
     beforeMetrics: Record<string, number>,
-    afterMetrics: Record<string, number>
+    afterMetrics: Record<string, number>,
   ): number {
     // Calculate actual impact based on suggestion category
     const category = suggestion.category;
-    
+
     switch (category) {
       case 'SEO':
-        return this.calculateMetricImprovement(beforeMetrics.seoScore, afterMetrics.seoScore);
+        return this.calculateMetricImprovement(
+          beforeMetrics.seoScore,
+          afterMetrics.seoScore,
+        );
       case 'READABILITY':
-        return this.calculateMetricImprovement(beforeMetrics.readabilityScore, afterMetrics.readabilityScore);
+        return this.calculateMetricImprovement(
+          beforeMetrics.readabilityScore,
+          afterMetrics.readabilityScore,
+        );
       case 'ENGAGEMENT':
-        return this.calculateMetricImprovement(beforeMetrics.engagementScore, afterMetrics.engagementScore);
+        return this.calculateMetricImprovement(
+          beforeMetrics.engagementScore,
+          afterMetrics.engagementScore,
+        );
       default:
         return this.calculateOverallImprovement(beforeMetrics, afterMetrics);
     }
@@ -1230,7 +1366,7 @@ For each variation, explain the hypothesis and expected impact.`;
 
   private calculateOverallImprovement(
     before: Record<string, number>,
-    after: Record<string, number>
+    after: Record<string, number>,
   ): number {
     const metrics = ['seoScore', 'readabilityScore', 'engagementScore'];
     let totalImprovement = 0;
@@ -1238,7 +1374,10 @@ For each variation, explain the hypothesis and expected impact.`;
 
     metrics.forEach(metric => {
       if (before[metric] !== undefined && after[metric] !== undefined) {
-        totalImprovement += this.calculateMetricImprovement(before[metric], after[metric]);
+        totalImprovement += this.calculateMetricImprovement(
+          before[metric],
+          after[metric],
+        );
         validMetrics++;
       }
     });
@@ -1246,11 +1385,17 @@ For each variation, explain the hypothesis and expected impact.`;
     return validMetrics > 0 ? totalImprovement / validMetrics : 0;
   }
 
-  private generateImpactInsights(suggestion: any, actualImpact: number, expectedImpact: number): string[] {
+  private generateImpactInsights(
+    suggestion: any,
+    actualImpact: number,
+    expectedImpact: number,
+  ): string[] {
     const insights: string[] = [];
-    
+
     if (actualImpact >= expectedImpact * 1.2) {
-      insights.push('Exceeded expectations - consider applying similar optimizations');
+      insights.push(
+        'Exceeded expectations - consider applying similar optimizations',
+      );
     } else if (actualImpact >= expectedImpact * 0.8) {
       insights.push('Met expectations - good optimization');
     } else if (actualImpact >= 0) {
@@ -1262,18 +1407,27 @@ For each variation, explain the hypothesis and expected impact.`;
     return insights;
   }
 
-  private generateNextStepRecommendations(results: any[], metrics: any): string[] {
+  private generateNextStepRecommendations(
+    results: any[],
+    metrics: any,
+  ): string[] {
     const recommendations: string[] = [];
-    
+
     const successfulOptimizations = results.filter(r => r.success).length;
     const totalOptimizations = results.length;
-    
+
     if (successfulOptimizations / totalOptimizations >= 0.8) {
-      recommendations.push('Great results! Consider implementing similar optimizations on other content');
+      recommendations.push(
+        'Great results! Consider implementing similar optimizations on other content',
+      );
     } else if (successfulOptimizations / totalOptimizations >= 0.5) {
-      recommendations.push('Mixed results. Analyze successful optimizations and refine approach');
+      recommendations.push(
+        'Mixed results. Analyze successful optimizations and refine approach',
+      );
     } else {
-      recommendations.push('Low success rate. Review optimization strategy and consider different approaches');
+      recommendations.push(
+        'Low success rate. Review optimization strategy and consider different approaches',
+      );
     }
 
     return recommendations;
@@ -1287,7 +1441,7 @@ For each variation, explain the hypothesis and expected impact.`;
     }
 
     const blogPost = await this.config.prisma.blogPost.findUnique({
-      where: { id: blogPostId }
+      where: { id: blogPostId },
     });
 
     if (!blogPost) {
@@ -1297,7 +1451,9 @@ For each variation, explain the hypothesis and expected impact.`;
     return blogPost.content;
   }
 
-  private async saveOptimizationsToDatabase(suggestions: OptimizationSuggestion[]): Promise<void> {
+  private async saveOptimizationsToDatabase(
+    suggestions: OptimizationSuggestion[],
+  ): Promise<void> {
     if (!this.config.prisma) return;
 
     for (const suggestion of suggestions) {
@@ -1322,8 +1478,8 @@ For each variation, explain the hypothesis and expected impact.`;
             engagementMetric: suggestion.engagementMetric,
             expectedLift: suggestion.expectedLift,
             isImplemented: suggestion.isImplemented,
-            isValidated: suggestion.isValidated
-          }
+            isValidated: suggestion.isValidated,
+          },
         });
       } catch (error) {
         console.error('Failed to save optimization suggestion:', error);
@@ -1357,12 +1513,11 @@ For each variation, explain the hypothesis and expected impact.`;
           readabilityScore: metrics.readabilityScore,
           engagementScore: metrics.engagementScore,
           totalSuggestions: metrics.totalSuggestions,
-          implementedSuggestions: metrics.implementedSuggestions
-        }
+          implementedSuggestions: metrics.implementedSuggestions,
+        },
       });
     } catch (error) {
       console.error('Failed to save content metrics:', error);
     }
   }
 }
-

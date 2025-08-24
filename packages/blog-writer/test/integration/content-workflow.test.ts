@@ -32,11 +32,13 @@ describe('Content Workflow Integration Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Initialize services with mock dependencies
     const mockModel = {} as any;
-    const mockPrisma = new (vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient)();
-    
+    const mockPrisma = new (vi.mocked(
+      await import('../../src/generated/prisma-client'),
+    ).PrismaClient)();
+
     blogGenerator = new BlogGenerator();
     contentStrategy = new ContentStrategyService({
       model: mockModel,
@@ -55,7 +57,9 @@ describe('Content Workflow Integration Tests', () => {
   describe('End-to-End Blog Creation Workflow', () => {
     test('should create, optimize, and schedule a blog post', async () => {
       // Mock the entire workflow
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
       const mockBlogPost = {
         id: 'test-123',
         title: 'Test Blog Post',
@@ -67,7 +71,9 @@ describe('Content Workflow Integration Tests', () => {
         },
       };
 
-      mockPrisma.prototype.blogPost.create.mockResolvedValue(mockBlogPost as any);
+      mockPrisma.prototype.blogPost.create.mockResolvedValue(
+        mockBlogPost as any,
+      );
       mockPrisma.prototype.editorialCalendar.create.mockResolvedValue({
         id: 'calendar-123',
         entries: [],
@@ -116,8 +122,10 @@ describe('Content Workflow Integration Tests', () => {
     });
 
     test('should handle workflow with content strategy planning', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
-      
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
+
       // Mock strategy service responses
       mockPrisma.prototype.blogPost.create.mockResolvedValue({
         id: 'strategy-123',
@@ -140,7 +148,8 @@ describe('Content Workflow Integration Tests', () => {
         },
       };
 
-      const strategyResult = await contentStrategy.generateStrategy(strategyRequest);
+      const strategyResult =
+        await contentStrategy.generateStrategy(strategyRequest);
 
       expect(strategyResult).toBeDefined();
       expect(strategyResult.overview).toBeDefined();
@@ -149,8 +158,10 @@ describe('Content Workflow Integration Tests', () => {
     });
 
     test('should handle optimization workflow with multiple iterations', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
-      
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
+
       mockPrisma.prototype.blogPost.create.mockResolvedValue({
         id: 'optimize-123',
         title: 'Optimizable Post',
@@ -184,34 +195,44 @@ describe('Content Workflow Integration Tests', () => {
       expect(secondOptimization.suggestions.length).toBeGreaterThan(0);
 
       // Verify that optimizations are cumulative
-      const totalSuggestions = firstOptimization.suggestions.length + secondOptimization.suggestions.length;
+      const totalSuggestions =
+        firstOptimization.suggestions.length +
+        secondOptimization.suggestions.length;
       expect(totalSuggestions).toBeGreaterThan(0);
     });
   });
 
   describe('Error Handling in Workflows', () => {
     test('should handle database connection failures gracefully', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
-      mockPrisma.prototype.blogPost.create.mockRejectedValue(new Error('Database connection failed'));
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
+      mockPrisma.prototype.blogPost.create.mockRejectedValue(
+        new Error('Database connection failed'),
+      );
 
       await expect(
         blogGenerator.generateBlog({
           model: {} as any,
           topic: 'Test Topic',
-        })
+        }),
       ).rejects.toThrow('Database connection failed');
     });
 
     test('should handle AI service failures in optimization', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
       mockPrisma.prototype.blogPost.findUnique.mockResolvedValue({
         id: 'test-123',
         content: 'Test content',
       } as any);
 
       // Mock AI service failure
-      vi.spyOn(contentOptimization as any, 'generateOptimizationSuggestions')
-        .mockRejectedValue(new Error('AI service unavailable'));
+      vi.spyOn(
+        contentOptimization as any,
+        'generateOptimizationSuggestions',
+      ).mockRejectedValue(new Error('AI service unavailable'));
 
       const result = await contentOptimization.optimizeContent({
         blogPostId: 'test-123',
@@ -228,8 +249,10 @@ describe('Content Workflow Integration Tests', () => {
   describe('Performance in Workflows', () => {
     test('should complete full workflow within reasonable time', async () => {
       const startTime = Date.now();
-      
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
+
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
       mockPrisma.prototype.blogPost.create.mockResolvedValue({
         id: 'perf-123',
         title: 'Performance Test',

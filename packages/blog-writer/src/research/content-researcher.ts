@@ -14,7 +14,7 @@ import {
   ContentGapAnalysisSchema,
   CompetitorAnalysisSchema,
   ContentOutlineSchema,
-  ContentSummarySchema
+  ContentSummarySchema,
 } from '../schemas/ai-schemas';
 
 /**

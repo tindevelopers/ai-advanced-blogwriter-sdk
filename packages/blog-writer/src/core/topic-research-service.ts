@@ -1,12 +1,11 @@
-
 /**
  * Topic Research & Trend Analysis Service
  * Intelligent topic discovery and trend analysis using AI providers
  */
 
-import { 
-  TopicResearch, 
-  TopicCluster, 
+import {
+  TopicResearch,
+  TopicCluster,
   TopicRelationship,
   TopicResearchRequest,
   TopicResearchResponse,
@@ -15,7 +14,7 @@ import {
   KeywordData,
   CompetitionLevel,
   Priority,
-  TopicStatus
+  TopicStatus,
 } from '../types/strategy-engine';
 
 import { LanguageModel } from 'ai';
@@ -23,7 +22,7 @@ import { PrismaClient } from '../generated/prisma-client';
 import {
   TopicResearchSchema,
   RelatedTopicsSchema,
-  TopicValidationSchema
+  TopicValidationSchema,
 } from '../schemas/ai-schemas';
 
 export interface TopicResearchConfig {
@@ -50,9 +49,11 @@ export class TopicResearchService {
   /**
    * Research a topic with comprehensive analysis
    */
-  async researchTopic(request: TopicResearchRequest): Promise<TopicResearchResponse> {
+  async researchTopic(
+    request: TopicResearchRequest,
+  ): Promise<TopicResearchResponse> {
     const cacheKey = `topic_research_${JSON.stringify(request)}`;
-    
+
     // Check cache first
     if (this.cacheResults && this.cache.has(cacheKey)) {
       const cached = this.cache.get(cacheKey)!;
@@ -64,10 +65,10 @@ export class TopicResearchService {
     try {
       // Generate comprehensive topic research using AI
       const researchPrompt = this.buildTopicResearchPrompt(request);
-      
+
       const result = await this.model.generateObject({
         schema: TopicResearchSchema,
-        prompt: researchPrompt
+        prompt: researchPrompt,
       });
 
       const response: TopicResearchResponse = {
@@ -76,12 +77,15 @@ export class TopicResearchService {
         trends: result.object.trends,
         competitors: [], // Will be populated if includeCompetitors is true
         opportunities: result.object.opportunities,
-        confidence: result.object.confidence
+        confidence: result.object.confidence,
       };
 
       // Include competitor analysis if requested
       if (request.includeCompetitors) {
-        response.competitors = await this.analyzeCompetitorTopics(request.query, response.keywords);
+        response.competitors = await this.analyzeCompetitorTopics(
+          request.query,
+          response.keywords,
+        );
       }
 
       // Cache the result
@@ -95,17 +99,21 @@ export class TopicResearchService {
       }
 
       return response;
-
     } catch (error) {
       console.error('Error in topic research:', error);
-      throw new Error(`Topic research failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Topic research failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   /**
    * Discover trending topics in a specific niche
    */
-  async discoverTrendingTopics(niche: string, limit: number = 10): Promise<TopicResearch[]> {
+  async discoverTrendingTopics(
+    niche: string,
+    limit: number = 10,
+  ): Promise<TopicResearch[]> {
     const prompt = `
       Analyze the "${niche}" niche and identify the top ${limit} trending topics that are gaining momentum.
       
@@ -139,28 +147,47 @@ export class TopicResearchService {
                   title: { type: 'string' },
                   description: { type: 'string' },
                   primaryKeywords: { type: 'array', items: { type: 'string' } },
-                  secondaryKeywords: { type: 'array', items: { type: 'string' } },
-                  longTailKeywords: { type: 'array', items: { type: 'string' } },
+                  secondaryKeywords: {
+                    type: 'array',
+                    items: { type: 'string' },
+                  },
+                  longTailKeywords: {
+                    type: 'array',
+                    items: { type: 'string' },
+                  },
                   trendScore: { type: 'number', minimum: 0, maximum: 1 },
                   opportunityScore: { type: 'number', minimum: 0, maximum: 1 },
-                  competitionLevel: { type: 'string', enum: ['low', 'medium', 'high'] },
+                  competitionLevel: {
+                    type: 'string',
+                    enum: ['low', 'medium', 'high'],
+                  },
                   contentGapScore: { type: 'number', minimum: 0, maximum: 1 },
-                  priority: { type: 'string', enum: ['low', 'medium', 'high', 'urgent'] },
+                  priority: {
+                    type: 'string',
+                    enum: ['low', 'medium', 'high', 'urgent'],
+                  },
                   estimatedEffort: { type: 'number' },
                   peakMonths: { type: 'array', items: { type: 'string' } },
-                  tags: { type: 'array', items: { type: 'string' } }
+                  tags: { type: 'array', items: { type: 'string' } },
                 },
-                required: ['title', 'primaryKeywords', 'trendScore', 'opportunityScore']
-              }
-            }
+                required: [
+                  'title',
+                  'primaryKeywords',
+                  'trendScore',
+                  'opportunityScore',
+                ],
+              },
+            },
           },
-          required: ['topics']
+          required: ['topics'],
         },
-        prompt
+        prompt,
       });
 
       const topics = await Promise.all(
-        result.object.topics.map(topicData => this.createTopicFromAIResult(topicData))
+        result.object.topics.map(topicData =>
+          this.createTopicFromAIResult(topicData),
+        ),
       );
 
       // Save to database if available
@@ -171,17 +198,21 @@ export class TopicResearchService {
       }
 
       return topics;
-
     } catch (error) {
       console.error('Error discovering trending topics:', error);
-      throw new Error(`Trending topics discovery failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Trending topics discovery failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   /**
    * Analyze seasonality patterns for a topic
    */
-  async analyzeSeasonality(topic: string, keywords: string[]): Promise<SeasonalityData> {
+  async analyzeSeasonality(
+    topic: string,
+    keywords: string[],
+  ): Promise<SeasonalityData> {
     const prompt = `
       Analyze the seasonality patterns for the topic "${topic}" with these keywords: ${keywords.join(', ')}.
       
@@ -207,39 +238,45 @@ export class TopicResearchService {
                 properties: {
                   month: { type: 'string' },
                   searchVolume: { type: 'number' },
-                  trend: { type: 'number', minimum: -1, maximum: 1 }
+                  trend: { type: 'number', minimum: -1, maximum: 1 },
                 },
-                required: ['month', 'searchVolume', 'trend']
-              }
+                required: ['month', 'searchVolume', 'trend'],
+              },
             },
             peakSeason: { type: 'string' },
             lowSeason: { type: 'string' },
-            volatility: { type: 'number', minimum: 0, maximum: 1 }
+            volatility: { type: 'number', minimum: 0, maximum: 1 },
           },
-          required: ['months', 'peakSeason', 'lowSeason', 'volatility']
+          required: ['months', 'peakSeason', 'lowSeason', 'volatility'],
         },
-        prompt
+        prompt,
       });
 
       return result.object;
-
     } catch (error) {
       console.error('Error analyzing seasonality:', error);
-      throw new Error(`Seasonality analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Seasonality analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
   /**
    * Find related topics and build topic clusters
    */
-  async findRelatedTopics(topicId: string, maxResults: number = 5): Promise<TopicResearch[]> {
+  async findRelatedTopics(
+    topicId: string,
+    maxResults: number = 5,
+  ): Promise<TopicResearch[]> {
     if (!this.prisma) {
-      throw new Error('Database connection required for finding related topics');
+      throw new Error(
+        'Database connection required for finding related topics',
+      );
     }
 
     try {
       const baseTopic = await this.prisma.topicResearch.findUnique({
-        where: { id: topicId }
+        where: { id: topicId },
       });
 
       if (!baseTopic) {
@@ -273,47 +310,65 @@ export class TopicResearchService {
                 properties: {
                   title: { type: 'string' },
                   description: { type: 'string' },
-                  relationshipType: { 
-                    type: 'string', 
-                    enum: ['related', 'prerequisite', 'followup', 'similar', 'alternative'] 
+                  relationshipType: {
+                    type: 'string',
+                    enum: [
+                      'related',
+                      'prerequisite',
+                      'followup',
+                      'similar',
+                      'alternative',
+                    ],
                   },
                   strength: { type: 'number', minimum: 0, maximum: 1 },
                   primaryKeywords: { type: 'array', items: { type: 'string' } },
-                  secondaryKeywords: { type: 'array', items: { type: 'string' } },
+                  secondaryKeywords: {
+                    type: 'array',
+                    items: { type: 'string' },
+                  },
                   opportunityScore: { type: 'number', minimum: 0, maximum: 1 },
-                  competitionLevel: { type: 'string', enum: ['low', 'medium', 'high'] }
+                  competitionLevel: {
+                    type: 'string',
+                    enum: ['low', 'medium', 'high'],
+                  },
                 },
-                required: ['title', 'relationshipType', 'strength', 'primaryKeywords']
-              }
-            }
+                required: [
+                  'title',
+                  'relationshipType',
+                  'strength',
+                  'primaryKeywords',
+                ],
+              },
+            },
           },
-          required: ['relatedTopics']
+          required: ['relatedTopics'],
         },
-        prompt
+        prompt,
       });
 
       const relatedTopics = await Promise.all(
-        result.object.relatedTopics.map(async (topicData) => {
+        result.object.relatedTopics.map(async topicData => {
           const topic = await this.createTopicFromAIResult(topicData);
           await this.saveTopic(topic);
-          
+
           // Create relationship
           await this.createTopicRelationship(
-            topicId, 
-            topic.id, 
+            topicId,
+            topic.id,
             topicData.relationshipType,
-            topicData.strength
+            topicData.strength,
           );
-          
+
           return topic;
-        })
+        }),
       );
 
       return relatedTopics;
-
     } catch (error) {
       console.error('Error finding related topics:', error);
-      throw new Error(`Related topics search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Related topics search failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
@@ -357,19 +412,18 @@ export class TopicResearchService {
                 contentGap: { type: 'number', minimum: 0, maximum: 1 },
                 trending: { type: 'number', minimum: 0, maximum: 1 },
                 commercial: { type: 'number', minimum: 0, maximum: 1 },
-                authority: { type: 'number', minimum: 0, maximum: 1 }
+                authority: { type: 'number', minimum: 0, maximum: 1 },
               },
-              required: ['searchVolume', 'competition', 'contentGap']
+              required: ['searchVolume', 'competition', 'contentGap'],
             },
-            recommendations: { type: 'array', items: { type: 'string' } }
+            recommendations: { type: 'array', items: { type: 'string' } },
           },
-          required: ['opportunityScore', 'reasoning', 'factors']
+          required: ['opportunityScore', 'reasoning', 'factors'],
         },
-        prompt
+        prompt,
       });
 
       return result.object.opportunityScore;
-
     } catch (error) {
       console.error('Error scoring topic opportunity:', error);
       return topic.opportunityScore; // Return existing score on error
@@ -402,9 +456,16 @@ export class TopicResearchService {
     `;
   }
 
-  private async createTopicFromAIResult(aiResult: any, request?: TopicResearchRequest): Promise<TopicResearch> {
-    const slug = aiResult.title?.toLowerCase()?.replace(/[^a-z0-9]+/g, '-')?.replace(/^-|-$/g, '') || '';
-    
+  private async createTopicFromAIResult(
+    aiResult: any,
+    request?: TopicResearchRequest,
+  ): Promise<TopicResearch> {
+    const slug =
+      aiResult.title
+        ?.toLowerCase()
+        ?.replace(/[^a-z0-9]+/g, '-')
+        ?.replace(/^-|-$/g, '') || '';
+
     return {
       id: `topic_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       title: aiResult.title || '',
@@ -413,45 +474,48 @@ export class TopicResearchService {
       primaryKeywords: aiResult.primaryKeywords || [],
       secondaryKeywords: aiResult.secondaryKeywords || [],
       longTailKeywords: aiResult.longTailKeywords || [],
-      
+
       // Search data - would be populated from real APIs in production
       searchVolume: aiResult.searchVolume,
       keywordDifficulty: aiResult.keywordDifficulty,
       cpc: aiResult.cpc,
       seasonalityData: aiResult.seasonalityData,
-      
+
       // Trend analysis
       trendScore: aiResult.trendScore || 0.5,
       trending: aiResult.trending || false,
       trendData: aiResult.trendData,
       peakMonths: aiResult.peakMonths || [],
-      
+
       // Opportunity scoring
       opportunityScore: aiResult.opportunityScore || 0.5,
       competitionLevel: aiResult.competitionLevel || 'medium',
       contentGapScore: aiResult.contentGapScore || 0.5,
-      
+
       // Metadata
       status: 'researched' as TopicStatus,
       priority: aiResult.priority || 'medium',
       estimatedEffort: aiResult.estimatedEffort,
       tags: aiResult.tags || [],
-      
+
       clusterId: aiResult.clusterId,
-      
+
       createdAt: new Date(),
       updatedAt: new Date(),
-      
+
       // Related entities - initialized empty
       competitors: [],
       contentBriefs: [],
       calendarEntries: [],
       relatedTopics: [],
-      relatedFrom: []
+      relatedFrom: [],
     };
   }
 
-  private async analyzeCompetitorTopics(query: string, keywords: KeywordData[]): Promise<any[]> {
+  private async analyzeCompetitorTopics(
+    query: string,
+    keywords: KeywordData[],
+  ): Promise<any[]> {
     // This would integrate with competitor analysis service
     // For now, return empty array
     return [];
@@ -485,7 +549,7 @@ export class TopicResearchService {
           estimatedEffort: topic.estimatedEffort,
           tags: topic.tags,
           clusterId: topic.clusterId,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         create: {
           id: topic.id,
@@ -512,8 +576,8 @@ export class TopicResearchService {
           tags: topic.tags,
           clusterId: topic.clusterId,
           createdAt: topic.createdAt,
-          updatedAt: topic.updatedAt
-        }
+          updatedAt: topic.updatedAt,
+        },
       });
     } catch (error) {
       console.error('Error saving topic:', error);
@@ -521,10 +585,10 @@ export class TopicResearchService {
   }
 
   private async createTopicRelationship(
-    fromTopicId: string, 
-    toTopicId: string, 
-    relationshipType: string, 
-    strength: number
+    fromTopicId: string,
+    toTopicId: string,
+    relationshipType: string,
+    strength: number,
   ): Promise<void> {
     if (!this.prisma) return;
 
@@ -534,8 +598,8 @@ export class TopicResearchService {
           fromTopicId,
           toTopicId,
           relationshipType,
-          strength
-        }
+          strength,
+        },
       });
     } catch (error) {
       console.error('Error creating topic relationship:', error);
@@ -548,7 +612,7 @@ export class TopicResearchService {
   public clearExpiredCache(): void {
     const now = Date.now();
     const ttlMs = this.cacheTTL * 60 * 60 * 1000;
-    
+
     for (const [key, value] of this.cache.entries()) {
       if (now - value.timestamp > ttlMs) {
         this.cache.delete(key);
@@ -562,7 +626,7 @@ export class TopicResearchService {
   public getCacheStats(): { size: number; hitRate: number } {
     return {
       size: this.cache.size,
-      hitRate: 0 // Would need to implement hit tracking
+      hitRate: 0, // Would need to implement hit tracking
     };
   }
 }

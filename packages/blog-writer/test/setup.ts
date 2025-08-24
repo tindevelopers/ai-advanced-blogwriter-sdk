@@ -3,37 +3,45 @@ import { vi } from 'vitest';
 // Global test setup
 beforeAll(() => {
   // Set up global mocks
-  vi.mock('@ai-sdk/provider', () => ({
-    LanguageModelV2: vi.fn(),
-  }), { virtual: true });
+  vi.mock(
+    '@ai-sdk/provider',
+    () => ({
+      LanguageModelV2: vi.fn(),
+    }),
+    { virtual: true },
+  );
 
-  vi.mock('../../src/generated/prisma-client', () => ({
-    PrismaClient: vi.fn(() => ({
-      blogPost: {
-        create: vi.fn(),
-        findUnique: vi.fn(),
-        update: vi.fn(),
-        delete: vi.fn(),
-      },
-      editorialCalendar: {
-        create: vi.fn(),
-        findUnique: vi.fn(),
-        update: vi.fn(),
-        delete: vi.fn(),
-      },
-      optimizationSuggestion: {
-        create: vi.fn(),
-        findMany: vi.fn(),
-        update: vi.fn(),
-        delete: vi.fn(),
-      },
-      contentMetrics: {
-        create: vi.fn(),
-        findUnique: vi.fn(),
-        update: vi.fn(),
-      },
-    })),
-  }), { virtual: true });
+  vi.mock(
+    '../../src/generated/prisma-client',
+    () => ({
+      PrismaClient: vi.fn(() => ({
+        blogPost: {
+          create: vi.fn(),
+          findUnique: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+        },
+        editorialCalendar: {
+          create: vi.fn(),
+          findUnique: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+        },
+        optimizationSuggestion: {
+          create: vi.fn(),
+          findMany: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+        },
+        contentMetrics: {
+          create: vi.fn(),
+          findUnique: vi.fn(),
+          update: vi.fn(),
+        },
+      })),
+    }),
+    { virtual: true },
+  );
 
   // Mock console methods to reduce noise in tests
   vi.spyOn(console, 'log').mockImplementation(() => {});

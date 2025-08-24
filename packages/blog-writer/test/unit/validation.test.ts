@@ -10,7 +10,8 @@ describe('Blog Post Validation Unit Tests', () => {
           id: 'test-123',
           title: 'Valid Blog Post Title',
           slug: 'valid-blog-post',
-          metaDescription: 'A valid meta description that is long enough for SEO.',
+          metaDescription:
+            'A valid meta description that is long enough for SEO.',
           createdAt: new Date(),
           updatedAt: new Date(),
           seo: {
@@ -44,7 +45,8 @@ Additional content to reach the required word count and demonstrate proper headi
 ## Conclusion
 
 A strong conclusion that summarizes the main points and provides value to readers.`,
-          excerpt: 'This is a test blog post that demonstrates proper structure and validation.',
+          excerpt:
+            'This is a test blog post that demonstrates proper structure and validation.',
           featuredImage: {
             url: 'https://example.com/image.jpg',
             alt: 'Valid blog post featured image',
@@ -85,7 +87,9 @@ A strong conclusion that summarizes the main points and provides value to reader
 
       expect(validation.isValid).toBe(false);
       expect(validation.errors.length).toBeGreaterThan(0);
-      expect(validation.errors.some(error => error.field === 'title')).toBe(true);
+      expect(validation.errors.some(error => error.field === 'title')).toBe(
+        true,
+      );
       expect(validation.qualityScore).toBeLessThan(70);
     });
 
@@ -112,7 +116,9 @@ A strong conclusion that summarizes the main points and provides value to reader
 
       expect(validation.isValid).toBe(false);
       expect(validation.errors.length).toBeGreaterThan(0);
-      expect(validation.errors.some(error => error.field === 'slug')).toBe(true);
+      expect(validation.errors.some(error => error.field === 'slug')).toBe(
+        true,
+      );
     });
 
     test('should reject blog post with too short content', () => {
@@ -138,7 +144,9 @@ A strong conclusion that summarizes the main points and provides value to reader
 
       expect(validation.isValid).toBe(false);
       expect(validation.errors.length).toBeGreaterThan(0);
-      expect(validation.errors.some(error => error.type === 'content_issue')).toBe(true);
+      expect(
+        validation.errors.some(error => error.type === 'content_issue'),
+      ).toBe(true);
     });
 
     test('should reject blog post with missing required metadata', () => {
@@ -235,7 +243,9 @@ Basic conclusion.`,
 
       expect(validation.isValid).toBe(false);
       expect(validation.errors.length).toBeGreaterThan(0);
-      expect(validation.errors.some(error => error.type === 'content_issue')).toBe(true);
+      expect(
+        validation.errors.some(error => error.type === 'content_issue'),
+      ).toBe(true);
     });
 
     test('should validate blog post with special characters', () => {

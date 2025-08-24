@@ -1,4 +1,3 @@
-
 import type { AIConfig } from './base-config';
 
 // Define LanguageModelV1 interface locally to avoid dependency

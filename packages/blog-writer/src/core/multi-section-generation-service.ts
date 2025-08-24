@@ -1,5 +1,3 @@
-
-
 /**
  * Multi-Section Content Generation Service
  * Intelligent content structuring and section-by-section generation with context awareness
@@ -19,7 +17,7 @@ import {
   ConnectionType,
   MultiSectionGenerationRequest,
   SectionGenerationOptions,
-  BrandVoiceProfile
+  BrandVoiceProfile,
 } from '../types/advanced-writing';
 
 export interface MultiSectionConfig {
@@ -49,7 +47,7 @@ export class MultiSectionGenerationService {
     objectives?: string[];
   }): Promise<ContentOutline> {
     const prompt = this.buildOutlinePrompt(request);
-    
+
     const result = await generateText({
       model: this.config.model,
       prompt,
@@ -57,17 +55,19 @@ export class MultiSectionGenerationService {
     });
 
     const outline = this.parseOutlineResponse(result.text);
-    
+
     // Enhance outline with flow analysis
     outline.contentFlow = await this.analyzeContentFlow(outline);
-    
+
     return outline;
   }
 
   /**
    * Generate content for all sections with context awareness
    */
-  async generateMultiSectionContent(request: MultiSectionGenerationRequest): Promise<{
+  async generateMultiSectionContent(
+    request: MultiSectionGenerationRequest,
+  ): Promise<{
     sections: ContentSection[];
     contentFlow: ContentFlowMap;
     metrics: {
@@ -81,25 +81,31 @@ export class MultiSectionGenerationService {
     let totalSectionTime = 0;
 
     // Sort sections by order for sequential generation
-    const sortedSections = request.outline.sections.sort((a, b) => a.order - b.order);
-    
+    const sortedSections = request.outline.sections.sort(
+      (a, b) => a.order - b.order,
+    );
+
     for (const outlineSection of sortedSections) {
       const sectionStartTime = Date.now();
-      
+
       // Build context for this section
       const context = this.buildSectionContext(
         outlineSection,
         sections,
         sortedSections,
-        request
+        request,
       );
-      
-      const generatedSection = await this.generateSection(outlineSection, context, request.generationOptions);
+
+      const generatedSection = await this.generateSection(
+        outlineSection,
+        context,
+        request.generationOptions,
+      );
       sections.push(generatedSection);
-      
+
       const sectionTime = Date.now() - sectionStartTime;
       totalSectionTime += sectionTime;
-      
+
       // Save section to database if Prisma is available
       if (this.config.prisma && request.blogPostId) {
         await this.saveSectionToDatabase(request.blogPostId, generatedSection);
@@ -119,8 +125,8 @@ export class MultiSectionGenerationService {
       metrics: {
         totalGenerationTime: totalTime,
         averageSectionTime: averageTime,
-        coherenceScore
-      }
+        coherenceScore,
+      },
     };
   }
 
@@ -130,7 +136,7 @@ export class MultiSectionGenerationService {
   async generateSection(
     outlineSection: OutlineSection,
     context?: SectionGenerationContext,
-    options?: SectionGenerationOptions
+    options?: SectionGenerationOptions,
   ): Promise<ContentSection> {
     // Provide defaults if context or options are not provided
     const defaultContext: SectionGenerationContext = {
@@ -140,7 +146,7 @@ export class MultiSectionGenerationService {
       style: 'informative',
       brandVoice: undefined,
       targetAudience: 'general',
-      contentObjectives: []
+      contentObjectives: [],
     };
 
     const defaultOptions: SectionGenerationOptions = {
@@ -148,13 +154,17 @@ export class MultiSectionGenerationService {
       maxTokensPerSection: 1000,
       includeKeyPoints: true,
       optimizeForSEO: false,
-      maintainConsistency: true
+      maintainConsistency: true,
     };
 
     const finalContext = context || defaultContext;
     const finalOptions = options || defaultOptions;
-    const prompt = this.buildSectionPrompt(outlineSection, finalContext, finalOptions);
-    
+    const prompt = this.buildSectionPrompt(
+      outlineSection,
+      finalContext,
+      finalOptions,
+    );
+
     const result = await generateText({
       model: this.config.model,
       prompt,
@@ -174,20 +184,27 @@ export class MultiSectionGenerationService {
       keyPoints: outlineSection.keyPoints || [],
       contextTags: outlineSection.contextTags || [],
       promptUsed: prompt,
-      modelUsed: typeof this.config.model === 'string' ? this.config.model : 'ai-model',
+      modelUsed:
+        typeof this.config.model === 'string' ? this.config.model : 'ai-model',
       generationContext: {
         previousSectionsCount: finalContext.previousSections.length,
         mainTopic: finalContext.mainTopic,
         tone: finalContext.tone,
-        style: finalContext.style
+        style: finalContext.style,
       },
       generatedAt: new Date(),
       readabilityScore: await this.calculateReadabilityScore(result.text),
-      coherenceScore: await this.calculateSectionCoherence(result.text, finalContext),
-      relevanceScore: await this.calculateRelevanceScore(result.text, finalContext),
+      coherenceScore: await this.calculateSectionCoherence(
+        result.text,
+        finalContext,
+      ),
+      relevanceScore: await this.calculateRelevanceScore(
+        result.text,
+        finalContext,
+      ),
       children: [],
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     return section;
@@ -207,14 +224,17 @@ export class MultiSectionGenerationService {
     for (let i = 0; i < sections.length - 1; i++) {
       const currentSection = sections[i];
       const nextSection = sections[i + 1];
-      
-      const transition = await this.generateTransition(currentSection, nextSection);
+
+      const transition = await this.generateTransition(
+        currentSection,
+        nextSection,
+      );
       transitions.push(transition);
-      
+
       // Add transition to the end of current section
       optimizedSections[i] = {
         ...currentSection,
-        content: currentSection.content + '\n\n' + transition
+        content: currentSection.content + '\n\n' + transition,
       };
     }
 
@@ -223,7 +243,7 @@ export class MultiSectionGenerationService {
     return {
       optimizedSections,
       transitions,
-      flowScore
+      flowScore,
     };
   }
 
@@ -237,10 +257,13 @@ export class MultiSectionGenerationService {
       additionalKeyPoints?: string[];
       focusAreas?: string[];
       insertionPoints?: number[];
-    }
+    },
   ): Promise<ContentOutline> {
-    const prompt = this.buildOutlineExpansionPrompt(existingOutline, expansionRequest);
-    
+    const prompt = this.buildOutlineExpansionPrompt(
+      existingOutline,
+      expansionRequest,
+    );
+
     const result = await generateText({
       model: this.config.model,
       prompt,
@@ -248,12 +271,17 @@ export class MultiSectionGenerationService {
     });
 
     const expandedSections = this.parseOutlineResponse(result.text);
-    
+
     // Merge with existing outline
     const mergedOutline: ContentOutline = {
       ...existingOutline,
-      sections: this.mergeOutlineSections(existingOutline.sections, expandedSections.sections),
-      totalWordCount: (existingOutline.totalWordCount || 0) + (expansionRequest.targetLength || 0)
+      sections: this.mergeOutlineSections(
+        existingOutline.sections,
+        expandedSections.sections,
+      ),
+      totalWordCount:
+        (existingOutline.totalWordCount || 0) +
+        (expansionRequest.targetLength || 0),
     };
 
     // Recalculate content flow
@@ -274,14 +302,26 @@ ${request.targetAudience ? `Target Audience: ${request.targetAudience}` : ''}
 ${request.tone ? `Tone: ${request.tone}` : ''}
 ${request.style ? `Style: ${request.style}` : ''}
 
-${request.keyPoints ? `Key Points to Cover:
-${request.keyPoints.map((point: string, i: number) => `${i + 1}. ${point}`).join('\n')}` : ''}
+${
+  request.keyPoints
+    ? `Key Points to Cover:
+${request.keyPoints.map((point: string, i: number) => `${i + 1}. ${point}`).join('\n')}`
+    : ''
+}
 
-${request.seoKeywords ? `SEO Keywords to Include:
-${request.seoKeywords.join(', ')}` : ''}
+${
+  request.seoKeywords
+    ? `SEO Keywords to Include:
+${request.seoKeywords.join(', ')}`
+    : ''
+}
 
-${request.objectives ? `Content Objectives:
-${request.objectives.map((obj: string, i: number) => `${i + 1}. ${obj}`).join('\n')}` : ''}
+${
+  request.objectives
+    ? `Content Objectives:
+${request.objectives.map((obj: string, i: number) => `${i + 1}. ${obj}`).join('\n')}`
+    : ''
+}
 
 Create a detailed outline with:
 1. Logical section hierarchy (headings, subheadings)
@@ -311,10 +351,15 @@ Return the outline in the following JSON format:
     outlineSection: OutlineSection,
     previousSections: ContentSection[],
     allSections: OutlineSection[],
-    request: MultiSectionGenerationRequest
+    request: MultiSectionGenerationRequest,
   ): SectionGenerationContext {
-    const currentIndex = allSections.findIndex(s => s.order === outlineSection.order);
-    const followingSections = allSections.slice(currentIndex + 1, currentIndex + 3); // Next 2 sections
+    const currentIndex = allSections.findIndex(
+      s => s.order === outlineSection.order,
+    );
+    const followingSections = allSections.slice(
+      currentIndex + 1,
+      currentIndex + 3,
+    ); // Next 2 sections
 
     return {
       previousSections,
@@ -325,20 +370,25 @@ Return the outline in the following JSON format:
       style: request.generationOptions.style || 'informative',
       targetAudience: request.generationOptions.targetAudience,
       brandVoice: request.brandVoice,
-      contentObjective: 'Provide valuable, engaging content that flows naturally'
+      contentObjective:
+        'Provide valuable, engaging content that flows naturally',
     };
   }
 
   private buildSectionPrompt(
     outlineSection: OutlineSection,
     context: SectionGenerationContext,
-    options: SectionGenerationOptions
+    options: SectionGenerationOptions,
   ): string {
-    const previousContent = context.previousSections.length > 0 
-      ? context.previousSections.slice(-2).map(s => `${s.title}: ${s.content.slice(0, 200)}...`).join('\n')
-      : 'This is the first section.';
+    const previousContent =
+      context.previousSections.length > 0
+        ? context.previousSections
+            .slice(-2)
+            .map(s => `${s.title}: ${s.content.slice(0, 200)}...`)
+            .join('\n')
+        : 'This is the first section.';
 
-    const followingContext = context.followingSections 
+    const followingContext = context.followingSections
       ? context.followingSections.map(s => s.title).join(', ')
       : 'No following sections.';
 
@@ -368,15 +418,25 @@ ${previousContent}
 
 Following Sections: ${followingContext}
 
-${context.brandVoice ? `Brand Voice Guidelines:
+${
+  context.brandVoice
+    ? `Brand Voice Guidelines:
 - Primary Tone: ${context.brandVoice.primaryTone}
-- Personality: ${Object.entries(context.brandVoice.personalityTraits).map(([k, v]) => `${k}: ${v}`).join(', ')}
-- Vocabulary Level: ${context.brandVoice.vocabularyLevel}` : ''}
+- Personality: ${Object.entries(context.brandVoice.personalityTraits)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(', ')}
+- Vocabulary Level: ${context.brandVoice.vocabularyLevel}`
+    : ''
+}
 
-${options.seoOptimized ? `SEO Requirements:
+${
+  options.seoOptimized
+    ? `SEO Requirements:
 - Include target keywords naturally: ${context.targetKeywords?.join(', ')}
 - Use semantic variations
-- Maintain keyword density of 1-2%` : ''}
+- Maintain keyword density of 1-2%`
+    : ''
+}
 
 Requirements:
 1. Write engaging, informative content
@@ -390,47 +450,60 @@ Requirements:
 Write the section content now:`;
   }
 
-  private async analyzeContentFlow(outline: ContentOutline): Promise<ContentFlowMap> {
+  private async analyzeContentFlow(
+    outline: ContentOutline,
+  ): Promise<ContentFlowMap> {
     const connections: ContentConnection[] = [];
     const sections = outline.sections.sort((a, b) => a.order - b.order);
 
     for (let i = 0; i < sections.length - 1; i++) {
       const current = sections[i];
       const next = sections[i + 1];
-      
+
       const connectionType = this.determineConnectionType(current, next);
       const strength = await this.calculateConnectionStrength(current, next);
-      
+
       connections.push({
         fromSectionId: current.id || `section_${i}`,
         toSectionId: next.id || `section_${i + 1}`,
         connectionType,
         strength,
-        transitionText: await this.generateTransitionPreview(current, next)
+        transitionText: await this.generateTransitionPreview(current, next),
       });
     }
 
-    const coherenceScore = connections.reduce((sum, conn) => sum + conn.strength, 0) / connections.length;
+    const coherenceScore =
+      connections.reduce((sum, conn) => sum + conn.strength, 0) /
+      connections.length;
 
     return {
       sections: sections.map(s => s.id || `section_${s.order}`),
       connections,
       coherenceScore,
-      logicalFlow: coherenceScore > 0.7
+      logicalFlow: coherenceScore > 0.7,
     };
   }
 
-  private determineConnectionType(current: OutlineSection, next: OutlineSection): ConnectionType {
+  private determineConnectionType(
+    current: OutlineSection,
+    next: OutlineSection,
+  ): ConnectionType {
     // Simple heuristic based on section types and titles
-    if (current.type === SectionType.INTRODUCTION) return ConnectionType.SEQUENTIAL;
+    if (current.type === SectionType.INTRODUCTION)
+      return ConnectionType.SEQUENTIAL;
     if (next.type === SectionType.CONCLUSION) return ConnectionType.SUMMARY;
-    if (current.title.includes('example') || next.title.includes('example')) return ConnectionType.EXAMPLE;
-    if (current.title.includes('vs') || next.title.includes('comparison')) return ConnectionType.COMPARISON;
-    
+    if (current.title.includes('example') || next.title.includes('example'))
+      return ConnectionType.EXAMPLE;
+    if (current.title.includes('vs') || next.title.includes('comparison'))
+      return ConnectionType.COMPARISON;
+
     return ConnectionType.SEQUENTIAL;
   }
 
-  private async calculateConnectionStrength(current: OutlineSection, next: OutlineSection): Promise<number> {
+  private async calculateConnectionStrength(
+    current: OutlineSection,
+    next: OutlineSection,
+  ): Promise<number> {
     // Use AI to analyze logical connection strength
     const prompt = `Analyze the logical connection between these two sections:
 
@@ -465,7 +538,10 @@ Return only the numerical score (e.g., 0.7):`;
     }
   }
 
-  private async generateTransition(current: ContentSection, next: ContentSection): Promise<string> {
+  private async generateTransition(
+    current: ContentSection,
+    next: ContentSection,
+  ): Promise<string> {
     const prompt = `Create a smooth transition between these two content sections:
 
 Current Section: "${current.title}"
@@ -491,15 +567,18 @@ Transition:`;
     return result.text.trim();
   }
 
-  private async generateTransitionPreview(current: OutlineSection, next: OutlineSection): Promise<string> {
+  private async generateTransitionPreview(
+    current: OutlineSection,
+    next: OutlineSection,
+  ): Promise<string> {
     // Simplified version for outline analysis
     const transitions = [
       `Moving from ${current.title.toLowerCase()} to ${next.title.toLowerCase()}`,
       `Building on this foundation, let's explore ${next.title.toLowerCase()}`,
       `Now that we've covered ${current.title.toLowerCase()}, let's examine ${next.title.toLowerCase()}`,
-      `This brings us to our next important topic: ${next.title.toLowerCase()}`
+      `This brings us to our next important topic: ${next.title.toLowerCase()}`,
     ];
-    
+
     return transitions[Math.floor(Math.random() * transitions.length)];
   }
 
@@ -509,39 +588,49 @@ Transition:`;
       return {
         id: `outline_${Date.now()}`,
         title: parsed.title || 'Untitled',
-        sections: parsed.sections?.map((section: any, index: number) => ({
-          id: `section_${index}`,
-          title: section.title || `Section ${index + 1}`,
-          type: section.type || SectionType.PARAGRAPH,
-          level: section.level || 1,
-          order: section.order || index + 1,
-          parentId: section.parentId,
-          estimatedWordCount: section.estimatedWordCount || 300,
-          keyPoints: section.keyPoints || [],
-          contextTags: section.contextTags || []
-        })) || [],
-        totalWordCount: parsed.sections?.reduce((sum: number, s: any) => sum + (s.estimatedWordCount || 300), 0) || 0
+        sections:
+          parsed.sections?.map((section: any, index: number) => ({
+            id: `section_${index}`,
+            title: section.title || `Section ${index + 1}`,
+            type: section.type || SectionType.PARAGRAPH,
+            level: section.level || 1,
+            order: section.order || index + 1,
+            parentId: section.parentId,
+            estimatedWordCount: section.estimatedWordCount || 300,
+            keyPoints: section.keyPoints || [],
+            contextTags: section.contextTags || [],
+          })) || [],
+        totalWordCount:
+          parsed.sections?.reduce(
+            (sum: number, s: any) => sum + (s.estimatedWordCount || 300),
+            0,
+          ) || 0,
       };
     } catch (error) {
       console.warn('Failed to parse outline response, using fallback');
       return {
         id: `outline_${Date.now()}`,
         title: 'Generated Outline',
-        sections: [{
-          id: 'section_1',
-          title: 'Introduction',
-          type: SectionType.INTRODUCTION,
-          level: 1,
-          order: 1,
-          estimatedWordCount: 300,
-          keyPoints: [],
-          contextTags: []
-        }]
+        sections: [
+          {
+            id: 'section_1',
+            title: 'Introduction',
+            type: SectionType.INTRODUCTION,
+            level: 1,
+            order: 1,
+            estimatedWordCount: 300,
+            keyPoints: [],
+            contextTags: [],
+          },
+        ],
       };
     }
   }
 
-  private buildOutlineExpansionPrompt(outline: ContentOutline, request: any): string {
+  private buildOutlineExpansionPrompt(
+    outline: ContentOutline,
+    request: any,
+  ): string {
     return `Expand the following content outline with additional sections:
 
 Current Outline:
@@ -574,15 +663,18 @@ Return additional sections in JSON format:
 }`;
   }
 
-  private mergeOutlineSections(existing: OutlineSection[], additional: OutlineSection[]): OutlineSection[] {
+  private mergeOutlineSections(
+    existing: OutlineSection[],
+    additional: OutlineSection[],
+  ): OutlineSection[] {
     // Simple merge - in practice, would need more sophisticated logic
     const merged = [...existing];
-    
+
     additional.forEach(newSection => {
       newSection.order = merged.length + 1;
       merged.push(newSection);
     });
-    
+
     return merged.sort((a, b) => a.order - b.order);
   }
 
@@ -591,49 +683,61 @@ Return additional sections in JSON format:
     const sentences = text.split(/[.!?]+/).length;
     const words = text.split(/\s+/).length;
     const avgWordsPerSentence = words / sentences;
-    
+
     // Higher score for 15-20 words per sentence (optimal readability)
     const idealRange = avgWordsPerSentence >= 15 && avgWordsPerSentence <= 20;
     return idealRange ? 0.8 + Math.random() * 0.2 : 0.6 + Math.random() * 0.2;
   }
 
-  private async calculateSectionCoherence(text: string, context: SectionGenerationContext): Promise<number> {
+  private async calculateSectionCoherence(
+    text: string,
+    context: SectionGenerationContext,
+  ): Promise<number> {
     // Simplified coherence calculation
-    const keywordMatches = context.targetKeywords?.filter(keyword => 
-      text.toLowerCase().includes(keyword.toLowerCase())
-    ).length || 0;
-    
+    const keywordMatches =
+      context.targetKeywords?.filter(keyword =>
+        text.toLowerCase().includes(keyword.toLowerCase()),
+      ).length || 0;
+
     const baseScore = 0.7;
-    const keywordBonus = (keywordMatches / (context.targetKeywords?.length || 1)) * 0.2;
+    const keywordBonus =
+      (keywordMatches / (context.targetKeywords?.length || 1)) * 0.2;
     const lengthFactor = text.length > 200 ? 0.1 : 0;
-    
+
     return Math.min(1, baseScore + keywordBonus + lengthFactor);
   }
 
-  private async calculateRelevanceScore(text: string, context: SectionGenerationContext): Promise<number> {
+  private async calculateRelevanceScore(
+    text: string,
+    context: SectionGenerationContext,
+  ): Promise<number> {
     // Check relevance to main topic and section purpose
     const topicWords = context.mainTopic.toLowerCase().split(/\s+/);
     const textLower = text.toLowerCase();
-    
-    const topicMatches = topicWords.filter(word => textLower.includes(word)).length;
+
+    const topicMatches = topicWords.filter(word =>
+      textLower.includes(word),
+    ).length;
     const relevanceScore = topicMatches / topicWords.length;
-    
+
     return Math.min(1, relevanceScore + 0.3); // Base relevance + topic matching
   }
 
-  private async analyzeGeneratedContentFlow(sections: ContentSection[]): Promise<ContentFlowMap> {
+  private async analyzeGeneratedContentFlow(
+    sections: ContentSection[],
+  ): Promise<ContentFlowMap> {
     const connections: ContentConnection[] = [];
-    
+
     for (let i = 0; i < sections.length - 1; i++) {
       const current = sections[i];
       const next = sections[i + 1];
-      
+
       connections.push({
         fromSectionId: current.id,
         toSectionId: next.id,
         connectionType: ConnectionType.SEQUENTIAL, // Could be enhanced with AI analysis
         strength: 0.8, // Could be calculated based on actual content
-        transitionText: `Transition from ${current.title} to ${next.title}`
+        transitionText: `Transition from ${current.title} to ${next.title}`,
       });
     }
 
@@ -641,40 +745,47 @@ Return additional sections in JSON format:
       sections: sections.map(s => s.id),
       connections,
       coherenceScore: 0.8, // Could be calculated from actual content analysis
-      logicalFlow: true
+      logicalFlow: true,
     };
   }
 
-  private async calculateCoherenceScore(sections: ContentSection[]): Promise<number> {
+  private async calculateCoherenceScore(
+    sections: ContentSection[],
+  ): Promise<number> {
     // Analyze overall coherence across all sections
     let totalScore = 0;
-    
+
     for (const section of sections) {
       totalScore += section.coherenceScore || 0.7;
     }
-    
+
     return sections.length > 0 ? totalScore / sections.length : 0;
   }
 
-  private async calculateFlowScore(sections: ContentSection[]): Promise<number> {
+  private async calculateFlowScore(
+    sections: ContentSection[],
+  ): Promise<number> {
     // Calculate how well sections flow together
     let flowScore = 0;
-    
+
     for (let i = 0; i < sections.length - 1; i++) {
       const current = sections[i];
       const next = sections[i + 1];
-      
+
       // Simple flow analysis based on content endings and beginnings
       const currentEnd = current.content.slice(-100).toLowerCase();
       const nextStart = next.content.slice(0, 100).toLowerCase();
-      
+
       // Check for connecting words/phrases
-      const hasConnector = /\b(however|therefore|furthermore|additionally|meanwhile|consequently|thus|hence)\b/.test(nextStart);
+      const hasConnector =
+        /\b(however|therefore|furthermore|additionally|meanwhile|consequently|thus|hence)\b/.test(
+          nextStart,
+        );
       const sectionScore = hasConnector ? 0.8 : 0.6;
-      
+
       flowScore += sectionScore;
     }
-    
+
     return sections.length > 1 ? flowScore / (sections.length - 1) : 1;
   }
 
@@ -682,9 +793,12 @@ Return additional sections in JSON format:
     return text.trim().split(/\s+/).length;
   }
 
-  private async saveSectionToDatabase(blogPostId: string, section: ContentSection): Promise<void> {
+  private async saveSectionToDatabase(
+    blogPostId: string,
+    section: ContentSection,
+  ): Promise<void> {
     if (!this.config.prisma) return;
-    
+
     try {
       await this.config.prisma.contentSection.create({
         data: {
@@ -704,12 +818,11 @@ Return additional sections in JSON format:
           generatedAt: section.generatedAt,
           readabilityScore: section.readabilityScore,
           coherenceScore: section.coherenceScore,
-          relevanceScore: section.relevanceScore
-        }
+          relevanceScore: section.relevanceScore,
+        },
       });
     } catch (error) {
       console.error('Failed to save section to database:', error);
     }
   }
 }
-

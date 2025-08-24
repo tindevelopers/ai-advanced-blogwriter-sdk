@@ -1,8 +1,18 @@
-
-import { generateText, generateObject, type GenerateTextResult, type GenerateObjectResult } from 'ai';
+import {
+  generateText,
+  generateObject,
+  type GenerateTextResult,
+  type GenerateObjectResult,
+} from 'ai';
 import { z } from 'zod';
 import type { LanguageModelV2 } from '@ai-sdk/provider';
-import type { BlogAIConfig, BlogPost, BlogTemplate, BlogTemplateConfig, BlogTemplateContext } from '../types';
+import type {
+  BlogAIConfig,
+  BlogPost,
+  BlogTemplate,
+  BlogTemplateConfig,
+  BlogTemplateContext,
+} from '../types';
 import { BLOG_TEMPLATES } from '../types/templates';
 import { createBlogPrompt } from './prompts';
 import { validateBlogPost } from './validation';
@@ -13,34 +23,34 @@ import { validateBlogPost } from './validation';
 export interface GenerateBlogOptions {
   /** Model to use for generation */
   model: LanguageModelV2;
-  
+
   /** Blog topic */
   topic: string;
-  
+
   /** Target keywords */
   keywords?: string[];
-  
+
   /** Blog template to use */
   template?: BlogTemplate;
-  
+
   /** Template variables */
   templateVariables?: Record<string, any>;
-  
+
   /** Target word count */
   wordCount?: {
     min?: number;
     max?: number;
   };
-  
+
   /** Content tone */
   tone?: string;
-  
+
   /** Target audience */
   audience?: string;
-  
+
   /** Additional context or instructions */
   context?: string;
-  
+
   /** SEO optimization */
   seo?: {
     /** Primary keyword */
@@ -50,10 +60,10 @@ export interface GenerateBlogOptions {
     /** Include table of contents */
     includeToC?: boolean;
   };
-  
+
   /** Research data to include */
   research?: any;
-  
+
   /** Configuration overrides */
   config?: Partial<BlogAIConfig>;
 }
@@ -64,7 +74,7 @@ export interface GenerateBlogOptions {
 export interface GenerateBlogResult {
   /** Generated blog post */
   blogPost: BlogPost;
-  
+
   /** Generation metadata */
   metadata: {
     /** Template used */
@@ -76,13 +86,13 @@ export interface GenerateBlogResult {
     /** Model used */
     model: string;
   };
-  
+
   /** SEO analysis */
   seoAnalysis?: any;
-  
+
   /** Suggestions for improvement */
   suggestions?: string[];
-  
+
   /** Generation warnings */
   warnings?: string[];
 }
@@ -90,29 +100,36 @@ export interface GenerateBlogResult {
 /**
  * Generate a complete blog post using AI
  */
-export async function generateBlog(options: GenerateBlogOptions): Promise<GenerateBlogResult> {
+export async function generateBlog(
+  options: GenerateBlogOptions,
+): Promise<GenerateBlogResult> {
   const startTime = Date.now();
-  
+
   // Get template configuration
   const template = options.template || 'howto';
   const templateConfig = BLOG_TEMPLATES[template];
-  
+
   if (!templateConfig) {
     throw new Error(`Unknown template: ${template}`);
   }
-  
+
   // Create template context
   const templateContext: BlogTemplateContext = {
     template: templateConfig,
     variables: options.templateVariables || {},
     keywords: options.keywords,
     constraints: {
-      wordCount: options.wordCount ? { min: options.wordCount.min || 0, max: options.wordCount.max || 5000 } : undefined,
+      wordCount: options.wordCount
+        ? {
+            min: options.wordCount.min || 0,
+            max: options.wordCount.max || 5000,
+          }
+        : undefined,
       tone: options.tone,
     },
     research: options.research ? { topic: options.research } : undefined,
   };
-  
+
   // Generate the blog content
   const contentResult = await generateBlogContent({
     model: options.model,
@@ -122,7 +139,7 @@ export async function generateBlog(options: GenerateBlogOptions): Promise<Genera
     context: options.context,
     config: options.config,
   });
-  
+
   // Generate metadata
   const metadataResult = await generateBlogMetadata({
     model: options.model,
@@ -131,7 +148,7 @@ export async function generateBlog(options: GenerateBlogOptions): Promise<Genera
     keywords: options.keywords,
     seo: options.seo,
   });
-  
+
   // Construct the blog post
   const blogPost: BlogPost = {
     metadata: {
@@ -161,14 +178,14 @@ export async function generateBlog(options: GenerateBlogOptions): Promise<Genera
     },
     status: 'draft',
   };
-  
+
   // Validate the blog post
   const validation = validateBlogPost(blogPost);
   const warnings = (validation.warnings || []).map(w => w.message);
-  
+
   // Calculate generation time
   const generationTime = Date.now() - startTime;
-  
+
   return {
     blogPost,
     metadata: {
@@ -209,7 +226,7 @@ async function generateBlogContent(options: {
     audience: options.audience,
     context: options.context,
   });
-  
+
   // Generate structured blog content
   const result = await generateObject({
     model: options.model,
@@ -218,17 +235,22 @@ async function generateBlogContent(options: {
       title: z.string().describe('Engaging blog post title'),
       excerpt: z.string().describe('Brief excerpt or summary of the post'),
       content: z.string().describe('Full blog post content in markdown format'),
-      tableOfContents: z.array(z.object({
-        title: z.string(),
-        anchor: z.string(),
-        level: z.number(),
-      })).optional().describe('Table of contents entries'),
+      tableOfContents: z
+        .array(
+          z.object({
+            title: z.string(),
+            anchor: z.string(),
+            level: z.number(),
+          }),
+        )
+        .optional()
+        .describe('Table of contents entries'),
     }),
   });
-  
+
   const contentData = result.object;
   const wordCount = countWords(contentData.content);
-  
+
   return {
     title: contentData.title,
     content: contentData.content,
@@ -266,7 +288,7 @@ Generate appropriate:
 3. Primary category
 
 Ensure the metadata is optimized for search engines while being user-friendly.`;
-  
+
   const result = await generateObject({
     model: options.model,
     prompt,
@@ -276,14 +298,16 @@ Ensure the metadata is optimized for search engines while being user-friendly.`;
       category: z.string().describe('Primary category for the post'),
     }),
   });
-  
+
   return result.object;
 }
 
 /**
  * Stream blog generation for real-time updates
  */
-export async function streamBlog(options: GenerateBlogOptions): Promise<AsyncIterable<any>> {
+export async function streamBlog(
+  options: GenerateBlogOptions,
+): Promise<AsyncIterable<any>> {
   // Implementation for streaming blog generation
   // This would use streamText instead of generateText
   throw new Error('Stream blog generation not implemented yet');

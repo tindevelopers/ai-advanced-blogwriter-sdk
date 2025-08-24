@@ -402,7 +402,8 @@ export function createExampleContentStrategy(): ContentStrategy {
 /**
  * Example implementation of comprehensive writing configuration
  */
-export function createExampleWritingConfig(): any { // WritingConfig not exported
+export function createExampleWritingConfig(): any {
+  // WritingConfig not exported
   // Define content sections
   const sections: ContentSection[] = [
     {
@@ -591,7 +592,8 @@ export function createExampleWritingConfig(): any { // WritingConfig not exporte
   };
 
   // Combine into complete writing config
-  const writingConfig: any = { // WritingConfig not exported
+  const writingConfig: any = {
+    // WritingConfig not exported
     sections,
     styleGuide,
     seoRequirements,
@@ -676,7 +678,8 @@ export function validateContentStrategy(strategy: ContentStrategy): boolean {
 /**
  * Validate WritingConfig interface implementation
  */
-export function validateWritingConfig(config: any): boolean { // WritingConfig not exported
+export function validateWritingConfig(config: any): boolean {
+  // WritingConfig not exported
   return !!(
     config.sections?.length &&
     config.styleGuide &&

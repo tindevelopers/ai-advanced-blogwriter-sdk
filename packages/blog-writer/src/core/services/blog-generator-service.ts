@@ -1,4 +1,10 @@
-import { BaseServiceClass, ServiceConfig, LoggerProvider, ServiceContainer, AIModelProvider } from '../interfaces/base-service';
+import {
+  BaseServiceClass,
+  ServiceConfig,
+  LoggerProvider,
+  ServiceContainer,
+  AIModelProvider,
+} from '../interfaces/base-service';
 import { BlogPost, BlogTemplate } from '../../types';
 import { validateBlogPost } from '../validation';
 
@@ -66,7 +72,7 @@ export class BlogGeneratorService extends BaseServiceClass {
     config: ServiceConfig,
     logger: LoggerProvider,
     container: ServiceContainer,
-    aiModel: AIModelProvider
+    aiModel: AIModelProvider,
   ) {
     super(config, logger, container);
     this.aiModel = aiModel;
@@ -76,10 +82,15 @@ export class BlogGeneratorService extends BaseServiceClass {
   /**
    * Generate a blog post with the given options
    */
-  async generateBlog(options: BlogGenerationOptions): Promise<BlogGenerationResult> {
+  async generateBlog(
+    options: BlogGenerationOptions,
+  ): Promise<BlogGenerationResult> {
     const startTime = Date.now();
-    
-    this.log('info', 'Starting blog generation', { topic: options.topic, template: options.template });
+
+    this.log('info', 'Starting blog generation', {
+      topic: options.topic,
+      template: options.template,
+    });
 
     try {
       // Validate input options
@@ -130,11 +141,10 @@ export class BlogGeneratorService extends BaseServiceClass {
       });
 
       return result;
-
     } catch (error) {
-      this.log('error', 'Blog generation failed', { 
-        topic: options.topic, 
-        error: error instanceof Error ? error.message : String(error) 
+      this.log('error', 'Blog generation failed', {
+        topic: options.topic,
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -145,9 +155,12 @@ export class BlogGeneratorService extends BaseServiceClass {
    */
   async generateMultipleBlogs(
     options: BlogGenerationOptions[],
-    concurrency: number = 3
+    concurrency: number = 3,
   ): Promise<BlogGenerationResult[]> {
-    this.log('info', 'Starting multiple blog generation', { count: options.length, concurrency });
+    this.log('info', 'Starting multiple blog generation', {
+      count: options.length,
+      concurrency,
+    });
 
     const results: BlogGenerationResult[] = [];
     const chunks = this.chunkArray(options, concurrency);
@@ -155,7 +168,7 @@ export class BlogGeneratorService extends BaseServiceClass {
     for (const chunk of chunks) {
       const chunkPromises = chunk.map(option => this.generateBlog(option));
       const chunkResults = await Promise.allSettled(chunkPromises);
-      
+
       chunkResults.forEach((result, index) => {
         if (result.status === 'fulfilled') {
           results.push(result.value);
@@ -182,17 +195,21 @@ export class BlogGeneratorService extends BaseServiceClass {
    */
   private async generateContent(options: BlogGenerationOptions): Promise<{
     text: string;
-    tokenUsage?: { promptTokens: number; completionTokens: number; totalTokens: number };
+    tokenUsage?: {
+      promptTokens: number;
+      completionTokens: number;
+      totalTokens: number;
+    };
   }> {
     const prompt = this.buildPrompt(options);
-    
+
     const result = await this.withRetry(async () => {
       return await this.withTimeout(
         this.aiModel.generateText(prompt, {
           maxTokens: options.wordCount?.max || 4000,
           temperature: 0.7,
         }),
-        this.config.timeout
+        this.config.timeout,
       );
     });
 
@@ -208,7 +225,7 @@ export class BlogGeneratorService extends BaseServiceClass {
   private buildPrompt(options: BlogGenerationOptions): string {
     const template = options.template || 'howto';
     const wordCount = options.wordCount?.min || 1000;
-    
+
     return `Write a comprehensive ${template} blog post about "${options.topic}".
 
 Requirements:
@@ -238,11 +255,11 @@ Format the content with proper markdown headings (H1, H2, H3).`;
    */
   private async createBlogPost(
     options: BlogGenerationOptions,
-    content: { text: string }
+    content: { text: string },
   ): Promise<BlogPost> {
     const now = new Date();
     const wordCount = this.calculateWordCount(content.text);
-    
+
     return {
       id: this.generateId(),
       title: this.extractTitle(content.text),
@@ -253,11 +270,14 @@ Format the content with proper markdown headings (H1, H2, H3).`;
         id: this.generateId(),
         title: this.extractTitle(content.text),
         slug: this.generateSlug(options.topic),
-        metaDescription: options.seo?.metaDescription || this.generateMetaDescription(content.text),
+        metaDescription:
+          options.seo?.metaDescription ||
+          this.generateMetaDescription(content.text),
         createdAt: now,
         updatedAt: now,
         seo: {
-          focusKeyword: options.seo?.focusKeyword || options.keywords?.[0] || '',
+          focusKeyword:
+            options.seo?.focusKeyword || options.keywords?.[0] || '',
           keywords: options.keywords || [],
           wordCount,
           seoScore: this.calculateSeoScore(content.text, options),
@@ -272,7 +292,9 @@ Format the content with proper markdown headings (H1, H2, H3).`;
       content: {
         content: content.text,
         excerpt: this.generateExcerpt(content.text),
-        featuredImage: options.content?.includeImages ? this.generateFeaturedImage(options.topic) : undefined,
+        featuredImage: options.content?.includeImages
+          ? this.generateFeaturedImage(options.topic)
+          : undefined,
       },
       status: 'draft',
     };
@@ -298,7 +320,9 @@ Format the content with proper markdown headings (H1, H2, H3).`;
         throw new Error('Maximum word count cannot exceed 10,000');
       }
       if (options.wordCount.min > options.wordCount.max) {
-        throw new Error('Minimum word count cannot be greater than maximum word count');
+        throw new Error(
+          'Minimum word count cannot be greater than maximum word count',
+        );
       }
     }
 
@@ -317,18 +341,24 @@ Format the content with proper markdown headings (H1, H2, H3).`;
   /**
    * Calculate SEO score
    */
-  private calculateSeoScore(text: string, options: BlogGenerationOptions): number {
+  private calculateSeoScore(
+    text: string,
+    options: BlogGenerationOptions,
+  ): number {
     let score = 70; // Base score
 
     // Check for focus keyword
-    if (options.seo?.focusKeyword && text.toLowerCase().includes(options.seo.focusKeyword.toLowerCase())) {
+    if (
+      options.seo?.focusKeyword &&
+      text.toLowerCase().includes(options.seo.focusKeyword.toLowerCase())
+    ) {
       score += 10;
     }
 
     // Check for other keywords
     if (options.keywords) {
-      const keywordMatches = options.keywords.filter(keyword => 
-        text.toLowerCase().includes(keyword.toLowerCase())
+      const keywordMatches = options.keywords.filter(keyword =>
+        text.toLowerCase().includes(keyword.toLowerCase()),
       ).length;
       score += (keywordMatches / options.keywords.length) * 10;
     }
@@ -347,13 +377,16 @@ Format the content with proper markdown headings (H1, H2, H3).`;
    */
   private calculateReadabilityScore(text: string): number {
     // Simple Flesch Reading Ease calculation
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
+    const sentences = text
+      .split(/[.!?]+/)
+      .filter(s => s.trim().length > 0).length;
     const words = this.calculateWordCount(text);
     const syllables = this.countSyllables(text);
 
     if (sentences === 0 || words === 0) return 0;
 
-    const score = 206.835 - (1.015 * (words / sentences)) - (84.6 * (syllables / words));
+    const score =
+      206.835 - 1.015 * (words / sentences) - 84.6 * (syllables / words);
     return Math.max(0, Math.min(100, score));
   }
 
@@ -402,7 +435,9 @@ Format the content with proper markdown headings (H1, H2, H3).`;
   private generateMetaDescription(text: string): string {
     const firstParagraph = text.match(/^[^#\n]+/m)?.[0] || '';
     const cleanText = firstParagraph.replace(/[#*`]/g, '').trim();
-    return cleanText.length > 160 ? cleanText.substring(0, 157) + '...' : cleanText;
+    return cleanText.length > 160
+      ? cleanText.substring(0, 157) + '...'
+      : cleanText;
   }
 
   /**
@@ -411,7 +446,9 @@ Format the content with proper markdown headings (H1, H2, H3).`;
   private generateExcerpt(text: string): string {
     const firstParagraph = text.match(/^[^#\n]+/m)?.[0] || '';
     const cleanText = firstParagraph.replace(/[#*`]/g, '').trim();
-    return cleanText.length > 200 ? cleanText.substring(0, 197) + '...' : cleanText;
+    return cleanText.length > 200
+      ? cleanText.substring(0, 197) + '...'
+      : cleanText;
   }
 
   /**

@@ -27,10 +27,12 @@ describe('Error Handling and Edge Cases', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     const mockModel = {} as any;
-    const mockPrisma = new (vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient)();
-    
+    const mockPrisma = new (vi.mocked(
+      await import('../../src/generated/prisma-client'),
+    ).PrismaClient)();
+
     blogGenerator = new BlogGenerator();
     contentOptimization = new ContentOptimizationService({
       model: mockModel,
@@ -75,7 +77,8 @@ describe('Error Handling and Edge Cases', () => {
     });
 
     test('should handle special characters in topics', async () => {
-      const specialTopic = 'Topic with special chars: !@#$%^&*()_+-=[]{}|;:,.<>?';
+      const specialTopic =
+        'Topic with special chars: !@#$%^&*()_+-=[]{}|;:,.<>?';
       const mockGenerateText = vi.mocked(await import('ai')).generateText;
       mockGenerateText.mockResolvedValue({
         text: '# Special Characters Test\n\nContent with special characters.',
@@ -120,7 +123,7 @@ describe('Error Handling and Edge Cases', () => {
         blogGenerator.generateBlog({
           model: {} as any,
           topic: 'Timeout Test',
-        })
+        }),
       ).rejects.toThrow('Request timeout');
     });
 
@@ -132,7 +135,7 @@ describe('Error Handling and Edge Cases', () => {
         blogGenerator.generateBlog({
           model: {} as any,
           topic: 'Rate Limit Test',
-        })
+        }),
       ).rejects.toThrow('Rate limit exceeded');
     });
 
@@ -144,7 +147,7 @@ describe('Error Handling and Edge Cases', () => {
         blogGenerator.generateBlog({
           model: {} as any,
           topic: 'Auth Test',
-        })
+        }),
       ).rejects.toThrow('Invalid API key');
     });
 
@@ -156,45 +159,57 @@ describe('Error Handling and Edge Cases', () => {
         blogGenerator.generateBlog({
           model: {} as any,
           topic: 'Quota Test',
-        })
+        }),
       ).rejects.toThrow('Quota exceeded');
     });
   });
 
   describe('Database Error Handling', () => {
     test('should handle database connection failures', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
-      mockPrisma.prototype.blogPost.create.mockRejectedValue(new Error('Database connection failed'));
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
+      mockPrisma.prototype.blogPost.create.mockRejectedValue(
+        new Error('Database connection failed'),
+      );
 
       await expect(
         blogGenerator.generateBlog({
           model: {} as any,
           topic: 'Database Test',
-        })
+        }),
       ).rejects.toThrow('Database connection failed');
     });
 
     test('should handle database constraint violations', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
-      mockPrisma.prototype.blogPost.create.mockRejectedValue(new Error('Unique constraint violation'));
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
+      mockPrisma.prototype.blogPost.create.mockRejectedValue(
+        new Error('Unique constraint violation'),
+      );
 
       await expect(
         blogGenerator.generateBlog({
           model: {} as any,
           topic: 'Constraint Test',
-        })
+        }),
       ).rejects.toThrow('Unique constraint violation');
     });
 
     test('should handle database deadlocks', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
-      mockPrisma.prototype.blogPost.create.mockRejectedValue(new Error('Deadlock detected'));
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
+      mockPrisma.prototype.blogPost.create.mockRejectedValue(
+        new Error('Deadlock detected'),
+      );
 
       await expect(
         blogGenerator.generateBlog({
           model: {} as any,
           topic: 'Deadlock Test',
-        })
+        }),
       ).rejects.toThrow('Deadlock detected');
     });
   });
@@ -265,7 +280,8 @@ describe('Error Handling and Edge Cases', () => {
           settings: {},
         },
         content: {
-          content: '<script>alert("XSS")</script>Malicious content with script tags',
+          content:
+            '<script>alert("XSS")</script>Malicious content with script tags',
         },
         status: 'draft',
       };
@@ -273,7 +289,9 @@ describe('Error Handling and Edge Cases', () => {
       const validation = validateBlogPost(maliciousBlogPost);
 
       expect(validation.isValid).toBe(false);
-      expect(validation.errors.some(error => error.type === 'content_issue')).toBe(true);
+      expect(
+        validation.errors.some(error => error.type === 'content_issue'),
+      ).toBe(true);
     });
 
     test('should handle blog post with invalid URLs', () => {
@@ -302,13 +320,17 @@ describe('Error Handling and Edge Cases', () => {
       const validation = validateBlogPost(invalidUrlBlogPost);
 
       expect(validation.isValid).toBe(false);
-      expect(validation.errors.some(error => error.type === 'invalid_format')).toBe(true);
+      expect(
+        validation.errors.some(error => error.type === 'invalid_format'),
+      ).toBe(true);
     });
   });
 
   describe('Optimization Service Edge Cases', () => {
     test('should handle optimization with empty content', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
       mockPrisma.prototype.blogPost.findUnique.mockResolvedValue({
         id: 'empty-content-123',
         content: '', // Empty content
@@ -328,7 +350,9 @@ describe('Error Handling and Edge Cases', () => {
     });
 
     test('should handle optimization with invalid blog post ID', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
       mockPrisma.prototype.blogPost.findUnique.mockResolvedValue(null);
 
       await expect(
@@ -337,12 +361,14 @@ describe('Error Handling and Edge Cases', () => {
           categories: ['seo'],
           priority: 'high',
           maxRecommendations: 5,
-        })
+        }),
       ).rejects.toThrow();
     });
 
     test('should handle optimization with invalid categories', async () => {
-      const mockPrisma = vi.mocked(await import('../../src/generated/prisma-client')).PrismaClient;
+      const mockPrisma = vi.mocked(
+        await import('../../src/generated/prisma-client'),
+      ).PrismaClient;
       mockPrisma.prototype.blogPost.findUnique.mockResolvedValue({
         id: 'invalid-categories-123',
         content: 'Test content',
@@ -381,7 +407,7 @@ describe('Error Handling and Edge Cases', () => {
       });
 
       expect(result).toBeDefined();
-      
+
       // Clean up
       largeObjects.length = 0;
     });
@@ -395,13 +421,13 @@ describe('Error Handling and Edge Cases', () => {
       });
 
       const startTime = Date.now();
-      
+
       // Create many concurrent requests
       const promises = Array.from({ length: 20 }, (_, i) =>
         blogGenerator.generateBlog({
           model: {} as any,
           topic: `Concurrent Test ${i}`,
-        })
+        }),
       );
 
       const results = await Promise.all(promises);
@@ -410,7 +436,7 @@ describe('Error Handling and Edge Cases', () => {
 
       expect(results).toHaveLength(20);
       expect(duration).toBeLessThan(10000); // Should complete within 10 seconds
-      
+
       results.forEach(result => {
         expect(result).toBeDefined();
         expect(result.blogPost).toBeDefined();
@@ -427,7 +453,7 @@ describe('Error Handling and Edge Cases', () => {
         blogGenerator.generateBlog({
           model: {} as any,
           topic: 'Network Timeout Test',
-        })
+        }),
       ).rejects.toThrow('Network timeout');
     });
 
@@ -439,7 +465,7 @@ describe('Error Handling and Edge Cases', () => {
         blogGenerator.generateBlog({
           model: {} as any,
           topic: 'Service Unavailable Test',
-        })
+        }),
       ).rejects.toThrow('Service unavailable');
     });
 
@@ -455,7 +481,7 @@ describe('Error Handling and Edge Cases', () => {
         blogGenerator.generateBlog({
           model: {} as any,
           topic: 'Malformed Response Test',
-        })
+        }),
       ).rejects.toThrow();
     });
   });

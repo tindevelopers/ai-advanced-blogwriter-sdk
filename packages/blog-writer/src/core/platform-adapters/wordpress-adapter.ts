@@ -1,10 +1,12 @@
-
 /**
  * WordPress Platform Adapter
  * Supports WordPress.com and self-hosted WordPress with REST API
  */
 
-import { BasePlatformAdapter, type PlatformAdapterConfig } from '../base-platform-adapter';
+import {
+  BasePlatformAdapter,
+  type PlatformAdapterConfig,
+} from '../base-platform-adapter';
 import { ContentFormat } from '../../types/platform-integration';
 import type {
   PlatformCapabilities,
@@ -26,7 +28,7 @@ import type {
   Tag,
   CustomField,
   ValidationError,
-  MediaFile
+  MediaFile,
 } from '../../types/platform-integration';
 import type { BlogPost } from '../../types/blog-post';
 
@@ -51,13 +53,13 @@ export class WordPressAdapter extends BasePlatformAdapter {
   public readonly name = 'wordpress';
   public readonly displayName = 'WordPress';
   public readonly version = '1.0.0';
-  
+
   public readonly capabilities: PlatformCapabilities = {
     maxContentLength: 65535, // WordPress post_content limit
     maxTitleLength: 255,
     maxDescriptionLength: 320, // Meta description best practice
     maxTagsCount: 50,
-    
+
     // Media support
     supportsImages: true,
     supportsVideo: true,
@@ -65,7 +67,7 @@ export class WordPressAdapter extends BasePlatformAdapter {
     supportsGalleries: true,
     maxImageSize: 10 * 1024 * 1024, // 10MB default
     supportedImageFormats: ['jpeg', 'jpg', 'png', 'gif', 'webp', 'svg'],
-    
+
     // Publishing features
     supportsScheduling: true,
     supportsDrafts: true,
@@ -73,53 +75,53 @@ export class WordPressAdapter extends BasePlatformAdapter {
     supportsDeleting: true,
     supportsCategories: true,
     supportsTags: true,
-    
+
     // Analytics (limited without plugins)
     supportsAnalytics: false, // Native WP doesn't provide analytics
     supportsRealTimeMetrics: false,
     supportsCustomEvents: false,
-    
+
     // SEO and metadata
     supportsCustomMeta: true,
     supportsOpenGraph: true, // With plugins like Yoast
     supportsTwitterCards: true,
     supportsSchema: true,
     supportsCanonical: true,
-    
+
     // Formatting
     supportedFormats: [
       ContentFormat.HTML,
       ContentFormat.RICH_TEXT,
-      ContentFormat.MARKDOWN // With plugins
+      ContentFormat.MARKDOWN, // With plugins
     ],
     supportsMarkdown: false, // Requires plugin
     supportsHTML: true,
     supportsRichText: true,
     supportsCustomCSS: true, // With appropriate permissions
-    
+
     // Social and engagement
     supportsComments: true,
     supportsSharing: true, // With plugins
     supportsReactions: false, // Requires plugins
     supportsSubscriptions: true, // With plugins
-    
+
     // Advanced features
     supportsA11y: true,
     supportsMultiLanguage: true, // With plugins like WPML
     supportsVersioning: true, // WordPress revisions
-    supportsBulkOperations: false // Not natively supported
+    supportsBulkOperations: false, // Not natively supported
   };
-  
+
   private baseUrl: string;
   private apiUrl: string;
   private authHeader?: string;
-  
+
   constructor(config: WordPressConfig = {}) {
     super(config);
-    
+
     const wpConfig = config as WordPressConfig;
     this.baseUrl = wpConfig.siteUrl || '';
-    
+
     if (wpConfig.isWordPressCom) {
       this.apiUrl = `https://public-api.wordpress.com/wp/v2/sites/${this.getSiteId()}/`;
     } else {
@@ -127,12 +129,14 @@ export class WordPressAdapter extends BasePlatformAdapter {
       this.apiUrl = `${this.baseUrl}/wp-json/${apiVersion}/`;
     }
   }
-  
+
   // ===== AUTHENTICATION =====
-  
-  protected async performAuthentication(credentials: PlatformCredentials): Promise<AuthenticationResult> {
+
+  protected async performAuthentication(
+    credentials: PlatformCredentials,
+  ): Promise<AuthenticationResult> {
     const wpCreds = credentials.data as WordPressCredentials;
-    
+
     if (wpCreds.type === 'application_password') {
       return this.authenticateWithApplicationPassword(wpCreds);
     } else if (wpCreds.type === 'oauth2') {
@@ -141,91 +145,97 @@ export class WordPressAdapter extends BasePlatformAdapter {
       throw new Error('Unsupported authentication type for WordPress');
     }
   }
-  
-  private async authenticateWithApplicationPassword(creds: WordPressCredentials): Promise<AuthenticationResult> {
+
+  private async authenticateWithApplicationPassword(
+    creds: WordPressCredentials,
+  ): Promise<AuthenticationResult> {
     if (!creds.username || !creds.password) {
       return {
         success: false,
-        error: 'Username and application password are required'
+        error: 'Username and application password are required',
       };
     }
-    
-    const auth = Buffer.from(`${creds.username}:${creds.password}`).toString('base64');
+
+    const auth = Buffer.from(`${creds.username}:${creds.password}`).toString(
+      'base64',
+    );
     this.authHeader = `Basic ${auth}`;
-    
+
     // Test authentication by fetching user info
     try {
       const response = await this.makeRequest('GET', 'users/me');
-      
+
       if (response.id) {
         return {
           success: true,
           userInfo: {
             id: response.id.toString(),
             name: response.name,
-            email: response.email
-          }
+            email: response.email,
+          },
         };
       } else {
         return {
           success: false,
-          error: 'Authentication failed - invalid credentials'
+          error: 'Authentication failed - invalid credentials',
         };
       }
     } catch (error) {
       return {
         success: false,
-        error: `Authentication failed: ${error.message}`
+        error: `Authentication failed: ${error.message}`,
       };
     }
   }
-  
-  private async authenticateWithOAuth2(creds: WordPressCredentials): Promise<AuthenticationResult> {
+
+  private async authenticateWithOAuth2(
+    creds: WordPressCredentials,
+  ): Promise<AuthenticationResult> {
     if (!creds.accessToken) {
       return {
         success: false,
-        error: 'Access token is required for OAuth2 authentication'
+        error: 'Access token is required for OAuth2 authentication',
       };
     }
-    
+
     this.authHeader = `Bearer ${creds.accessToken}`;
-    
+
     try {
       const response = await this.makeRequest('GET', 'users/me');
-      
+
       return {
         success: true,
         token: creds.accessToken,
         userInfo: {
           id: response.id.toString(),
           name: response.name,
-          email: response.email
-        }
+          email: response.email,
+        },
       };
     } catch (error) {
       return {
         success: false,
-        error: `OAuth2 authentication failed: ${error.message}`
+        error: `OAuth2 authentication failed: ${error.message}`,
       };
     }
   }
-  
+
   protected async validateConnectionInternal(): Promise<ConnectionValidationResult> {
     try {
       const response = await this.makeRequest('GET', 'users/me');
-      
+
       if (response.id) {
         return {
           isValid: true,
           isAuthenticated: true,
-          capabilities: this.capabilities
+          capabilities: this.capabilities,
         };
       } else {
         return {
           isValid: false,
           isAuthenticated: false,
           capabilities: this.capabilities,
-          error: 'Invalid connection'
+          error: 'Invalid connection',
         };
       }
     } catch (error) {
@@ -233,84 +243,98 @@ export class WordPressAdapter extends BasePlatformAdapter {
         isValid: false,
         isAuthenticated: false,
         capabilities: this.capabilities,
-        error: error.message
+        error: error.message,
       };
     }
   }
-  
+
   // ===== CONTENT FORMATTING =====
-  
-  protected async formatContentInternal(content: BlogPost, options?: FormatOptions): Promise<FormattedContent> {
+
+  protected async formatContentInternal(
+    content: BlogPost,
+    options?: FormatOptions,
+  ): Promise<FormattedContent> {
     // Convert blog post to WordPress format
     const formattedContent: FormattedContent = {
       title: content.title,
       content: this.formatContentBody(content.content.text, options),
       excerpt: content.excerpt || this.generateExcerpt(content.content.text),
-      
+
       metadata: {
         slug: content.slug,
         description: content.metaDescription,
         keywords: content.keywords || [],
         tags: [], // Will be populated from content.keywords if needed
-        categories: content.metadata?.category ? [content.metadata.category] : [],
-        publishDate: content.metadata?.publishedAt ? new Date(content.metadata.publishedAt) : undefined,
+        categories: content.metadata?.category
+          ? [content.metadata.category]
+          : [],
+        publishDate: content.metadata?.publishedAt
+          ? new Date(content.metadata.publishedAt)
+          : undefined,
         status: this.mapPostStatus(content.status),
         visibility: 'public',
         author: {
           name: content.metadata?.author?.name || 'Unknown Author',
-          email: content.metadata?.author?.email
-        }
+          email: content.metadata?.author?.email,
+        },
       },
-      
+
       seo: {
         metaTitle: content.title,
         metaDescription: content.metaDescription,
         focusKeyword: content.focusKeyword,
         ogTitle: content.metadata?.social?.ogTitle || content.title,
-        ogDescription: content.metadata?.social?.ogDescription || content.metaDescription,
+        ogDescription:
+          content.metadata?.social?.ogDescription || content.metaDescription,
         ogImage: content.metadata?.social?.ogImage,
         twitterCard: 'summary_large_image',
         twitterTitle: content.title,
         twitterDescription: content.metaDescription,
-        twitterImage: content.metadata?.social?.twitterImage || content.metadata?.social?.ogImage,
-        canonical: options?.customMappings?.canonical as string
+        twitterImage:
+          content.metadata?.social?.twitterImage ||
+          content.metadata?.social?.ogImage,
+        canonical: options?.customMappings?.canonical as string,
       },
-      
-      featuredImage: content.featuredImageUrl ? {
-        filename: this.extractFilenameFromUrl(content.featuredImageUrl),
-        url: content.featuredImageUrl,
-        mimeType: this.guessMimeTypeFromUrl(content.featuredImageUrl),
-        size: 0, // Unknown without fetching
-        altText: content.content?.featuredImage?.alt
-      } : undefined,
-      
+
+      featuredImage: content.featuredImageUrl
+        ? {
+            filename: this.extractFilenameFromUrl(content.featuredImageUrl),
+            url: content.featuredImageUrl,
+            mimeType: this.guessMimeTypeFromUrl(content.featuredImageUrl),
+            size: 0, // Unknown without fetching
+            altText: content.content?.featuredImage?.alt,
+          }
+        : undefined,
+
       format: ContentFormat.HTML,
       originalWordCount: content.metadata?.seo?.wordCount || 0,
       adaptedWordCount: 0, // Will be calculated
-      adaptationScore: 1.0 // Start with perfect score
+      adaptationScore: 1.0, // Start with perfect score
     };
-    
+
     // Calculate adapted word count
-    formattedContent.adaptedWordCount = this.countWords(formattedContent.content);
-    
+    formattedContent.adaptedWordCount = this.countWords(
+      formattedContent.content,
+    );
+
     return formattedContent;
   }
-  
+
   private formatContentBody(content: string, options?: FormatOptions): string {
     let formatted = content;
-    
+
     // Convert markdown to HTML if needed
     if (options?.preserveFormatting === false) {
       // Basic markdown to HTML conversion
       formatted = this.convertBasicMarkdownToHtml(formatted);
     }
-    
+
     // Apply WordPress-specific formatting
     formatted = this.applyWordPressFormatting(formatted);
-    
+
     return formatted;
   }
-  
+
   private convertBasicMarkdownToHtml(content: string): string {
     // Basic markdown conversions
     return content
@@ -322,118 +346,143 @@ export class WordPressAdapter extends BasePlatformAdapter {
       .replace(/!\[([^\]]*)\]\(([^\)]+)\)/gim, '<img src="$2" alt="$1" />')
       .replace(/\[([^\]]+)\]\(([^\)]+)\)/gim, '<a href="$2">$1</a>');
   }
-  
+
   private applyWordPressFormatting(content: string): string {
     // WordPress-specific content formatting
     // Add WordPress blocks if needed
     if (content.includes('<!-- wp:')) {
       return content; // Already in block format
     }
-    
+
     // Wrap in paragraph blocks for Gutenberg
     const paragraphs = content.split(/\n\s*\n/);
     return paragraphs
       .map(p => p.trim())
       .filter(p => p.length > 0)
       .map(p => {
-        if (p.startsWith('<h') || p.startsWith('<img') || p.startsWith('<div')) {
+        if (
+          p.startsWith('<h') ||
+          p.startsWith('<img') ||
+          p.startsWith('<div')
+        ) {
           return p; // Already formatted
         }
         return `<p>${p}</p>`;
       })
       .join('\n\n');
   }
-  
+
   // ===== PUBLISHING =====
-  
-  protected async publishContentInternal(content: FormattedContent, options?: PublishOptions): Promise<PublishResult> {
+
+  protected async publishContentInternal(
+    content: FormattedContent,
+    options?: PublishOptions,
+  ): Promise<PublishResult> {
     const postData = this.buildWordPressPostData(content, options);
-    
+
     try {
       const response = await this.makeRequest('POST', 'posts', postData);
-      
+
       return {
         success: true,
         externalId: response.id.toString(),
         externalUrl: response.link,
         publishedAt: new Date(response.date),
-        platformResponse: response
+        platformResponse: response,
       };
     } catch (error) {
       return {
         success: false,
-        error: `Publishing failed: ${error.message}`
+        error: `Publishing failed: ${error.message}`,
       };
     }
   }
-  
-  protected async scheduleContentInternal(content: FormattedContent, publishTime: Date, options?: PublishOptions): Promise<ScheduleResult> {
+
+  protected async scheduleContentInternal(
+    content: FormattedContent,
+    publishTime: Date,
+    options?: PublishOptions,
+  ): Promise<ScheduleResult> {
     const postData = this.buildWordPressPostData(content, options);
     postData.status = 'future';
     postData.date = publishTime.toISOString();
-    
+
     try {
       const response = await this.makeRequest('POST', 'posts', postData);
-      
+
       return {
         success: true,
         scheduleId: response.id.toString(),
         scheduledTime: new Date(response.date),
-        platformResponse: response
+        platformResponse: response,
       };
     } catch (error) {
       return {
         success: false,
         scheduledTime: publishTime,
-        error: `Scheduling failed: ${error.message}`
+        error: `Scheduling failed: ${error.message}`,
       };
     }
   }
-  
-  public async update(externalId: string, content: FormattedContent, options?: PublishOptions): Promise<PublishResult> {
+
+  public async update(
+    externalId: string,
+    content: FormattedContent,
+    options?: PublishOptions,
+  ): Promise<PublishResult> {
     this.ensureAuthenticated();
-    
+
     const postData = this.buildWordPressPostData(content, options);
-    
+
     try {
-      const response = await this.makeRequest('PUT', `posts/${externalId}`, postData);
-      
+      const response = await this.makeRequest(
+        'PUT',
+        `posts/${externalId}`,
+        postData,
+      );
+
       return {
         success: true,
         externalId: response.id.toString(),
         externalUrl: response.link,
         publishedAt: new Date(response.modified),
-        platformResponse: response
+        platformResponse: response,
       };
     } catch (error) {
       return {
         success: false,
-        error: `Update failed: ${error.message}`
+        error: `Update failed: ${error.message}`,
       };
     }
   }
-  
+
   public async delete(externalId: string): Promise<DeleteResult> {
     this.ensureAuthenticated();
-    
+
     try {
-      const response = await this.makeRequest('DELETE', `posts/${externalId}?force=true`);
-      
+      const response = await this.makeRequest(
+        'DELETE',
+        `posts/${externalId}?force=true`,
+      );
+
       return {
         success: true,
-        deletedAt: new Date()
+        deletedAt: new Date(),
       };
     } catch (error) {
       return {
         success: false,
-        error: `Deletion failed: ${error.message}`
+        error: `Deletion failed: ${error.message}`,
       };
     }
   }
-  
+
   // ===== ANALYTICS (Limited Support) =====
-  
-  protected async getAnalyticsInternal(timeRange: DateRange, options?: AnalyticsOptions): Promise<PlatformAnalytics> {
+
+  protected async getAnalyticsInternal(
+    timeRange: DateRange,
+    options?: AnalyticsOptions,
+  ): Promise<PlatformAnalytics> {
     // WordPress doesn't provide native analytics, return basic structure
     return {
       platformName: this.name,
@@ -454,95 +503,99 @@ export class WordPressAdapter extends BasePlatformAdapter {
       contentBreakdown: [],
       audienceInsights: {
         totalAudience: 0,
-        newVsReturning: { new: 0, returning: 0 }
+        newVsReturning: { new: 0, returning: 0 },
       },
       platformSpecificMetrics: {
-        note: 'WordPress does not provide native analytics. Consider integrating with Google Analytics or similar services.'
-      }
+        note: 'WordPress does not provide native analytics. Consider integrating with Google Analytics or similar services.',
+      },
     };
   }
-  
+
   // ===== PLATFORM-SPECIFIC OPERATIONS =====
-  
+
   public async getCategories(): Promise<Category[]> {
     this.ensureAuthenticated();
-    
+
     try {
       const response = await this.makeRequest('GET', 'categories');
-      
+
       return response.map((cat: any) => ({
         id: cat.id.toString(),
         name: cat.name,
         slug: cat.slug,
-        parentId: cat.parent ? cat.parent.toString() : undefined
+        parentId: cat.parent ? cat.parent.toString() : undefined,
       }));
     } catch (error) {
       throw new Error(`Failed to fetch categories: ${error.message}`);
     }
   }
-  
+
   public async getTags(): Promise<Tag[]> {
     this.ensureAuthenticated();
-    
+
     try {
       const response = await this.makeRequest('GET', 'tags');
-      
+
       return response.map((tag: any) => ({
         id: tag.id.toString(),
         name: tag.name,
         slug: tag.slug,
-        count: tag.count
+        count: tag.count,
       }));
     } catch (error) {
       throw new Error(`Failed to fetch tags: ${error.message}`);
     }
   }
-  
+
   public async getCustomFields(): Promise<CustomField[]> {
     // WordPress custom fields would require additional plugins/configuration
     return [];
   }
-  
+
   // ===== RATE LIMITING =====
-  
+
   public async getRateLimit(): Promise<RateLimitStatus> {
     // WordPress doesn't typically have strict rate limits for authenticated users
     // But some hosting providers may implement them
     return {
       limit: 1000,
       remaining: 1000,
-      resetTime: new Date(Date.now() + 3600000) // 1 hour from now
+      resetTime: new Date(Date.now() + 3600000), // 1 hour from now
     };
   }
-  
+
   // ===== PRIVATE HELPER METHODS =====
-  
-  private async makeRequest(method: string, endpoint: string, data?: any): Promise<any> {
+
+  private async makeRequest(
+    method: string,
+    endpoint: string,
+    data?: any,
+  ): Promise<any> {
     const url = `${this.apiUrl}${endpoint}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'User-Agent': 'AI-Blog-Writer-SDK/1.0'
+      'User-Agent': 'AI-Blog-Writer-SDK/1.0',
     };
-    
+
     if (this.authHeader) {
       headers.Authorization = this.authHeader;
     }
-    
+
     const config: RequestInit = {
       method,
-      headers
+      headers,
     };
-    
+
     if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
       config.body = JSON.stringify(data);
     }
-    
+
     const response = await fetch(url, config);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-      
+
       try {
         const errorData = JSON.parse(errorText);
         if (errorData.message) {
@@ -551,58 +604,67 @@ export class WordPressAdapter extends BasePlatformAdapter {
       } catch {
         // Use default error message
       }
-      
+
       throw new Error(errorMessage);
     }
-    
+
     return response.json();
   }
-  
-  private buildWordPressPostData(content: FormattedContent, options?: PublishOptions): any {
+
+  private buildWordPressPostData(
+    content: FormattedContent,
+    options?: PublishOptions,
+  ): any {
     const postData: any = {
       title: content.title,
       content: content.content,
       excerpt: content.excerpt,
-      status: options?.status || 'publish'
+      status: options?.status || 'publish',
     };
-    
+
     // Add slug if provided
     if (content.metadata.slug) {
       postData.slug = content.metadata.slug;
     }
-    
+
     // Add categories
     if (options?.categories && options.categories.length > 0) {
-      postData.categories = options.categories.map(cat => parseInt(cat, 10)).filter(id => !isNaN(id));
+      postData.categories = options.categories
+        .map(cat => parseInt(cat, 10))
+        .filter(id => !isNaN(id));
     }
-    
+
     // Add tags
     if (options?.tags && options.tags.length > 0) {
-      postData.tags = options.tags.map(tag => parseInt(tag, 10)).filter(id => !isNaN(id));
+      postData.tags = options.tags
+        .map(tag => parseInt(tag, 10))
+        .filter(id => !isNaN(id));
     }
-    
+
     // Add featured image
     if (options?.featuredImage || content.featuredImage) {
       // Would need to upload image first and get media ID
       // This is a simplified version
       postData.featured_media = null;
     }
-    
+
     // Add meta data
     if (content.seo.metaDescription) {
       postData.meta = postData.meta || {};
       postData.meta._yoast_wpseo_metadesc = content.seo.metaDescription;
     }
-    
+
     if (content.seo.focusKeyword) {
       postData.meta = postData.meta || {};
       postData.meta._yoast_wpseo_focuskw = content.seo.focusKeyword;
     }
-    
+
     return postData;
   }
-  
-  private mapPostStatus(status: string): 'draft' | 'published' | 'private' | 'unlisted' {
+
+  private mapPostStatus(
+    status: string,
+  ): 'draft' | 'published' | 'private' | 'unlisted' {
     switch (status.toLowerCase()) {
       case 'draft':
       case 'pending_review':
@@ -616,18 +678,18 @@ export class WordPressAdapter extends BasePlatformAdapter {
         return 'draft';
     }
   }
-  
+
   private generateExcerpt(content: string, maxLength: number = 150): string {
     const plainText = content.replace(/<[^>]*>/g, '');
     if (plainText.length <= maxLength) return plainText;
-    
+
     return plainText.substring(0, maxLength).trim() + '...';
   }
-  
+
   private extractFilenameFromUrl(url: string): string {
     return url.split('/').pop() || 'image';
   }
-  
+
   private guessMimeTypeFromUrl(url: string): string {
     const extension = url.split('.').pop()?.toLowerCase();
     const mimeTypes: Record<string, string> = {
@@ -636,16 +698,16 @@ export class WordPressAdapter extends BasePlatformAdapter {
       png: 'image/png',
       gif: 'image/gif',
       webp: 'image/webp',
-      svg: 'image/svg+xml'
+      svg: 'image/svg+xml',
     };
-    
+
     return mimeTypes[extension || ''] || 'image/jpeg';
   }
-  
+
   private countWords(text: string): number {
     return text.trim().split(/\s+/).length;
   }
-  
+
   private getSiteId(): string {
     // For WordPress.com, extract site ID from URL or credentials
     // This is a simplified implementation
@@ -653,9 +715,11 @@ export class WordPressAdapter extends BasePlatformAdapter {
   }
 
   // Implement missing abstract methods
-  async authenticate(credentials: PlatformCredentials): Promise<AuthenticationResult> {
+  async authenticate(
+    credentials: PlatformCredentials,
+  ): Promise<AuthenticationResult> {
     const wpCredentials = credentials as WordPressCredentials;
-    
+
     try {
       if (wpCredentials.type === 'api_key') {
         return await this.authenticateWithApiKey(wpCredentials);
@@ -669,7 +733,7 @@ export class WordPressAdapter extends BasePlatformAdapter {
     } catch (error) {
       return {
         success: false,
-        error: `Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        error: `Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -681,17 +745,20 @@ export class WordPressAdapter extends BasePlatformAdapter {
         success: true,
         platform: 'wordpress',
         version: response.version || 'unknown',
-        capabilities: this.capabilities
+        capabilities: this.capabilities,
       };
     } catch (error) {
       return {
         success: false,
-        error: `Connection validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        error: `Connection validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
 
-  async formatContent(content: BlogPost, options?: FormatOptions): Promise<FormattedContent> {
+  async formatContent(
+    content: BlogPost,
+    options?: FormatOptions,
+  ): Promise<FormattedContent> {
     return {
       title: content.title,
       content: this.formatContentBody(content.content, options),
@@ -699,35 +766,41 @@ export class WordPressAdapter extends BasePlatformAdapter {
       metadata: {
         slug: content.metadata?.seo?.slug || this.generateSlug(content.title),
         author: content.metadata?.author?.name || 'Unknown',
-        publishDate: content.metadata?.publishedAt ? new Date(content.metadata.publishedAt) : undefined
+        publishDate: content.metadata?.publishedAt
+          ? new Date(content.metadata.publishedAt)
+          : undefined,
       },
       seo: {
-        metaDescription: content.metadata?.seo?.metaDescription || content.excerpt || '',
+        metaDescription:
+          content.metadata?.seo?.metaDescription || content.excerpt || '',
         focusKeyword: content.metadata?.seo?.focusKeyword || '',
-        title: content.title
+        title: content.title,
       },
-      featuredImage: content.content?.featuredImage || undefined
+      featuredImage: content.content?.featuredImage || undefined,
     };
   }
 
-  async publish(content: FormattedContent, options?: PublishOptions): Promise<PublishResult> {
+  async publish(
+    content: FormattedContent,
+    options?: PublishOptions,
+  ): Promise<PublishResult> {
     this.ensureAuthenticated();
-    
+
     try {
       const postData = this.buildWordPressPostData(content, options);
       const response = await this.makeRequest('POST', '/wp/v2/posts', postData);
-      
+
       return {
         success: true,
         contentId: response.id.toString(),
         url: response.link,
         publishedAt: new Date(response.date),
-        status: this.mapPostStatus(response.status)
+        status: this.mapPostStatus(response.status),
       };
     } catch (error) {
       return {
         success: false,
-        error: `Publishing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        error: `Publishing failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }

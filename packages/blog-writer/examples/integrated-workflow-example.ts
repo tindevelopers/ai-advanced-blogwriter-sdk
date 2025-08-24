@@ -131,9 +131,7 @@ async function performStrategicPlanning() {
     generateOpportunities: true,
   });
 
-  console.log(
-    `🎯 Researched topic opportunities`,
-  );
+  console.log(`🎯 Researched topic opportunities`);
 
   const selectedTopic = topicResearch.topic; // topics is not in interface
 
@@ -384,11 +382,11 @@ async function manageContentLifecycle(
       excerpt: 'AI-generated content with advanced features',
       status: 'DRAFT',
       focusKeyword: 'ai content generation',
-      keywords: ['ai', 'content', 'generation', 'blog']
+      keywords: ['ai', 'content', 'generation', 'blog'],
     },
     {
-      changeSummary: 'Initial AI-generated content with advanced features'
-    }
+      changeSummary: 'Initial AI-generated content with advanced features',
+    },
   );
 
   console.log(`📋 Created version: ${version.version}`);
@@ -405,7 +403,7 @@ async function manageContentLifecycle(
       'fact-checking-enabled': 'true',
       'tone-consistency-score':
         qualityInsights.qualityBreakdown.toneConsistency.toString(),
-    }
+    },
   });
 
   console.log('📊 Added quality metrics to metadata');

@@ -1,5 +1,3 @@
-
-
 /**
  * DataForSEO Integration Service
  * Handles MCP connections, API configuration, rate limiting, and error handling
@@ -14,7 +12,7 @@ import {
   KeywordResearchRequest,
   KeywordData,
   CompetitorAnalysis,
-  CompetitorPage
+  CompetitorPage,
 } from '../types/seo-engine';
 
 export interface DataForSEOServiceConfig {
@@ -62,7 +60,7 @@ export class DataForSEOService {
       retryAttempts: 3,
       cacheTTL: 60, // minutes
       fallbackMode: true,
-      ...options.config
+      ...options.config,
     };
 
     this.model = options.model;
@@ -76,8 +74,8 @@ export class DataForSEOService {
       apiQuota: {
         remaining: 0,
         limit: 0,
-        resetAt: new Date()
-      }
+        resetAt: new Date(),
+      },
     };
 
     // Initialize connection check
@@ -89,13 +87,15 @@ export class DataForSEOService {
    */
   async checkConnection(): Promise<DataForSEOConnectionStatus> {
     try {
-      const response = await this.makeAPIRequest('dataforseo_labs/available_parameters');
-      
+      const response = await this.makeAPIRequest(
+        'dataforseo_labs/available_parameters',
+      );
+
       if (response.success) {
         this.connectionStatus = {
           connected: true,
           lastChecked: new Date(),
-          apiQuota: response.rateLimit || this.connectionStatus.apiQuota
+          apiQuota: response.rateLimit || this.connectionStatus.apiQuota,
         };
       }
     } catch (error) {
@@ -103,7 +103,7 @@ export class DataForSEOService {
         connected: false,
         lastChecked: new Date(),
         apiQuota: this.connectionStatus.apiQuota,
-        error: error instanceof Error ? error.message : 'Connection failed'
+        error: error instanceof Error ? error.message : 'Connection failed',
       };
     }
 
@@ -120,9 +120,11 @@ export class DataForSEOService {
   /**
    * Perform keyword research using DataForSEO APIs
    */
-  async performKeywordResearch(request: KeywordResearchRequest): Promise<APIResponse<KeywordData[]>> {
+  async performKeywordResearch(
+    request: KeywordResearchRequest,
+  ): Promise<APIResponse<KeywordData[]>> {
     const cacheKey = this.generateCacheKey('keyword_research', request);
-    
+
     // Check cache first
     if (this.enableCaching) {
       const cached = await this.getFromCache<KeywordData[]>(cacheKey);
@@ -131,20 +133,27 @@ export class DataForSEOService {
           success: true,
           data: cached,
           cached: true,
-          source: 'cache'
+          source: 'cache',
         };
       }
     }
 
     // Check if we should use DataForSEO or fallback
-    if (!this.connectionStatus.connected && this.config.fallbackMode && this.model) {
+    if (
+      !this.connectionStatus.connected &&
+      this.config.fallbackMode &&
+      this.model
+    ) {
       return await this.keywordResearchFallback(request);
     }
 
     try {
       // Build DataForSEO request
       const dataforSeoRequest = this.buildKeywordResearchRequest(request);
-      const response = await this.makeAPIRequest('dataforseo_labs/keywords_for_keywords/live', dataforSeoRequest);
+      const response = await this.makeAPIRequest(
+        'dataforseo_labs/keywords_for_keywords/live',
+        dataforSeoRequest,
+      );
 
       if (!response.success) {
         throw new Error(response.error || 'DataForSEO request failed');
@@ -162,9 +171,8 @@ export class DataForSEOService {
         success: true,
         data: keywordData,
         source: 'dataforseo',
-        rateLimit: response.rateLimit
+        rateLimit: response.rateLimit,
       };
-
     } catch (error) {
       // Fallback to AI-based analysis if DataForSEO fails
       if (this.config.fallbackMode && this.model) {
@@ -173,8 +181,9 @@ export class DataForSEOService {
 
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Keyword research failed',
-        source: 'dataforseo'
+        error:
+          error instanceof Error ? error.message : 'Keyword research failed',
+        source: 'dataforseo',
       };
     }
   }
@@ -182,9 +191,15 @@ export class DataForSEOService {
   /**
    * Analyze competitor pages
    */
-  async analyzeCompetitors(keyword: string, competitorUrls?: string[]): Promise<APIResponse<CompetitorAnalysis>> {
-    const cacheKey = this.generateCacheKey('competitor_analysis', { keyword, competitorUrls });
-    
+  async analyzeCompetitors(
+    keyword: string,
+    competitorUrls?: string[],
+  ): Promise<APIResponse<CompetitorAnalysis>> {
+    const cacheKey = this.generateCacheKey('competitor_analysis', {
+      keyword,
+      competitorUrls,
+    });
+
     // Check cache first
     if (this.enableCaching) {
       const cached = await this.getFromCache<CompetitorAnalysis>(cacheKey);
@@ -193,44 +208,55 @@ export class DataForSEOService {
           success: true,
           data: cached,
           cached: true,
-          source: 'cache'
+          source: 'cache',
         };
       }
     }
 
     try {
       // Get SERP results for the keyword
-      const serpResponse = await this.makeAPIRequest('serp/google/organic/live/advanced', {
-        keyword,
-        location_code: 2840, // United States
-        language_code: 'en',
-        depth: 20
-      });
+      const serpResponse = await this.makeAPIRequest(
+        'serp/google/organic/live/advanced',
+        {
+          keyword,
+          location_code: 2840, // United States
+          language_code: 'en',
+          depth: 20,
+        },
+      );
 
       if (!serpResponse.success) {
         throw new Error(serpResponse.error || 'SERP analysis failed');
       }
 
       // Process competitor data
-      const competitorAnalysis = await this.processCompetitorAnalysis(keyword, serpResponse.data, competitorUrls);
+      const competitorAnalysis = await this.processCompetitorAnalysis(
+        keyword,
+        serpResponse.data,
+        competitorUrls,
+      );
 
       // Cache the results
       if (this.enableCaching) {
-        await this.setCache(cacheKey, competitorAnalysis, this.config.cacheTTL || 60);
+        await this.setCache(
+          cacheKey,
+          competitorAnalysis,
+          this.config.cacheTTL || 60,
+        );
       }
 
       return {
         success: true,
         data: competitorAnalysis,
         source: 'dataforseo',
-        rateLimit: serpResponse.rateLimit
+        rateLimit: serpResponse.rateLimit,
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Competitor analysis failed',
-        source: 'dataforseo'
+        error:
+          error instanceof Error ? error.message : 'Competitor analysis failed',
+        source: 'dataforseo',
       };
     }
   }
@@ -238,9 +264,11 @@ export class DataForSEOService {
   /**
    * Get keyword difficulty scores
    */
-  async getKeywordDifficulty(keywords: string[]): Promise<APIResponse<Record<string, number>>> {
+  async getKeywordDifficulty(
+    keywords: string[],
+  ): Promise<APIResponse<Record<string, number>>> {
     const cacheKey = this.generateCacheKey('keyword_difficulty', { keywords });
-    
+
     // Check cache first
     if (this.enableCaching) {
       const cached = await this.getFromCache<Record<string, number>>(cacheKey);
@@ -249,17 +277,20 @@ export class DataForSEOService {
           success: true,
           data: cached,
           cached: true,
-          source: 'cache'
+          source: 'cache',
         };
       }
     }
 
     try {
-      const response = await this.makeAPIRequest('dataforseo_labs/keyword_difficulty/live', {
-        keywords,
-        location_code: 2840, // United States
-        language_code: 'en'
-      });
+      const response = await this.makeAPIRequest(
+        'dataforseo_labs/keyword_difficulty/live',
+        {
+          keywords,
+          location_code: 2840, // United States
+          language_code: 'en',
+        },
+      );
 
       if (!response.success) {
         throw new Error(response.error || 'Keyword difficulty request failed');
@@ -279,21 +310,27 @@ export class DataForSEOService {
 
       // Cache the results
       if (this.enableCaching) {
-        await this.setCache(cacheKey, difficultyScores, this.config.cacheTTL || 60);
+        await this.setCache(
+          cacheKey,
+          difficultyScores,
+          this.config.cacheTTL || 60,
+        );
       }
 
       return {
         success: true,
         data: difficultyScores,
         source: 'dataforseo',
-        rateLimit: response.rateLimit
+        rateLimit: response.rateLimit,
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Keyword difficulty analysis failed',
-        source: 'dataforseo'
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Keyword difficulty analysis failed',
+        source: 'dataforseo',
       };
     }
   }
@@ -301,9 +338,15 @@ export class DataForSEOService {
   /**
    * Get search volume data for keywords
    */
-  async getSearchVolume(keywords: string[], location?: string): Promise<APIResponse<Record<string, number>>> {
-    const cacheKey = this.generateCacheKey('search_volume', { keywords, location });
-    
+  async getSearchVolume(
+    keywords: string[],
+    location?: string,
+  ): Promise<APIResponse<Record<string, number>>> {
+    const cacheKey = this.generateCacheKey('search_volume', {
+      keywords,
+      location,
+    });
+
     // Check cache first
     if (this.enableCaching) {
       const cached = await this.getFromCache<Record<string, number>>(cacheKey);
@@ -312,17 +355,20 @@ export class DataForSEOService {
           success: true,
           data: cached,
           cached: true,
-          source: 'cache'
+          source: 'cache',
         };
       }
     }
 
     try {
-      const response = await this.makeAPIRequest('keywords_data/google_ads/search_volume/live', {
-        keywords,
-        location_code: location === 'us' ? 2840 : 2840, // Default to US
-        language_code: 'en'
-      });
+      const response = await this.makeAPIRequest(
+        'keywords_data/google_ads/search_volume/live',
+        {
+          keywords,
+          location_code: location === 'us' ? 2840 : 2840, // Default to US
+          language_code: 'en',
+        },
+      );
 
       if (!response.success) {
         throw new Error(response.error || 'Search volume request failed');
@@ -342,21 +388,27 @@ export class DataForSEOService {
 
       // Cache the results
       if (this.enableCaching) {
-        await this.setCache(cacheKey, searchVolumes, this.config.cacheTTL || 60);
+        await this.setCache(
+          cacheKey,
+          searchVolumes,
+          this.config.cacheTTL || 60,
+        );
       }
 
       return {
         success: true,
         data: searchVolumes,
         source: 'dataforseo',
-        rateLimit: response.rateLimit
+        rateLimit: response.rateLimit,
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Search volume analysis failed',
-        source: 'dataforseo'
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Search volume analysis failed',
+        source: 'dataforseo',
       };
     }
   }
@@ -364,22 +416,30 @@ export class DataForSEOService {
   /**
    * Make authenticated API request to DataForSEO
    */
-  private async makeAPIRequest(endpoint: string, data?: any): Promise<APIResponse> {
+  private async makeAPIRequest(
+    endpoint: string,
+    data?: any,
+  ): Promise<APIResponse> {
     const url = `${this.config.baseUrl}/${endpoint}`;
-    const auth = Buffer.from(`${this.config.username}:${this.config.password}`).toString('base64');
+    const auth = Buffer.from(
+      `${this.config.username}:${this.config.password}`,
+    ).toString('base64');
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), this.config.timeout || 30000);
+      const timeoutId = setTimeout(
+        () => controller.abort(),
+        this.config.timeout || 30000,
+      );
 
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          'Authorization': `Basic ${auth}`,
-          'Content-Type': 'application/json'
+          Authorization: `Basic ${auth}`,
+          'Content-Type': 'application/json',
         },
         body: data ? JSON.stringify([data]) : undefined,
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
@@ -388,10 +448,17 @@ export class DataForSEOService {
 
       // Extract rate limit info from headers
       const rateLimit: RateLimitInfo = {
-        remaining: parseInt(response.headers.get('X-RateLimit-Remaining') || '0'),
+        remaining: parseInt(
+          response.headers.get('X-RateLimit-Remaining') || '0',
+        ),
         limit: parseInt(response.headers.get('X-RateLimit-Limit') || '0'),
-        resetAt: new Date(parseInt(response.headers.get('X-RateLimit-Reset') || '0') * 1000),
-        retryAfter: response.status === 429 ? parseInt(response.headers.get('Retry-After') || '60') : undefined
+        resetAt: new Date(
+          parseInt(response.headers.get('X-RateLimit-Reset') || '0') * 1000,
+        ),
+        retryAfter:
+          response.status === 429
+            ? parseInt(response.headers.get('Retry-After') || '60')
+            : undefined,
       };
 
       if (response.ok && responseData.status_code === 20000) {
@@ -399,22 +466,21 @@ export class DataForSEOService {
           success: true,
           data: responseData,
           rateLimit,
-          source: 'dataforseo'
+          source: 'dataforseo',
         };
       } else {
         return {
           success: false,
           error: responseData.status_message || `HTTP ${response.status}`,
           rateLimit,
-          source: 'dataforseo'
+          source: 'dataforseo',
         };
       }
-
     } catch (error) {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Request failed',
-        source: 'dataforseo'
+        source: 'dataforseo',
       };
     }
   }
@@ -433,8 +499,8 @@ export class DataForSEOService {
       include_clickstream_data: true,
       ignore_synonyms: !request.includeVariations,
       filters: [
-        ['search_volume', '>', 10] // Minimum search volume
-      ]
+        ['search_volume', '>', 10], // Minimum search volume
+      ],
     };
   }
 
@@ -453,7 +519,8 @@ export class DataForSEOService {
             cpc: item.cpc,
             competition: item.competition,
             competitionIndex: item.competition_index,
-            seasonality: item.monthly_searches?.map((m: any) => m.search_volume) || [],
+            seasonality:
+              item.monthly_searches?.map((m: any) => m.search_volume) || [],
             difficulty: {
               score: item.keyword_difficulty || 0,
               level: this.getDifficultyLevel(item.keyword_difficulty),
@@ -461,22 +528,22 @@ export class DataForSEOService {
                 domainAuthority: 0,
                 contentQuality: 0,
                 backlinks: 0,
-                competition: item.competition_index || 0
-              }
+                competition: item.competition_index || 0,
+              },
             },
             trends: {
               monthlySearches: item.monthly_searches || [],
               yearOverYear: 0,
               trending: 'stable',
-              seasonalPattern: false
+              seasonalPattern: false,
             },
             relatedKeywords: item.related_keywords || [],
             longTailVariations: [],
             searchIntent: {
               primary: this.determineSearchIntent(item.keyword || ''),
               confidence: 0.8,
-              modifiers: []
-            }
+              modifiers: [],
+            },
           };
 
           keywords.push(keywordData);
@@ -490,7 +557,11 @@ export class DataForSEOService {
   /**
    * Process competitor analysis data
    */
-  private async processCompetitorAnalysis(keyword: string, serpData: any, competitorUrls?: string[]): Promise<CompetitorAnalysis> {
+  private async processCompetitorAnalysis(
+    keyword: string,
+    serpData: any,
+    competitorUrls?: string[],
+  ): Promise<CompetitorAnalysis> {
     const competitors: CompetitorPage[] = [];
     let rank = 1;
 
@@ -509,7 +580,7 @@ export class DataForSEOService {
               rank: rank++,
               traffic: 0,
               contentScore: 0,
-              keywordOptimization: 0
+              keywordOptimization: 0,
             };
 
             competitors.push(competitor);
@@ -520,11 +591,21 @@ export class DataForSEOService {
 
     // Calculate average metrics
     const averageMetrics = {
-      wordCount: competitors.reduce((sum, c) => sum + c.wordCount, 0) / competitors.length || 0,
-      domainAuthority: competitors.reduce((sum, c) => sum + c.domainAuthority, 0) / competitors.length || 0,
-      pageAuthority: competitors.reduce((sum, c) => sum + c.pageAuthority, 0) / competitors.length || 0,
-      backlinks: competitors.reduce((sum, c) => sum + c.backlinks, 0) / competitors.length || 0,
-      contentScore: competitors.reduce((sum, c) => sum + c.contentScore, 0) / competitors.length || 0
+      wordCount:
+        competitors.reduce((sum, c) => sum + c.wordCount, 0) /
+          competitors.length || 0,
+      domainAuthority:
+        competitors.reduce((sum, c) => sum + c.domainAuthority, 0) /
+          competitors.length || 0,
+      pageAuthority:
+        competitors.reduce((sum, c) => sum + c.pageAuthority, 0) /
+          competitors.length || 0,
+      backlinks:
+        competitors.reduce((sum, c) => sum + c.backlinks, 0) /
+          competitors.length || 0,
+      contentScore:
+        competitors.reduce((sum, c) => sum + c.contentScore, 0) /
+          competitors.length || 0,
     };
 
     return {
@@ -532,19 +613,21 @@ export class DataForSEOService {
       competitors: competitors.slice(0, 10), // Top 10 competitors
       averageMetrics,
       gaps: [], // Would be populated with AI analysis
-      opportunities: [] // Would be populated with AI analysis
+      opportunities: [], // Would be populated with AI analysis
     };
   }
 
   /**
    * AI-powered fallback for keyword research
    */
-  private async keywordResearchFallback(request: KeywordResearchRequest): Promise<APIResponse<KeywordData[]>> {
+  private async keywordResearchFallback(
+    request: KeywordResearchRequest,
+  ): Promise<APIResponse<KeywordData[]>> {
     if (!this.model) {
       return {
         success: false,
         error: 'No fallback model available',
-        source: 'fallback'
+        source: 'fallback',
       };
     }
 
@@ -562,35 +645,35 @@ export class DataForSEOService {
             domainAuthority: 50,
             contentQuality: 60,
             backlinks: 40,
-            competition: 50
-          }
+            competition: 50,
+          },
         },
         trends: {
           monthlySearches: [],
           yearOverYear: 0,
           trending: 'stable',
-          seasonalPattern: false
+          seasonalPattern: false,
         },
         relatedKeywords: [],
         longTailVariations: [],
         searchIntent: {
           primary: 'informational',
           confidence: 0.7,
-          modifiers: []
-        }
+          modifiers: [],
+        },
       }));
 
       return {
         success: true,
         data: fallbackData,
-        source: 'fallback'
+        source: 'fallback',
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Fallback analysis failed',
-        source: 'fallback'
+        error:
+          error instanceof Error ? error.message : 'Fallback analysis failed',
+        source: 'fallback',
       };
     }
   }
@@ -600,22 +683,24 @@ export class DataForSEOService {
    */
   private getLocationCode(location?: string): number {
     const locationCodes: Record<string, number> = {
-      'us': 2840,
-      'uk': 2826,
-      'ca': 2124,
-      'au': 2036,
-      'de': 2276,
-      'fr': 2250,
-      'es': 2724,
-      'it': 2380,
-      'nl': 2528,
-      'br': 2076
+      us: 2840,
+      uk: 2826,
+      ca: 2124,
+      au: 2036,
+      de: 2276,
+      fr: 2250,
+      es: 2724,
+      it: 2380,
+      nl: 2528,
+      br: 2076,
     };
 
     return locationCodes[location?.toLowerCase() || 'us'] || 2840;
   }
 
-  private getDifficultyLevel(score?: number): 'very_easy' | 'easy' | 'possible' | 'difficult' | 'very_difficult' {
+  private getDifficultyLevel(
+    score?: number,
+  ): 'very_easy' | 'easy' | 'possible' | 'difficult' | 'very_difficult' {
     if (!score) return 'possible';
     if (score < 20) return 'very_easy';
     if (score < 40) return 'easy';
@@ -624,22 +709,49 @@ export class DataForSEOService {
     return 'very_difficult';
   }
 
-  private determineSearchIntent(keyword: string): 'informational' | 'navigational' | 'commercial' | 'transactional' {
-    const commercialKeywords = ['buy', 'price', 'cost', 'cheap', 'discount', 'deal'];
-    const transactionalKeywords = ['purchase', 'order', 'shop', 'store', 'online'];
-    const informationalKeywords = ['how', 'what', 'why', 'guide', 'tutorial', 'learn'];
+  private determineSearchIntent(
+    keyword: string,
+  ): 'informational' | 'navigational' | 'commercial' | 'transactional' {
+    const commercialKeywords = [
+      'buy',
+      'price',
+      'cost',
+      'cheap',
+      'discount',
+      'deal',
+    ];
+    const transactionalKeywords = [
+      'purchase',
+      'order',
+      'shop',
+      'store',
+      'online',
+    ];
+    const informationalKeywords = [
+      'how',
+      'what',
+      'why',
+      'guide',
+      'tutorial',
+      'learn',
+    ];
 
     const lowerKeyword = keyword.toLowerCase();
 
-    if (transactionalKeywords.some(k => lowerKeyword.includes(k))) return 'transactional';
-    if (commercialKeywords.some(k => lowerKeyword.includes(k))) return 'commercial';
-    if (informationalKeywords.some(k => lowerKeyword.includes(k))) return 'informational';
+    if (transactionalKeywords.some(k => lowerKeyword.includes(k)))
+      return 'transactional';
+    if (commercialKeywords.some(k => lowerKeyword.includes(k)))
+      return 'commercial';
+    if (informationalKeywords.some(k => lowerKeyword.includes(k)))
+      return 'informational';
 
     return 'informational'; // Default
   }
 
   private generateCacheKey(operation: string, params: any): string {
-    const hash = Buffer.from(JSON.stringify(params)).toString('base64').substring(0, 16);
+    const hash = Buffer.from(JSON.stringify(params))
+      .toString('base64')
+      .substring(0, 16);
     return `${this.cachePrefix}:${operation}:${hash}`;
   }
 
@@ -666,4 +778,3 @@ export class DataForSEOService {
     }
   }
 }
-

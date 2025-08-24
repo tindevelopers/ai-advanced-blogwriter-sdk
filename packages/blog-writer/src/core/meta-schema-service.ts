@@ -1,5 +1,3 @@
-
-
 /**
  * Meta Tag & Schema Markup Generation Service
  * Dynamic meta tag generation, Open Graph tags, Twitter Cards, and JSON-LD schema markup
@@ -23,7 +21,7 @@ import {
   WebsiteSchema,
   SchemaGenerationRequest,
   SchemaAnalysis,
-  SchemaSuggestion
+  SchemaSuggestion,
 } from '../types/seo-engine';
 
 export interface MetaSchemaConfig {
@@ -75,7 +73,7 @@ const MetaTagGenerationSchema = z.object({
       url: z.string(),
       type: z.string(),
       siteName: z.string().optional(),
-      locale: z.string().optional()
+      locale: z.string().optional(),
     }),
     twitterCard: z.object({
       card: z.enum(['summary', 'summary_large_image', 'app', 'player']),
@@ -83,66 +81,78 @@ const MetaTagGenerationSchema = z.object({
       description: z.string(),
       image: z.string(),
       site: z.string().optional(),
-      creator: z.string().optional()
+      creator: z.string().optional(),
     }),
-    additional: z.array(z.object({
-      name: z.string().optional(),
-      property: z.string().optional(),
-      content: z.string()
-    }))
+    additional: z.array(
+      z.object({
+        name: z.string().optional(),
+        property: z.string().optional(),
+        content: z.string(),
+      }),
+    ),
   }),
   recommendations: z.array(z.string()),
-  seoScore: z.number().min(0).max(100)
+  seoScore: z.number().min(0).max(100),
 });
 
 const FAQExtractionSchema = z.object({
-  faqs: z.array(z.object({
-    question: z.string(),
-    answer: z.string(),
-    relevance: z.number().min(0).max(100)
-  }))
+  faqs: z.array(
+    z.object({
+      question: z.string(),
+      answer: z.string(),
+      relevance: z.number().min(0).max(100),
+    }),
+  ),
 });
 
 const HowToExtractionSchema = z.object({
-  howToSteps: z.array(z.object({
-    stepNumber: z.number(),
-    name: z.string(),
-    description: z.string(),
-    image: z.string().optional()
-  })),
+  howToSteps: z.array(
+    z.object({
+      stepNumber: z.number(),
+      name: z.string(),
+      description: z.string(),
+      image: z.string().optional(),
+    }),
+  ),
   title: z.string(),
   description: z.string(),
   totalTime: z.string().optional(),
   supplies: z.array(z.string()).optional(),
-  tools: z.array(z.string()).optional()
+  tools: z.array(z.string()).optional(),
 });
 
 const BreadcrumbExtractionSchema = z.object({
-  breadcrumbs: z.array(z.object({
-    position: z.number(),
-    name: z.string(),
-    url: z.string()
-  }))
+  breadcrumbs: z.array(
+    z.object({
+      position: z.number(),
+      name: z.string(),
+      url: z.string(),
+    }),
+  ),
 });
 
 const SchemaAnalysisSchema = z.object({
   analysis: z.object({
     present: z.array(z.string()),
     missing: z.array(z.string()),
-    errors: z.array(z.object({
-      type: z.string(),
-      property: z.string(),
-      message: z.string(),
-      severity: z.enum(['error', 'warning'])
-    })),
-    suggestions: z.array(z.object({
-      type: z.string(),
-      description: z.string(),
-      impact: z.enum(['low', 'medium', 'high']),
-      implementation: z.string()
-    })),
-    score: z.number().min(0).max(100)
-  })
+    errors: z.array(
+      z.object({
+        type: z.string(),
+        property: z.string(),
+        message: z.string(),
+        severity: z.enum(['error', 'warning']),
+      }),
+    ),
+    suggestions: z.array(
+      z.object({
+        type: z.string(),
+        description: z.string(),
+        impact: z.enum(['low', 'medium', 'high']),
+        implementation: z.string(),
+      }),
+    ),
+    score: z.number().min(0).max(100),
+  }),
 });
 
 /**
@@ -158,16 +168,18 @@ export class MetaSchemaService {
       cacheTTL: 24, // 24 hours default
       defaultSite: {
         name: 'My Website',
-        url: 'https://example.com'
+        url: 'https://example.com',
       },
-      ...config
+      ...config,
     };
   }
 
   /**
    * Generate comprehensive meta tags
    */
-  async generateMetaTags(request: MetaGenerationRequest): Promise<MetaTagSuggestions> {
+  async generateMetaTags(
+    request: MetaGenerationRequest,
+  ): Promise<MetaTagSuggestions> {
     const prompt = `Generate optimized meta tags for this content:
 
 Title: ${request.title}
@@ -193,7 +205,7 @@ Ensure all tags are optimized for search engines and social media sharing.`;
       const result = await generateObject({
         model: this.config.model,
         prompt,
-        schema: MetaTagGenerationSchema
+        schema: MetaTagGenerationSchema,
       });
 
       const metaTags = result.object.metaTags;
@@ -210,24 +222,25 @@ Ensure all tags are optimized for search engines and social media sharing.`;
           image: metaTags.openGraph.image || request.image || '',
           url: metaTags.openGraph.url || request.url || '',
           type: metaTags.openGraph.type,
-          siteName: metaTags.openGraph.siteName || this.config.defaultSite?.name,
-          locale: metaTags.openGraph.locale || 'en_US'
+          siteName:
+            metaTags.openGraph.siteName || this.config.defaultSite?.name,
+          locale: metaTags.openGraph.locale || 'en_US',
         },
         twitterCard: {
           card: metaTags.twitterCard.card,
           title: metaTags.twitterCard.title,
           description: metaTags.twitterCard.description,
           image: metaTags.twitterCard.image || request.image || '',
-          site: metaTags.twitterCard.site || this.config.defaultSite?.twitterHandle,
-          creator: metaTags.twitterCard.creator
+          site:
+            metaTags.twitterCard.site || this.config.defaultSite?.twitterHandle,
+          creator: metaTags.twitterCard.creator,
         },
         other: metaTags.additional.map(tag => ({
           name: tag.name,
           property: tag.property,
-          content: tag.content
-        }))
+          content: tag.content,
+        })),
       };
-
     } catch (error) {
       // Fallback to basic meta tag generation
       return this.generateBasicMetaTags(request);
@@ -237,14 +250,18 @@ Ensure all tags are optimized for search engines and social media sharing.`;
   /**
    * Generate comprehensive schema markup
    */
-  async generateSchemaMarkup(request: SchemaGenerationRequest): Promise<SchemaMarkup> {
+  async generateSchemaMarkup(
+    request: SchemaGenerationRequest,
+  ): Promise<SchemaMarkup> {
     const articleSchema = await this.generateArticleSchema(request);
-    const breadcrumbSchema = await this.generateBreadcrumbSchema(request.url || '');
+    const breadcrumbSchema = await this.generateBreadcrumbSchema(
+      request.url || '',
+    );
     const faqSchema = await this.extractFAQSchema(request.title, '');
     const howToSchema = await this.extractHowToSchema(request.title, '');
 
     const schema: SchemaMarkup = {
-      article: articleSchema
+      article: articleSchema,
     };
 
     if (breadcrumbSchema && breadcrumbSchema.itemListElement.length > 0) {
@@ -265,7 +282,7 @@ Ensure all tags are optimized for search engines and social media sharing.`;
         '@type': 'Organization',
         name: this.config.defaultOrganization.name,
         url: this.config.defaultOrganization.url,
-        logo: this.config.defaultOrganization.logo
+        logo: this.config.defaultOrganization.logo,
       };
     }
 
@@ -274,7 +291,7 @@ Ensure all tags are optimized for search engines and social media sharing.`;
       schema.website = {
         '@type': 'WebSite',
         name: this.config.defaultSite.name,
-        url: this.config.defaultSite.url
+        url: this.config.defaultSite.url,
       };
     }
 
@@ -284,21 +301,26 @@ Ensure all tags are optimized for search engines and social media sharing.`;
   /**
    * Generate Article schema markup
    */
-  async generateArticleSchema(request: SchemaGenerationRequest): Promise<ArticleSchema> {
+  async generateArticleSchema(
+    request: SchemaGenerationRequest,
+  ): Promise<ArticleSchema> {
     const schemaType = this.determineArticleType(request.contentType);
-    
+
     const author: any = {
       '@type': 'Person',
-      name: request.author || 'Anonymous'
+      name: request.author || 'Anonymous',
     };
 
     const publisher: any = {
       '@type': 'Organization',
-      name: this.config.defaultOrganization?.name || this.config.defaultSite?.name || 'Publisher',
+      name:
+        this.config.defaultOrganization?.name ||
+        this.config.defaultSite?.name ||
+        'Publisher',
       logo: {
         '@type': 'ImageObject',
-        url: this.config.defaultOrganization?.logo || ''
-      }
+        url: this.config.defaultOrganization?.logo || '',
+      },
     };
 
     return {
@@ -312,14 +334,17 @@ Ensure all tags are optimized for search engines and social media sharing.`;
       image: request.image ? [request.image] : [],
       mainEntityOfPage: request.url || '',
       wordCount: this.countWords(request.description),
-      keywords: request.additionalData?.keywords || []
+      keywords: request.additionalData?.keywords || [],
     };
   }
 
   /**
    * Extract FAQ schema from content
    */
-  async extractFAQSchema(title: string, content: string): Promise<FAQSchema | null> {
+  async extractFAQSchema(
+    title: string,
+    content: string,
+  ): Promise<FAQSchema | null> {
     if (!content.includes('?') || content.length < 500) {
       return null; // Not likely to contain FAQs
     }
@@ -341,7 +366,7 @@ Extract only clear, well-formed question-answer pairs that would be valuable for
       const result = await generateObject({
         model: this.config.model,
         prompt,
-        schema: FAQExtractionSchema
+        schema: FAQExtractionSchema,
       });
 
       const faqs = result.object.faqs.filter(faq => faq.relevance > 70);
@@ -357,11 +382,10 @@ Extract only clear, well-formed question-answer pairs that would be valuable for
           name: faq.question,
           acceptedAnswer: {
             '@type': 'Answer',
-            text: faq.answer
-          }
-        }))
+            text: faq.answer,
+          },
+        })),
       };
-
     } catch (error) {
       return null;
     }
@@ -370,10 +394,21 @@ Extract only clear, well-formed question-answer pairs that would be valuable for
   /**
    * Extract How-to schema from content
    */
-  async extractHowToSchema(title: string, content: string): Promise<HowToSchema | null> {
-    const howToKeywords = ['how to', 'step by step', 'tutorial', 'guide', 'instructions'];
-    const hasHowToContent = howToKeywords.some(keyword => 
-      title.toLowerCase().includes(keyword) || content.toLowerCase().includes(keyword)
+  async extractHowToSchema(
+    title: string,
+    content: string,
+  ): Promise<HowToSchema | null> {
+    const howToKeywords = [
+      'how to',
+      'step by step',
+      'tutorial',
+      'guide',
+      'instructions',
+    ];
+    const hasHowToContent = howToKeywords.some(
+      keyword =>
+        title.toLowerCase().includes(keyword) ||
+        content.toLowerCase().includes(keyword),
     );
 
     if (!hasHowToContent) {
@@ -398,7 +433,7 @@ Only extract if there are clear, sequential steps (minimum 3 steps).`;
       const result = await generateObject({
         model: this.config.model,
         prompt,
-        schema: HowToExtractionSchema
+        schema: HowToExtractionSchema,
       });
 
       if (result.object.howToSteps.length < 3) {
@@ -413,13 +448,12 @@ Only extract if there are clear, sequential steps (minimum 3 steps).`;
           '@type': 'HowToStep',
           name: step.name,
           text: step.description,
-          image: step.image
+          image: step.image,
         })),
         totalTime: result.object.totalTime,
         supply: result.object.supplies,
-        tool: result.object.tools
+        tool: result.object.tools,
       };
-
     } catch (error) {
       return null;
     }
@@ -428,7 +462,9 @@ Only extract if there are clear, sequential steps (minimum 3 steps).`;
   /**
    * Generate breadcrumb schema
    */
-  async generateBreadcrumbSchema(url: string): Promise<BreadcrumbSchema | null> {
+  async generateBreadcrumbSchema(
+    url: string,
+  ): Promise<BreadcrumbSchema | null> {
     if (!url || url.split('/').length < 4) {
       return null; // Not enough path segments for meaningful breadcrumbs
     }
@@ -453,7 +489,7 @@ Only include 2-5 breadcrumb items total.`;
       const result = await generateObject({
         model: this.config.model,
         prompt,
-        schema: BreadcrumbExtractionSchema
+        schema: BreadcrumbExtractionSchema,
       });
 
       if (result.object.breadcrumbs.length < 2) {
@@ -466,10 +502,9 @@ Only include 2-5 breadcrumb items total.`;
           '@type': 'ListItem',
           position: crumb.position,
           name: crumb.name,
-          item: crumb.url
-        }))
+          item: crumb.url,
+        })),
       };
-
     } catch (error) {
       return null;
     }
@@ -479,8 +514,10 @@ Only include 2-5 breadcrumb items total.`;
    * Analyze existing schema markup
    */
   async analyzeSchemaMarkup(existingSchema: any[]): Promise<SchemaAnalysis> {
-    const schemaTypes = existingSchema.map(schema => schema['@type']).filter(Boolean);
-    
+    const schemaTypes = existingSchema
+      .map(schema => schema['@type'])
+      .filter(Boolean);
+
     const prompt = `Analyze this existing schema markup for completeness and errors:
 
 Existing schema types: ${schemaTypes.join(', ')}
@@ -499,23 +536,24 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
       const result = await generateObject({
         model: this.config.model,
         prompt,
-        schema: SchemaAnalysisSchema
+        schema: SchemaAnalysisSchema,
       });
 
       return result.object.analysis;
-
     } catch (error) {
       return {
         present: schemaTypes,
         missing: ['Article', 'Organization', 'WebSite'],
         errors: [],
-        suggestions: [{
-          type: 'Article',
-          description: 'Add Article schema for better content understanding',
-          impact: 'high',
-          implementation: 'Add JSON-LD script with Article schema'
-        }],
-        score: 30
+        suggestions: [
+          {
+            type: 'Article',
+            description: 'Add Article schema for better content understanding',
+            impact: 'high',
+            implementation: 'Add JSON-LD script with Article schema',
+          },
+        ],
+        score: 30,
       };
     }
   }
@@ -523,44 +561,53 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
   /**
    * Generate rich snippet optimized meta tags
    */
-  async generateRichSnippetTags(content: string, targetKeywords: string[]): Promise<CustomMetaTag[]> {
+  async generateRichSnippetTags(
+    content: string,
+    targetKeywords: string[],
+  ): Promise<CustomMetaTag[]> {
     const richSnippetTags: CustomMetaTag[] = [];
 
     // Article specific tags
     richSnippetTags.push(
       {
         property: 'article:published_time',
-        content: new Date().toISOString()
+        content: new Date().toISOString(),
       },
       {
         property: 'article:modified_time',
-        content: new Date().toISOString()
+        content: new Date().toISOString(),
       },
       {
         property: 'article:section',
-        content: this.extractPrimaryCategory(content, targetKeywords)
-      }
+        content: this.extractPrimaryCategory(content, targetKeywords),
+      },
     );
 
     // Add reading time estimate
     const wordCount = this.countWords(content);
     const readingTime = Math.ceil(wordCount / 200); // Assuming 200 WPM
-    richSnippetTags.push({
-      name: 'twitter:label1',
-      content: 'Reading time'
-    }, {
-      name: 'twitter:data1',
-      content: `${readingTime} min read`
-    });
+    richSnippetTags.push(
+      {
+        name: 'twitter:label1',
+        content: 'Reading time',
+      },
+      {
+        name: 'twitter:data1',
+        content: `${readingTime} min read`,
+      },
+    );
 
     // Add word count for rich snippets
-    richSnippetTags.push({
-      name: 'twitter:label2',
-      content: 'Word count'
-    }, {
-      name: 'twitter:data2',
-      content: `${wordCount} words`
-    });
+    richSnippetTags.push(
+      {
+        name: 'twitter:label2',
+        content: 'Word count',
+      },
+      {
+        name: 'twitter:data2',
+        content: `${wordCount} words`,
+      },
+    );
 
     return richSnippetTags;
   }
@@ -570,7 +617,7 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
    */
   validateSchemaMarkup(schema: any): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
-    
+
     try {
       // Basic validation
       if (!schema['@type']) {
@@ -597,8 +644,13 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
             if (!item.name) {
               errors.push(`FAQ question ${index + 1} missing name`);
             }
-            if (!item.acceptedAnswer || item.acceptedAnswer['@type'] !== 'Answer') {
-              errors.push(`FAQ question ${index + 1} missing valid acceptedAnswer`);
+            if (
+              !item.acceptedAnswer ||
+              item.acceptedAnswer['@type'] !== 'Answer'
+            ) {
+              errors.push(
+                `FAQ question ${index + 1} missing valid acceptedAnswer`,
+              );
             }
           });
         }
@@ -614,13 +666,12 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
 
       return {
         valid: errors.length === 0,
-        errors
+        errors,
       };
-
     } catch (error) {
       return {
         valid: false,
-        errors: ['Schema validation failed: Invalid JSON structure']
+        errors: ['Schema validation failed: Invalid JSON structure'],
       };
     }
   }
@@ -629,12 +680,17 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
    * Private helper methods
    */
 
-  private generateBasicMetaTags(request: MetaGenerationRequest): MetaTagSuggestions {
+  private generateBasicMetaTags(
+    request: MetaGenerationRequest,
+  ): MetaTagSuggestions {
     // Generate basic meta tags as fallback
-    const title = request.title.length > 60 ? 
-      request.title.substring(0, 57) + '...' : request.title;
-    
-    const description = request.excerpt || 
+    const title =
+      request.title.length > 60
+        ? request.title.substring(0, 57) + '...'
+        : request.title;
+
+    const description =
+      request.excerpt ||
       request.content.substring(0, 155).replace(/\s+\S*$/, '') + '...';
 
     return {
@@ -650,7 +706,7 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
         url: request.url || '',
         type: 'article',
         siteName: this.config.defaultSite?.name,
-        locale: 'en_US'
+        locale: 'en_US',
       },
       twitterCard: {
         card: 'summary_large_image',
@@ -658,15 +714,17 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
         description,
         image: request.image || '',
         site: this.config.defaultSite?.twitterHandle,
-        creator: request.author?.name
+        creator: request.author?.name,
       },
-      other: []
+      other: [],
     };
   }
 
-  private determineArticleType(contentType?: string): 'Article' | 'BlogPosting' | 'NewsArticle' {
+  private determineArticleType(
+    contentType?: string,
+  ): 'Article' | 'BlogPosting' | 'NewsArticle' {
     if (!contentType) return 'Article';
-    
+
     switch (contentType.toLowerCase()) {
       case 'blog_post':
       case 'blog':
@@ -680,7 +738,10 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
 
   private countWords(text: string): number {
     if (!text) return 0;
-    return text.trim().split(/\s+/).filter(word => word.length > 0).length;
+    return text
+      .trim()
+      .split(/\s+/)
+      .filter(word => word.length > 0).length;
   }
 
   private extractPrimaryCategory(content: string, keywords: string[]): string {
@@ -688,17 +749,26 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
     if (keywords && keywords.length > 0) {
       return keywords[0].split(' ')[0];
     }
-    
+
     // Fallback to common categories
-    const categories = ['technology', 'business', 'health', 'education', 'lifestyle', 'finance', 'marketing', 'seo'];
+    const categories = [
+      'technology',
+      'business',
+      'health',
+      'education',
+      'lifestyle',
+      'finance',
+      'marketing',
+      'seo',
+    ];
     const lowerContent = content.toLowerCase();
-    
+
     for (const category of categories) {
       if (lowerContent.includes(category)) {
         return category.charAt(0).toUpperCase() + category.slice(1);
       }
     }
-    
+
     return 'General';
   }
 
@@ -711,13 +781,13 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
     // Basic meta tags
     html.push(`<title>${metaTags.title}</title>`);
     html.push(`<meta name="description" content="${metaTags.description}">`);
-    
+
     if (metaTags.keywords) {
       html.push(`<meta name="keywords" content="${metaTags.keywords}">`);
     }
-    
+
     html.push(`<meta name="robots" content="${metaTags.robots}">`);
-    
+
     if (metaTags.canonical) {
       html.push(`<link rel="canonical" href="${metaTags.canonical}">`);
     }
@@ -728,15 +798,15 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
     html.push(`<meta property="og:description" content="${og.description}">`);
     html.push(`<meta property="og:type" content="${og.type}">`);
     html.push(`<meta property="og:url" content="${og.url}">`);
-    
+
     if (og.image) {
       html.push(`<meta property="og:image" content="${og.image}">`);
     }
-    
+
     if (og.siteName) {
       html.push(`<meta property="og:site_name" content="${og.siteName}">`);
     }
-    
+
     if (og.locale) {
       html.push(`<meta property="og:locale" content="${og.locale}">`);
     }
@@ -745,16 +815,18 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
     const twitter = metaTags.twitterCard;
     html.push(`<meta name="twitter:card" content="${twitter.card}">`);
     html.push(`<meta name="twitter:title" content="${twitter.title}">`);
-    html.push(`<meta name="twitter:description" content="${twitter.description}">`);
-    
+    html.push(
+      `<meta name="twitter:description" content="${twitter.description}">`,
+    );
+
     if (twitter.image) {
       html.push(`<meta name="twitter:image" content="${twitter.image}">`);
     }
-    
+
     if (twitter.site) {
       html.push(`<meta name="twitter:site" content="${twitter.site}">`);
     }
-    
+
     if (twitter.creator) {
       html.push(`<meta name="twitter:creator" content="${twitter.creator}">`);
     }
@@ -781,7 +853,7 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
     if (schema.article) {
       schemaArray.push({
         '@context': 'https://schema.org',
-        ...schema.article
+        ...schema.article,
       });
     }
 
@@ -789,7 +861,7 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
     if (schema.breadcrumb) {
       schemaArray.push({
         '@context': 'https://schema.org',
-        ...schema.breadcrumb
+        ...schema.breadcrumb,
       });
     }
 
@@ -797,7 +869,7 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
     if (schema.faq) {
       schemaArray.push({
         '@context': 'https://schema.org',
-        ...schema.faq
+        ...schema.faq,
       });
     }
 
@@ -805,7 +877,7 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
     if (schema.howTo) {
       schemaArray.push({
         '@context': 'https://schema.org',
-        ...schema.howTo
+        ...schema.howTo,
       });
     }
 
@@ -813,7 +885,7 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
     if (schema.organization) {
       schemaArray.push({
         '@context': 'https://schema.org',
-        ...schema.organization
+        ...schema.organization,
       });
     }
 
@@ -821,16 +893,18 @@ Focus on Article, FAQ, HowTo, Breadcrumb, Organization, and WebSite schemas.`;
     if (schema.website) {
       schemaArray.push({
         '@context': 'https://schema.org',
-        ...schema.website
+        ...schema.website,
       });
     }
 
     // Add custom schemas
     if (schema.custom) {
-      schemaArray.push(...schema.custom.map(customSchema => ({
-        '@context': 'https://schema.org',
-        ...customSchema
-      })));
+      schemaArray.push(
+        ...schema.custom.map(customSchema => ({
+          '@context': 'https://schema.org',
+          ...customSchema,
+        })),
+      );
     }
 
     return `<script type="application/ld+json">
@@ -838,4 +912,3 @@ ${JSON.stringify(schemaArray, null, 2)}
 </script>`;
   }
 }
-
