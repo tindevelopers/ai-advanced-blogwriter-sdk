@@ -6,6 +6,7 @@ import { WorkflowManager } from './workflow-manager';
 import { MetadataManager } from './metadata-manager';
 import { CategorizationManager } from './categorization-manager';
 import { NotificationManager } from './notification-manager';
+import { CategorizationMetrics } from '../types/categorization';
 
 import type {
   // Versioning types
@@ -231,10 +232,10 @@ export class ContentManagementService {
     const version = await this.versionManager.createVersion(
       blogPostId,
       {
-        title: data.title || blogPost.title,
-        content: data.content || blogPost.content,
-        metaDescription: data.metaDescription || blogPost.metaDescription,
-        excerpt: data.excerpt || blogPost.excerpt
+        title: data.title ?? blogPost.title,
+        content: data.content ?? blogPost.content,
+        metaDescription: data.metaDescription ?? blogPost.metaDescription ?? undefined,
+        excerpt: data.excerpt ?? blogPost.excerpt ?? undefined
       },
       { changeSummary: data.changeSummary || 'Content updated' }
     );

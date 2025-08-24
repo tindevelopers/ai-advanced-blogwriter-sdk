@@ -10,12 +10,40 @@ import { PrismaClient } from '../generated/prisma-client';
 import { z } from 'zod';
 import {
   OptimizationSuggestion,
-  OptimizationCategory,
-  ImpactLevel,
+  OptimizationType,
+  SuggestionPriority,
   EffortLevel,
-  OptimizationRequest,
-  ContentMetrics
+  SuggestionCategory
 } from '../types/advanced-writing';
+
+// Define missing interfaces locally
+export interface OptimizationRequest {
+  blogPostId: string;
+  categories: string[];
+  priority: 'high' | 'medium' | 'low';
+  maxRecommendations: number;
+  keywords?: string[];
+  readingLevel?: number;
+  contentType?: string;
+  brandVoice?: string;
+}
+
+export interface ContentMetrics {
+  wordCount: number;
+  readingLevel: number;
+  keywordDensity: Record<string, number>;
+  seoScore: number;
+  readabilityScore: number;
+  engagementScore: number;
+}
+
+export interface PerformanceMetrics {
+  pageViews: number;
+  uniqueViews: number;
+  avgTimeOnPage: number;
+  bounceRate: number;
+  engagementRate: number;
+}
 
 export interface OptimizationConfig {
   model: LanguageModel;
@@ -116,7 +144,7 @@ export class ContentOptimizationService {
     
     // Perform different types of analysis
     const analyses = await Promise.all([
-      this.performSEOAnalysis(content, request.targetKeywords || []),
+      this.performSEOAnalysis(content, request.keywords || []),
       this.performReadabilityAnalysis(content),
       this.performEngagementAnalysis(content),
       this.performStructureAnalysis(content),
@@ -127,7 +155,6 @@ export class ContentOptimizationService {
     // Generate suggestions based on analyses
     const suggestions = await this.generateOptimizationSuggestions(
       content,
-      analyses,
       request
     );
 
@@ -137,10 +164,10 @@ export class ContentOptimizationService {
       : suggestions;
 
     // Limit suggestions if requested
-    const finalSuggestions = request.maxSuggestions 
+    const finalSuggestions = request.maxRecommendations 
       ? filteredSuggestions
           .sort((a, b) => b.priority - a.priority)
-          .slice(0, request.maxSuggestions)
+          .slice(0, request.maxRecommendations)
       : filteredSuggestions;
 
     // Create metrics
@@ -149,7 +176,7 @@ export class ContentOptimizationService {
     // Prioritize actions
     const prioritizedActions = this.prioritizeSuggestions(
       finalSuggestions, 
-      request.prioritizeHighImpact !== false
+      request.priority === 'high'
     );
 
     // Create implementation guide
@@ -653,40 +680,19 @@ Focus on making the content more accessible and engaging.`;
 
   private async generateOptimizationSuggestions(
     content: string,
-    analyses: any[],
     request: OptimizationRequest
   ): Promise<OptimizationSuggestion[]> {
-    const [seoAnalysis, readabilityAnalysis, engagementAnalysis, structureAnalysis, lengthAnalysis, ctaAnalysis] = analyses;
+    const prompt = `Analyze the following content and provide optimization suggestions:
 
-    const prompt = `Generate comprehensive optimization suggestions for this content based on analysis results:
+Content: ${content}
 
-Content Analysis Results:
-- SEO Score: ${seoAnalysis.overallScore}/100
-- Readability Grade Level: ${readabilityAnalysis.gradeLevel}
-- Engagement Score: ${engagementAnalysis.score}/100
-- Structure Score: ${structureAnalysis.score}/100
-- Word Count: ${lengthAnalysis.wordCount}
-- CTA Score: ${ctaAnalysis.score}/100
+Requirements:
+- Target keywords: ${request.keywords?.join(', ') || 'none specified'}
+- Target reading level: ${request.readingLevel || 'not specified'}
+- Content type: ${request.contentType || 'blog'}
+- Brand voice: ${request.brandVoice || 'professional'}
 
-${request.targetKeywords ? `Target Keywords: ${request.targetKeywords.join(', ')}` : ''}
-
-Generate specific, actionable optimization suggestions across categories:
-1. SEO improvements
-2. Readability enhancements
-3. Engagement optimizations
-4. Structural improvements
-5. Content length adjustments
-6. CTA optimizations
-
-For each suggestion, provide:
-- Clear title and description
-- Impact level (LOW/MEDIUM/HIGH/CRITICAL)
-- Effort required (LOW/MEDIUM/HIGH)
-- Priority score (1-100)
-- Expected improvement metrics
-- Specific before/after examples where applicable
-
-Focus on suggestions that will have the highest impact with reasonable effort.`;
+Please provide specific, actionable suggestions for improving the content.`;
 
     try {
       const result = await generateObject({
@@ -697,31 +703,81 @@ Focus on suggestions that will have the highest impact with reasonable effort.`;
 
       return result.object.suggestions.map((s, index) => ({
         id: `opt_${Date.now()}_${index}`,
-        blogPostId: request.blogPostId,
-        category: s.category as OptimizationCategory,
-        title: s.title,
+        type: this.mapCategoryToType(s.category),
+        priority: this.mapPriority(s.priority),
+        effort: this.mapEffort(s.effort),
         description: s.description,
-        impact: s.impact as ImpactLevel,
-        effort: s.effort as EffortLevel,
-        priority: s.priority,
-        currentValue: s.currentValue,
-        suggestedValue: s.suggestedValue,
-        beforeText: s.beforeText,
-        afterText: s.afterText,
+        currentText: s.currentValue,
+        suggestedText: s.suggestedValue,
+        reasoning: s.description || `Improve ${s.category} for better content quality`,
+        expectedImpact: (s.expectedLift || 10) / 100, // Convert percentage to 0-1 scale
+        category: this.mapCategory(s.category),
         position: s.position,
-        seoImpact: s.seoImpact,
-        keywordTarget: s.keywordTarget,
-        readabilityImpact: s.readabilityImpact,
-        engagementMetric: s.engagementMetric,
-        expectedLift: s.expectedLift,
-        isImplemented: false,
-        isValidated: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        metadata: {
+          seoImpact: s.seoImpact,
+          keywordTarget: s.keywordTarget,
+          readabilityImpact: s.readabilityImpact,
+          engagementMetric: s.engagementMetric
+        }
       }));
     } catch (error) {
       console.error('Failed to generate optimization suggestions:', error);
       return [];
+    }
+  }
+
+  private mapCategoryToType(category: string): OptimizationType {
+    switch (category.toLowerCase()) {
+      case 'seo':
+        return OptimizationType.SEO;
+      case 'readability':
+        return OptimizationType.READABILITY;
+      case 'engagement':
+        return OptimizationType.ENGAGEMENT;
+      case 'structure':
+        return OptimizationType.STRUCTURE;
+      case 'tone_style':
+        return OptimizationType.TONE;
+      case 'fact_accuracy':
+        return OptimizationType.FACTUAL;
+      default:
+        return OptimizationType.READABILITY; // Default to readability instead of non-existent CONTENT
+    }
+  }
+
+  private mapPriority(priority: number): SuggestionPriority {
+    if (priority >= 90) return SuggestionPriority.HIGH;
+    if (priority >= 70) return SuggestionPriority.MEDIUM;
+    return SuggestionPriority.LOW;
+  }
+
+  private mapEffort(effort: string): EffortLevel {
+    switch (effort.toLowerCase()) {
+      case 'low':
+        return EffortLevel.MINIMAL;
+      case 'medium':
+        return EffortLevel.MODERATE;
+      case 'high':
+        return EffortLevel.SIGNIFICANT;
+      default:
+        return EffortLevel.MODERATE;
+    }
+  }
+
+  private mapCategory(category: string): SuggestionCategory {
+    switch (category.toLowerCase()) {
+      case 'readability':
+        return SuggestionCategory.CONTENT;
+      case 'seo':
+        return SuggestionCategory.SEO;
+      case 'tone_style':
+        return SuggestionCategory.STYLE;
+      case 'structure':
+        return SuggestionCategory.STRUCTURE;
+      case 'fact_accuracy':
+        return SuggestionCategory.FACTUAL;
+      default:
+        return SuggestionCategory.CONTENT;
     }
   }
 
@@ -738,37 +794,32 @@ Focus on suggestions that will have the highest impact with reasonable effort.`;
       if (density < 0.5) {
         suggestions.push({
           id: `keyword_${index}`,
-          blogPostId: '',
-          category: OptimizationCategory.KEYWORDS,
-          title: `Increase "${keyword}" keyword density`,
-          description: `Current density is ${density.toFixed(1)}%. Recommend 1-2% for better SEO.`,
-          impact: ImpactLevel.HIGH,
-          effort: EffortLevel.MEDIUM,
-          priority: 85,
-          keywordTarget: keyword,
-          seoImpact: 15,
-          expectedLift: 10,
-          isImplemented: false,
-          isValidated: false,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          type: OptimizationType.SEO,
+          priority: SuggestionPriority.HIGH,
+          effort: EffortLevel.MODERATE,
+          description: `Increase "${keyword}" keyword density`,
+          reasoning: `Current density is ${density.toFixed(1)}%. Recommend 1-2% for better SEO.`,
+          expectedImpact: 0.15,
+          category: SuggestionCategory.SEO,
+          metadata: {
+            keywordTarget: keyword,
+            seoImpact: 15
+          }
         });
       } else if (density > 3) {
         suggestions.push({
           id: `keyword_over_${index}`,
-          blogPostId: '',
-          category: OptimizationCategory.KEYWORDS,
-          title: `Reduce "${keyword}" keyword density`,
-          description: `Current density is ${density.toFixed(1)}%. This may be seen as keyword stuffing.`,
-          impact: ImpactLevel.MEDIUM,
-          effort: EffortLevel.LOW,
-          priority: 70,
-          keywordTarget: keyword,
-          seoImpact: -5,
-          isImplemented: false,
-          isValidated: false,
-          createdAt: new Date(),
-          updatedAt: new Date()
+          type: OptimizationType.SEO,
+          priority: SuggestionPriority.MEDIUM,
+          effort: EffortLevel.MINIMAL,
+          description: `Reduce "${keyword}" keyword density`,
+          reasoning: `Current density is ${density.toFixed(1)}%. This may be seen as keyword stuffing.`,
+          expectedImpact: 0.05,
+          category: SuggestionCategory.SEO,
+          metadata: {
+            keywordTarget: keyword,
+            seoImpact: -5
+          }
         });
       }
     });
@@ -782,39 +833,81 @@ Focus on suggestions that will have the highest impact with reasonable effort.`;
   ): Promise<OptimizationSuggestion[]> {
     const suggestions: OptimizationSuggestion[] = [];
 
-    if (seoAnalysis.titleOptimization.score < 80) {
+    if (seoAnalysis.titleOptimization?.score < 80) {
       suggestions.push({
         id: 'title_opt',
-        blogPostId: '',
-        category: OptimizationCategory.HEADLINE,
-        title: 'Optimize title for SEO',
-        description: seoAnalysis.titleOptimization.suggestions.join('; '),
-        impact: ImpactLevel.HIGH,
-        effort: EffortLevel.LOW,
-        priority: 95,
-        seoImpact: 20,
-        isImplemented: false,
-        isValidated: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        type: OptimizationType.SEO,
+        priority: SuggestionPriority.HIGH,
+        effort: EffortLevel.MINIMAL,
+        description: 'Optimize title for better SEO',
+        reasoning: 'Title optimization score is below 80. Improve for better search visibility.',
+        expectedImpact: 0.20,
+        category: SuggestionCategory.SEO
       });
     }
 
-    if (seoAnalysis.metaDescription.score < 80) {
+    if (seoAnalysis.metaDescriptionOptimization?.score < 75) {
       suggestions.push({
-        id: 'meta_desc',
-        blogPostId: '',
-        category: OptimizationCategory.META_DESCRIPTION,
-        title: 'Improve meta description',
-        description: seoAnalysis.metaDescription.suggestions.join('; '),
-        impact: ImpactLevel.HIGH,
-        effort: EffortLevel.LOW,
-        priority: 90,
-        seoImpact: 15,
-        isImplemented: false,
-        isValidated: false,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        id: 'meta_opt',
+        type: OptimizationType.SEO,
+        priority: SuggestionPriority.MEDIUM,
+        effort: EffortLevel.MINIMAL,
+        description: 'Improve meta description',
+        reasoning: 'Meta description score is below 75. Enhance for better click-through rates.',
+        expectedImpact: 0.15,
+        category: SuggestionCategory.SEO
+      });
+    }
+
+    if (seoAnalysis.headingOptimization?.score < 70) {
+      suggestions.push({
+        id: 'heading_opt',
+        type: OptimizationType.STRUCTURE,
+        priority: SuggestionPriority.MEDIUM,
+        effort: EffortLevel.MODERATE,
+        description: 'Improve heading structure',
+        reasoning: 'Heading optimization score is below 70. Better structure improves readability and SEO.',
+        expectedImpact: 0.12,
+        category: SuggestionCategory.STRUCTURE
+      });
+    }
+
+    if (seoAnalysis.contentOptimization?.score < 75) {
+      suggestions.push({
+        id: 'content_opt',
+        type: OptimizationType.READABILITY,
+        priority: SuggestionPriority.HIGH,
+        effort: EffortLevel.MODERATE,
+        description: 'Optimize content structure',
+        reasoning: 'Content optimization score is below 75. Improve overall content quality.',
+        expectedImpact: 0.18,
+        category: SuggestionCategory.CONTENT
+      });
+    }
+
+    if (seoAnalysis.readabilityOptimization?.score < 70) {
+      suggestions.push({
+        id: 'readability_opt',
+        type: OptimizationType.READABILITY,
+        priority: SuggestionPriority.MEDIUM,
+        effort: EffortLevel.MODERATE,
+        description: 'Improve content readability',
+        reasoning: 'Readability score is below 70. Simplify language and structure.',
+        expectedImpact: 0.10,
+        category: SuggestionCategory.CONTENT
+      });
+    }
+
+    if (seoAnalysis.engagementOptimization?.score < 75) {
+      suggestions.push({
+        id: 'engagement_opt',
+        type: OptimizationType.ENGAGEMENT,
+        priority: SuggestionPriority.MEDIUM,
+        effort: EffortLevel.MODERATE,
+        description: 'Enhance content engagement',
+        reasoning: 'Engagement optimization score is below 75. Add interactive elements and compelling content.',
+        expectedImpact: 0.14,
+        category: SuggestionCategory.CONTENT
       });
     }
 
@@ -832,10 +925,10 @@ Focus on suggestions that will have the highest impact with reasonable effort.`;
       suggestions.push({
         id: 'heading_structure',
         blogPostId: '',
-        category: OptimizationCategory.STRUCTURE,
+        category: OptimizationType.STRUCTURE,
         title: 'Improve heading structure',
         description: `Current: H1=${seoAnalysis.headingStructure.h1Count}, H2=${seoAnalysis.headingStructure.h2Count}. ${seoAnalysis.headingStructure.issues.join('; ')}`,
-        impact: ImpactLevel.MEDIUM,
+        impact: OptimizationType.MEDIUM,
         effort: EffortLevel.MEDIUM,
         priority: 75,
         seoImpact: 10,
@@ -850,10 +943,10 @@ Focus on suggestions that will have the highest impact with reasonable effort.`;
       suggestions.push({
         id: 'internal_links',
         blogPostId: '',
-        category: OptimizationCategory.INTERNAL_LINKING,
+        category: OptimizationType.INTERNAL_LINKING,
         title: 'Add internal links',
         description: `Currently ${seoAnalysis.internalLinking.linkCount} internal links. ${seoAnalysis.internalLinking.suggestions.join('; ')}`,
-        impact: ImpactLevel.MEDIUM,
+        impact: OptimizationType.MEDIUM,
         effort: EffortLevel.MEDIUM,
         priority: 70,
         seoImpact: 8,
@@ -878,10 +971,10 @@ Focus on suggestions that will have the highest impact with reasonable effort.`;
       suggestions.push({
         id: 'readability_grade',
         blogPostId: '',
-        category: OptimizationCategory.READABILITY,
+        category: OptimizationType.READABILITY,
         title: 'Simplify language complexity',
         description: `Current grade level: ${analysis.gradeLevel}. Target: ${targetGradeLevel}. ${analysis.improvementSuggestions.join('; ')}`,
-        impact: ImpactLevel.HIGH,
+        impact: OptimizationType.HIGH,
         effort: EffortLevel.MEDIUM,
         priority: 80,
         readabilityImpact: 15,
@@ -896,10 +989,10 @@ Focus on suggestions that will have the highest impact with reasonable effort.`;
       suggestions.push({
         id: 'sentence_length',
         blogPostId: '',
-        category: OptimizationCategory.READABILITY,
+        category: OptimizationType.READABILITY,
         title: 'Shorten sentence length',
         description: `Average sentence length is ${analysis.avgSentenceLength.toFixed(1)} words. Aim for under 20 words per sentence.`,
-        impact: ImpactLevel.MEDIUM,
+        impact: OptimizationType.MEDIUM,
         effort: EffortLevel.MEDIUM,
         priority: 70,
         readabilityImpact: 10,
@@ -925,10 +1018,10 @@ Focus on suggestions that will have the highest impact with reasonable effort.`;
         suggestions.push({
           id: `engagement_${index}`,
           blogPostId: '',
-          category: OptimizationCategory.ENGAGEMENT,
+          category: OptimizationType.ENGAGEMENT,
           title: 'Improve content engagement',
           description: issue,
-          impact: ImpactLevel.MEDIUM,
+          impact: OptimizationType.MEDIUM,
           effort: EffortLevel.MEDIUM,
           priority: 75,
           engagementMetric: 'time-on-page',
@@ -961,9 +1054,9 @@ Focus on suggestions that will have the highest impact with reasonable effort.`;
   }
 
   private createImplementationGuide(suggestions: OptimizationSuggestion[]): any {
-    const quickWins = suggestions.filter(s => s.effort === EffortLevel.LOW && s.impact !== ImpactLevel.LOW);
-    const mediumEffort = suggestions.filter(s => s.effort === EffortLevel.MEDIUM);
-    const highImpact = suggestions.filter(s => s.impact === ImpactLevel.HIGH || s.impact === ImpactLevel.CRITICAL);
+    const quickWins = suggestions.filter(s => s.effort === EffortLevel.MINIMAL && s.impact !== OptimizationType.LOW);
+    const mediumEffort = suggestions.filter(s => s.effort === EffortLevel.MODERATE);
+    const highImpact = suggestions.filter(s => s.impact === OptimizationType.HIGH || s.impact === OptimizationType.CRITICAL);
 
     return {
       quickWins: quickWins.slice(0, 5),
@@ -976,26 +1069,12 @@ Focus on suggestions that will have the highest impact with reasonable effort.`;
     const [seoAnalysis, readabilityAnalysis, engagementAnalysis, structureAnalysis, lengthAnalysis, ctaAnalysis] = analyses;
 
     return {
-      id: `metrics_${Date.now()}`,
-      blogPostId,
-      sectionsGenerated: 0, // Will be updated by multi-section service
-      overallQualityScore: (seoAnalysis.overallScore + readabilityAnalysis.readingEase + engagementAnalysis.score + structureAnalysis.score) / 400,
-      coherenceScore: structureAnalysis.score / 100,
-      consistencyScore: 0.8, // Would be calculated by tone service
-      originalityScore: 0.9, // Would be calculated by fact-checking service
-      toneConsistencyScore: 0.8, // Would be calculated by tone service
-      brandAlignmentScore: 0.7, // Would be calculated by tone service
-      totalClaims: 0, // Would be updated by fact-checking service
-      verifiedClaims: 0,
-      disputedClaims: 0,
-      sourcesUsed: 0,
-      reliableSources: 0,
+      wordCount: 0, // Will be updated by multi-section service
+      readingLevel: 0, // Will be updated by readability service
+      keywordDensity: {}, // Will be updated by SEO service
       seoScore: seoAnalysis.overallScore,
       readabilityScore: readabilityAnalysis.readingEase,
       engagementScore: engagementAnalysis.score,
-      totalSuggestions: 0, // Will be updated when suggestions are saved
-      implementedSuggestions: 0,
-      measuredAt: new Date()
     };
   }
 

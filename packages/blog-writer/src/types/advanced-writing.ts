@@ -19,6 +19,9 @@ export interface ContentOutline {
   contentGoals: string[];
 }
 
+// Alias for backward compatibility
+export type AdvancedContentOutline = ContentOutline;
+
 export interface OutlineSection {
   id: string;
   title: string;
@@ -30,6 +33,9 @@ export interface OutlineSection {
   sectionType: SectionType;
 }
 
+// Alias for backward compatibility
+export type AdvancedOutlineSection = OutlineSection;
+
 export enum SectionType {
   INTRODUCTION = 'introduction',
   OVERVIEW = 'overview',
@@ -40,7 +46,8 @@ export enum SectionType {
   SIDEBAR = 'sidebar',
   FAQ = 'faq',
   SUMMARY = 'summary',
-  RESOURCES = 'resources'
+  RESOURCES = 'resources',
+  PARAGRAPH = 'paragraph' // Added missing type
 }
 
 export interface ContentSection {
@@ -109,7 +116,8 @@ export enum ToneCategory {
   HUMOROUS = 'humorous',
   INSPIRATIONAL = 'inspirational',
   EDUCATIONAL = 'educational',
-  PERSUASIVE = 'persuasive'
+  PERSUASIVE = 'persuasive',
+  INFORMATIVE = 'informative' // Added missing type
 }
 
 export enum FormalityLevel {
@@ -205,22 +213,17 @@ export interface ToneDeviation {
 export interface FactCheck {
   id: string;
   blogPostId: string;
-  claim: string;
   sectionId?: string;
-  startPosition?: number;
-  endPosition?: number;
+  claim: string;
+  position: number;
+  length: number;
   verificationStatus: VerificationStatus;
-  confidenceScore?: number; // 0-1
-  sources: Source[];
-  verifiedAt: Date;
-  verificationMethod: VerificationMethod;
+  confidence: number; // 0-1
+  sources: FactSource[];
+  corrections?: string[];
   notes?: string;
-  citations: Citation[];
-  lastChecked: Date;
-  expiresAt?: Date; // when this fact check expires
+  checkedAt: Date;
   modelUsed: string;
-  humanReviewed?: boolean;
-  reviewedBy?: string;
 }
 
 export enum VerificationStatus {
@@ -228,179 +231,119 @@ export enum VerificationStatus {
   PARTIALLY_VERIFIED = 'partially_verified',
   UNVERIFIED = 'unverified',
   DISPUTED = 'disputed',
-  OUTDATED = 'outdated',
-  NEEDS_REVIEW = 'needs_review'
+  OUTDATED = 'outdated'
 }
 
-export enum VerificationMethod {
-  AUTOMATED = 'automated',
-  EXPERT_REVIEW = 'expert_review',
-  CROWD_SOURCED = 'crowd_sourced',
-  REFERENCE_CHECK = 'reference_check',
-  PRIMARY_SOURCE = 'primary_source'
-}
-
-export interface Source {
-  id: string;
+export interface FactSource {
   url: string;
   title: string;
   author?: string;
-  publishedDate?: Date;
-  lastAccessed: Date;
-  sourceType: SourceType;
-  credibilityScore?: number; // 0-1
-  relevanceScore: number; // 0-1
-}
-
-export enum SourceType {
-  ACADEMIC_PAPER = 'academic_paper',
-  NEWS_ARTICLE = 'news_article',
-  GOVERNMENT = 'government',
-  EXPERT_INTERVIEW = 'expert_interview',
-  BOOK = 'book',
-  BLOG_POST = 'blog_post',
-  SOCIAL_MEDIA = 'social_media',
-  PODCAST = 'podcast',
-  VIDEO = 'video',
-  OTHER = 'other'
-}
-
-export interface Citation {
-  id: string;
-  factCheckId: string;
-  sourceId: string;
-  quotedText?: string;
-  pageNumber?: string;
-  citationFormat: CitationFormat;
-  formattedCitation: string;
-  createdAt: Date;
-}
-
-export enum CitationFormat {
-  APA = 'apa',
-  MLA = 'mla',
-  CHICAGO = 'chicago',
-  HARVARD = 'harvard',
-  IEEE = 'ieee',
-  CUSTOM = 'custom'
+  publicationDate?: Date;
+  relevance: number; // 0-1
+  credibility: number; // 0-1
 }
 
 // ===== OPTIMIZATION =====
 
 export interface OptimizationSuggestion {
   id: string;
-  blogPostId: string;
-  category: OptimizationCategory;
-  title: string;
-  description: string;
-  impact: ImpactLevel;
+  type: OptimizationType;
+  priority: SuggestionPriority;
   effort: EffortLevel;
-  priority: number; // 1-10
-  currentValue?: string;
-  suggestedValue?: string;
-  beforeText?: string;
-  afterText?: string;
+  description: string;
+  currentText?: string;
+  suggestedText?: string;
   reasoning: string;
-  evidenceLinks?: string[];
-  implementationGuide?: string;
-  affectedSections?: string[];
-  estimatedImprovement?: number; // percentage
-  status: OptimizationStatus;
-  appliedAt?: Date;
-  appliedBy?: string;
-  results?: OptimizationResult;
-  createdAt: Date;
-  updatedAt: Date;
+  expectedImpact: number; // 0-1
+  category: SuggestionCategory;
+  position?: number;
+  length?: number;
+  metadata?: Record<string, any>;
 }
 
-export enum OptimizationCategory {
+export enum OptimizationType {
   READABILITY = 'readability',
   SEO = 'seo',
-  ENGAGEMENT = 'engagement',
-  STRUCTURE = 'structure',
   TONE = 'tone',
-  FACTUAL_ACCURACY = 'factual_accuracy',
-  GRAMMAR = 'grammar',
-  STYLE = 'style',
-  PERFORMANCE = 'performance'
+  STRUCTURE = 'structure',
+  FACTUAL = 'factual',
+  ENGAGEMENT = 'engagement',
+  ACCESSIBILITY = 'accessibility'
 }
 
-export enum ImpactLevel {
-  LOW = 'low',
-  MEDIUM = 'medium',
+export enum SuggestionPriority {
   HIGH = 'high',
-  CRITICAL = 'critical'
+  MEDIUM = 'medium',
+  LOW = 'low'
 }
 
 export enum EffortLevel {
   MINIMAL = 'minimal',
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
+  MODERATE = 'moderate',
   SIGNIFICANT = 'significant'
 }
 
-export enum OptimizationStatus {
-  PENDING = 'pending',
-  IN_PROGRESS = 'in_progress',
-  APPLIED = 'applied',
-  REJECTED = 'rejected',
-  OUTDATED = 'outdated'
+export enum SuggestionCategory {
+  CONTENT = 'content',
+  STYLE = 'style',
+  SEO = 'seo',
+  STRUCTURE = 'structure',
+  FACTUAL = 'factual'
 }
 
 export interface OptimizationResult {
-  metricsImprovement: Record<string, number>;
-  userFeedback?: string;
-  measuredAt: Date;
-  confidence: number; // 0-1
+  success: boolean;
+  originalText: string;
+  optimizedText: string;
+  changes: TextChange[];
+  qualityImprovement: number; // 0-1
+  processingTime: number;
+}
+
+export interface TextChange {
+  type: 'insertion' | 'deletion' | 'replacement';
+  position: number;
+  originalText?: string;
+  newText?: string;
+  reason: string;
 }
 
 // ===== WRITING CONFIGURATION =====
 
 export interface WritingConfig {
-  brandVoice?: BrandVoiceProfile;
   styleGuide?: StyleGuideSettings;
   seoRequirements?: SEORequirements;
-  factCheckingEnabled: boolean;
-  optimizationEnabled: boolean;
-  realtimeAnalysis: boolean;
-  collaborativeEditing: boolean;
-  versionControl: boolean;
+  factCheckingEnabled?: boolean;
+  optimizationEnabled?: boolean;
+  streamingEnabled?: boolean;
+  customInstructions?: string;
+  targetAudience?: string;
+  brandVoice?: BrandVoiceProfile;
+  sections?: ContentSection[]; // Added missing property
+  sourceVerification?: boolean; // Added missing property
 }
 
 export interface StyleGuideSettings {
-  id: string;
-  name: string;
-  description?: string;
-  rules: StyleRule[];
-  exceptions: StyleException[];
-  priority: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface StyleRule {
-  id: string;
-  name: string;
-  description: string;
-  pattern: string;
-  replacement?: string;
-  category: string;
-  severity: 'error' | 'warning' | 'info';
-  examples: StyleExample[];
-}
-
-export interface StyleExample {
-  incorrect: string;
-  correct: string;
-  explanation: string;
-}
-
-export interface StyleException {
-  ruleId: string;
-  context: string;
-  reason: string;
-  examples: string[];
+  tone: ToneCategory;
+  formality: FormalityLevel;
+  sentenceLength: 'short' | 'medium' | 'long' | 'varied';
+  paragraphLength: 'short' | 'medium' | 'long';
+  activeVoice: boolean;
+  contractions: boolean;
+  personalPronouns: 'first' | 'second' | 'third' | 'mixed';
+  punctuationStyle: 'oxford_comma' | 'no_oxford' | 'flexible';
+  readingLevel: number;
+  language: {
+    readingLevel: number;
+    complexity: 'simple' | 'moderate' | 'complex';
+  };
+  brandVoice: {
+    primaryTone: ToneCategory;
+    secondaryTones: ToneCategory[];
+  };
+  writingStyle?: {
+    [key: string]: any;
+  };
 }
 
 export interface SEORequirements {
@@ -412,6 +355,10 @@ export interface SEORequirements {
   includeSchema: boolean;
   optimizeImages: boolean;
   internalLinkTargets?: string[];
+  keywords?: {
+    primaryKeyword: string;
+    secondaryKeywords: string[];
+  };
 }
 
 // ===== STREAMING AND REAL-TIME =====

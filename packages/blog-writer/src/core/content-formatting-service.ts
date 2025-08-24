@@ -1,13 +1,15 @@
 
 /**
  * Content Formatting Service
- * Intelligent content transformation system for different platforms
+ * Handles content formatting, conversion, and platform-specific adaptations
  */
 
-import type { BlogPost } from '../types/blog-post';
-import type {
-  FormattedContent,
+import { LanguageModel } from 'ai';
+import { PrismaClient } from '../generated/prisma-client';
+import { BlogPost } from '../types/blog-post';
+import {
   ContentFormat,
+  FormattedContent,
   FormatOptions,
   PlatformCapabilities,
   ValidationResult,
