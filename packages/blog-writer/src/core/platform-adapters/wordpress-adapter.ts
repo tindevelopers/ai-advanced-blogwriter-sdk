@@ -257,8 +257,19 @@ export class WordPressAdapter extends BasePlatformAdapter {
     // Convert blog post to WordPress format
     const formattedContent: FormattedContent = {
       title: content.title,
-      content: this.formatContentBody(typeof content.content === 'string' ? content.content : content.content.content, options),
-      excerpt: content.excerpt || this.generateExcerpt(typeof content.content === 'string' ? content.content : content.content.content),
+      content: this.formatContentBody(
+        typeof content.content === 'string'
+          ? content.content
+          : content.content.content,
+        options,
+      ),
+      excerpt:
+        content.excerpt ||
+        this.generateExcerpt(
+          typeof content.content === 'string'
+            ? content.content
+            : content.content.content,
+        ),
 
       metadata: {
         slug: content.slug,

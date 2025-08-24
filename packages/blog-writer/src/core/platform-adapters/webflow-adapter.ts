@@ -7,9 +7,7 @@ import {
   BasePlatformAdapter,
   type PlatformAdapterConfig,
 } from '../base-platform-adapter';
-import {
-  ContentFormat,
-} from '../../types/platform-integration';
+import { ContentFormat } from '../../types/platform-integration';
 import type {
   PlatformCapabilities,
   PlatformCredentials,
@@ -417,12 +415,27 @@ export class WebflowAdapter extends BasePlatformAdapter {
 
     const formatted: FormattedContent = {
       title: content.title,
-      content: typeof formattedContent === 'string' ? formattedContent : formattedContent.content,
-      excerpt: content.excerpt || this.generateExcerpt(typeof formattedContent === 'string' ? formattedContent : formattedContent.content),
+      content:
+        typeof formattedContent === 'string'
+          ? formattedContent
+          : formattedContent.content,
+      excerpt:
+        content.excerpt ||
+        this.generateExcerpt(
+          typeof formattedContent === 'string'
+            ? formattedContent
+            : formattedContent.content,
+        ),
 
       metadata: {
         slug: this.generateSlug(content.title),
-        description: content.excerpt || this.generateExcerpt(typeof formattedContent === 'string' ? formattedContent : formattedContent.content),
+        description:
+          content.excerpt ||
+          this.generateExcerpt(
+            typeof formattedContent === 'string'
+              ? formattedContent
+              : formattedContent.content,
+          ),
         keywords: content.keywords || [],
         tags: content.keywords || [],
         publishDate: content.publishedAt,
@@ -454,7 +467,11 @@ export class WebflowAdapter extends BasePlatformAdapter {
 
       format: ContentFormat.RICH_TEXT,
       originalWordCount: content.wordCount || 0,
-      adaptedWordCount: this.countWords(typeof formattedContent === 'string' ? formattedContent : formattedContent.content),
+      adaptedWordCount: this.countWords(
+        typeof formattedContent === 'string'
+          ? formattedContent
+          : formattedContent.content,
+      ),
       adaptationScore: 0.95, // High score for Webflow compatibility
     };
 

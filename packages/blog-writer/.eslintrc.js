@@ -5,9 +5,9 @@ module.exports = {
     'node_modules/**/*',
     'temp/**/*',
     '*.d.ts.map',
-    'tsconfig.tsbuildinfo'
+    'tsconfig.tsbuildinfo',
   ],
   rules: {
     // Add any package-specific rules here
-  }
+  },
 };

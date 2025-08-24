@@ -80,7 +80,7 @@ export class SEOOptimizer {
         images: 0, // Not available in current schema
         url: result.object.components.url.score,
       },
-      recommendations: (result.object.recommendations.map((rec: any) => ({
+      recommendations: result.object.recommendations.map((rec: any) => ({
         type:
           rec.impact === 'critical'
             ? 'critical'
@@ -100,7 +100,7 @@ export class SEOOptimizer {
                 ? 50
                 : 25,
         fix: rec.fix || rec.message,
-      })) as unknown) as SEORecommendation[],
+      })) as unknown as SEORecommendation[],
       keywords: {
         primary: result.object.keywords?.[0]
           ? {
@@ -276,7 +276,7 @@ Each recommendation should include:
       schema: SEORecommendationSchema,
     });
 
-    return (result.object as unknown) as SEORecommendation[];
+    return result.object as unknown as SEORecommendation[];
   }
 
   /**
