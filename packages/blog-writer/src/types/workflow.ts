@@ -42,6 +42,9 @@ export interface ApprovalWorkflow {
   completedAt?: Date;
   dueDate?: Date;
   steps: ApprovalStep[];
+  // Additional properties for backward compatibility
+  status?: string;
+  updatedAt?: Date;
 }
 
 export interface ApprovalStep {

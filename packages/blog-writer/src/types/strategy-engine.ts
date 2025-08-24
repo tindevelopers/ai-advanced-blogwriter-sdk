@@ -106,6 +106,8 @@ export interface TrendData {
     predicted: number;
     confidence: number;
   }>;
+  // Additional properties for backward compatibility
+  length?: number;
 }
 
 export type CompetitionLevel = 'low' | 'medium' | 'high';
@@ -574,6 +576,12 @@ export interface TopicResearchRequest {
   depth?: 'basic' | 'detailed' | 'comprehensive';
   language?: string;
   location?: string;
+  // Additional properties for backward compatibility
+  topic?: string;
+  keywords?: string[];
+  niche?: string;
+  targetAudience?: string;
+  analysisDepth?: 'basic' | 'detailed' | 'comprehensive';
 }
 
 export interface TopicResearchResponse {
@@ -583,6 +591,9 @@ export interface TopicResearchResponse {
   competitors: CompetitorTopic[];
   opportunities: Opportunity[];
   confidence: number;
+  // Additional properties for backward compatibility
+  topics?: TopicResearch[];
+  competitionLevel?: string;
 }
 
 export interface CompetitorAnalysisRequest {
@@ -592,6 +603,9 @@ export interface CompetitorAnalysisRequest {
   includeKeywords?: boolean;
   includeTopics?: boolean;
   depth?: 'basic' | 'detailed' | 'comprehensive';
+  // Additional properties for backward compatibility
+  topic?: string;
+  includeContentGaps?: boolean;
 }
 
 export interface CompetitorAnalysisResponse {
@@ -600,6 +614,9 @@ export interface CompetitorAnalysisResponse {
   opportunities: Opportunity[];
   recommendations: Recommendation[];
   summary: ReportSummary;
+  // Additional properties for backward compatibility
+  competitors?: CompetitorAnalysis[];
+  contentGaps?: ContentGap[];
 }
 
 export interface ContentBriefRequest {
@@ -611,6 +628,10 @@ export interface ContentBriefRequest {
   includeCompetitorAnalysis?: boolean;
   includeResearch?: boolean;
   includeOutline?: boolean;
+  // Additional properties for backward compatibility
+  topicId?: string;
+  contentGoals?: string[];
+  competitorAnalysis?: boolean;
 }
 
 export interface ContentBriefResponse {

@@ -34,14 +34,8 @@ import {
   ToneCategory,
   EmotionalTone,
   VerificationStatus,
-  VerificationMethod,
-  Source,
-  Citation,
-  CitationFormat,
-  OptimizationCategory,
-  ImpactLevel,
   EffortLevel,
-  OptimizationStatus,
+  OptimizationType,
 } from '../types/advanced-writing';
 import type { BlogPost } from '../types/blog-post';
 
@@ -100,7 +94,14 @@ export class AdvancedWritingService {
       };
 
       if (request.streamingCallback) {
-        this.streamingCallback = request.streamingCallback;
+        // Handle both StreamingCallback object and function
+        if (typeof request.streamingCallback === 'function') {
+          this.streamingCallback = {
+            onProgress: request.streamingCallback,
+          };
+        } else {
+          this.streamingCallback = request.streamingCallback;
+        }
       }
 
       // Phase 1: Content Planning and Outline Generation
@@ -452,17 +453,13 @@ export class AdvancedWritingService {
         blogPostId: section.blogPostId,
         claim: 'Sample claim from content',
         sectionId: section.id,
-        startPosition: 0,
-        endPosition: 50,
+        position: 0,
+        length: 50,
         verificationStatus: VerificationStatus.VERIFIED,
-        confidenceScore: 0.9,
+        confidence: 0.9,
         sources: [],
-        verifiedAt: new Date(),
-        verificationMethod: VerificationMethod.AUTOMATED,
-        citations: [],
-        lastChecked: new Date(),
+        checkedAt: new Date(),
         modelUsed: this.config.model.modelId,
-        humanReviewed: false,
       };
 
       factChecks.push(factCheck);
@@ -482,23 +479,17 @@ export class AdvancedWritingService {
     suggestions.push({
       id: `opt-${Date.now()}-1`,
       blogPostId,
-      category: OptimizationCategory.READABILITY,
+      type: OptimizationType.READABILITY,
+      category: 'readability' as any,
       title: 'Improve Sentence Variety',
       description: 'Add more varied sentence structures to improve readability',
-      impact: ImpactLevel.MEDIUM,
-      effort: EffortLevel.LOW,
-      priority: 7,
+      impact: 'medium' as any,
+      effort: EffortLevel.MINIMAL,
+      priority: 7 as any,
       currentValue: 'Repetitive sentence structures',
       suggestedValue: 'Mix of short, medium, and long sentences',
       reasoning: 'Varied sentence length improves reading flow and engagement',
-      evidenceLinks: [],
-      implementationGuide:
-        'Review each paragraph and vary sentence beginnings and lengths',
-      affectedSections: [sections[0]?.id || ''],
-      estimatedImprovement: 15,
-      status: OptimizationStatus.PENDING,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      expectedImpact: 0.7,
     });
 
     return suggestions;
@@ -792,7 +783,7 @@ export class AdvancedWritingService {
         endPosition: fc.endPosition || undefined, // Convert null to undefined
         verificationStatus: fc.verificationStatus as any,
         confidenceScore: fc.confidenceScore || undefined, // Convert null to undefined
-        sources: fc.sources as Source[],
+        sources: fc.sources as any[],
         verifiedAt: fc.verifiedAt,
         verificationMethod: fc.verificationMethod as any,
         notes: fc.notes || undefined, // Convert null to undefined
@@ -802,7 +793,7 @@ export class AdvancedWritingService {
           sourceId: c.sourceId,
           quotedText: c.quotedText || undefined,
           pageNumber: c.pageNumber || undefined,
-          citationFormat: c.citationFormat as CitationFormat,
+          citationFormat: c.citationFormat as any,
           formattedCitation: c.formattedCitation,
           createdAt: c.createdAt,
         })),

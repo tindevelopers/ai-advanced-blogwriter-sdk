@@ -257,8 +257,8 @@ export class WordPressAdapter extends BasePlatformAdapter {
     // Convert blog post to WordPress format
     const formattedContent: FormattedContent = {
       title: content.title,
-      content: this.formatContentBody(content.content.text, options),
-      excerpt: content.excerpt || this.generateExcerpt(content.content.text),
+      content: this.formatContentBody(typeof content.content === 'string' ? content.content : content.content.content, options),
+      excerpt: content.excerpt || this.generateExcerpt(typeof content.content === 'string' ? content.content : content.content.content),
 
       metadata: {
         slug: content.slug,
@@ -764,15 +764,15 @@ export class WordPressAdapter extends BasePlatformAdapter {
       content: this.formatContentBody(content.content, options),
       excerpt: content.excerpt || this.generateExcerpt(content.content),
       metadata: {
-        slug: content.metadata?.seo?.slug || this.generateSlug(content.title),
-        author: content.metadata?.author?.name || 'Unknown',
+        slug: content.slug || this.generateSlug(content.title),
+        author: content.authorName || 'Unknown',
         publishDate: content.metadata?.publishedAt
           ? new Date(content.metadata.publishedAt)
           : undefined,
       },
       seo: {
         metaDescription:
-          content.metadata?.seo?.metaDescription || content.excerpt || '',
+          content.metadata?.metaDescription || content.excerpt || '',
         focusKeyword: content.metadata?.seo?.focusKeyword || '',
         title: content.title,
       },

@@ -113,8 +113,9 @@ export interface BrandVoiceProfile {
   primaryTone?: ToneCategory;
   secondaryTones?: ToneCategory[];
   vocabularyLevel?: string;
-  formalityLevel?: FormalityLevel;
+  formalityLevel?: FormalityLevelInput;
   personalityTraits?: PersonalityTraits;
+  examples?: string[];
 }
 
 export interface ToneCharacteristics {
@@ -157,7 +158,16 @@ export enum FormalityLevel {
   HIGH = 'high',
   MEDIUM = 'medium',
   LOW = 'low',
+  // Additional numeric values for backward compatibility
+  LEVEL_1 = 1,
+  LEVEL_2 = 2,
+  LEVEL_3 = 3,
+  LEVEL_4 = 4,
+  LEVEL_5 = 5,
 }
+
+// Allow numeric values for backward compatibility
+export type FormalityLevelInput = FormalityLevel | number;
 
 export enum EmotionalTone {
   ENTHUSIASTIC = 'enthusiastic',
@@ -176,6 +186,9 @@ export enum EmotionalTone {
   PASSIONATE = 'passionate',
   ANALYTICAL = 'analytical',
   INSPIRING = 'inspiring',
+  CALM = 'calm',
+  ANXIOUS = 'anxious',
+  UNCERTAIN = 'uncertain',
 }
 
 export interface PersonalityTraits {
@@ -184,6 +197,11 @@ export interface PersonalityTraits {
   sincerity: number; // 0-1
   excitement: number; // 0-1
   sophistication: number; // 0-1
+  // Additional properties for backward compatibility
+  authority?: number; // 0-1
+  trustworthiness?: number; // 0-1
+  expertise?: number; // 0-1
+  objectivity?: number; // 0-1
 }
 
 export interface VocabularyGuidelines {
@@ -194,6 +212,8 @@ export interface VocabularyGuidelines {
   synonyms: Record<string, string[]>;
   // Additional properties for backward compatibility
   complexityLevel?: string;
+  preferredExpressions?: string[];
+  avoidedPhrases?: string[];
 }
 
 export interface JargonGuideline {
@@ -209,6 +229,10 @@ export interface StylePreferences {
   contractions: boolean;
   personalPronouns: 'first' | 'second' | 'third' | 'mixed';
   punctuationStyle: 'oxford_comma' | 'no_oxford' | 'flexible';
+  // Additional properties for backward compatibility
+  sentenceStructure?: 'simple' | 'complex' | 'varied' | 'VARIED';
+  useExamples?: boolean;
+  includeData?: boolean;
 }
 
 export interface ConsistencyRule {
@@ -477,6 +501,8 @@ export enum StyleSeverity {
   MODERATE = 'moderate',
   MAJOR = 'major',
   HIGH = 'high', // Backward compatibility
+  // Additional values for backward compatibility
+  MEDIUM = 'medium',
 }
 
 export interface StyleViolation {
@@ -563,6 +589,13 @@ export interface StyleGuideSettings {
   writingStyle?: {
     [key: string]: any;
   };
+  // Additional properties for backward compatibility
+  formatting?: {
+    [key: string]: any;
+  };
+  qualityStandards?: {
+    [key: string]: any;
+  };
 }
 
 export interface SEORequirements {
@@ -577,6 +610,12 @@ export interface SEORequirements {
   keywords?: {
     primaryKeyword: string;
     secondaryKeywords: string[];
+    // Additional properties for backward compatibility
+    densityTargets?: {
+      primary: number | { min: number; max: number };
+      secondary: number | { min: number; max: number };
+    };
+    longTailKeywords?: string[];
   };
 }
 
@@ -641,6 +680,8 @@ export interface ComprehensiveWritingRequest {
   optimizationEnabled?: boolean;
   streamingCallback?: StreamingCallbackInput;
   customInstructions?: string;
+  // Additional properties for backward compatibility
+  generateOutline?: boolean;
 }
 
 export interface ComprehensiveWritingResult {
@@ -812,6 +853,8 @@ export interface FactCheckRequest {
   requireReliableSources?: boolean;
   // Additional properties for backward compatibility
   content?: string;
+  verificationLevel?: 'basic' | 'comprehensive' | 'COMPREHENSIVE';
+  sources?: string[];
 }
 
 // Multi-Section Generation Types

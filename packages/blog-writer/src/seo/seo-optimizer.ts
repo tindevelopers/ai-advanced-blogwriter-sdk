@@ -77,17 +77,17 @@ export class SEOOptimizer {
         keywords: result.object.components.keywords.score,
         contentLength: result.object.components.content.score,
         internalLinks: 0, // Would be calculated separately
-        images: result.object.components.images?.score || 0,
+        images: 0, // Not available in current schema
         url: result.object.components.url.score,
       },
-      recommendations: result.object.recommendations.map((rec: any) => ({
+      recommendations: (result.object.recommendations.map((rec: any) => ({
         type:
           rec.impact === 'critical'
             ? 'critical'
             : rec.impact === 'high'
               ? 'important'
               : 'minor',
-        category: rec.category,
+        category: rec.category as any, // Map AI schema category to interface category
         message: rec.message,
         current: rec.current,
         suggested: rec.suggested,
@@ -100,7 +100,7 @@ export class SEOOptimizer {
                 ? 50
                 : 25,
         fix: rec.fix || rec.message,
-      })),
+      })) as unknown) as SEORecommendation[],
       keywords: {
         primary: result.object.keywords?.[0]
           ? {
@@ -232,46 +232,7 @@ Provide detailed analysis for optimization recommendations.`;
     const result = await generateObject({
       model: this.model,
       prompt,
-      schema: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            keyword: { type: 'string' },
-            density: { type: 'number' },
-            recommendedDensity: {
-              type: 'object',
-              properties: {
-                min: { type: 'number' },
-                max: { type: 'number' },
-              },
-              required: ['min', 'max'],
-            },
-            positions: {
-              type: 'object',
-              properties: {
-                title: { type: 'boolean' },
-                metaDescription: { type: 'boolean' },
-                firstParagraph: { type: 'boolean' },
-                headings: { type: 'array', items: { type: 'string' } },
-                url: { type: 'boolean' },
-                altText: { type: 'boolean' },
-              },
-              required: [
-                'title',
-                'metaDescription',
-                'firstParagraph',
-                'headings',
-                'url',
-                'altText',
-              ],
-            },
-            related: { type: 'array', items: { type: 'string' } },
-            longTail: { type: 'array', items: { type: 'string' } },
-          },
-          required: ['keyword', 'density', 'recommendedDensity', 'positions'],
-        },
-      },
+      schema: KeywordAnalysisSchema,
     });
 
     return result.object as KeywordAnalysis[];
@@ -312,25 +273,10 @@ Each recommendation should include:
     const result = await generateObject({
       model: this.model,
       prompt,
-      schema: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            type: { type: 'string', enum: ['critical', 'important', 'minor'] },
-            category: { type: 'string' },
-            message: { type: 'string' },
-            current: { type: 'string' },
-            suggested: { type: 'string' },
-            impact: { type: 'number', minimum: 0, maximum: 100 },
-            fix: { type: 'string' },
-          },
-          required: ['type', 'category', 'message', 'impact', 'fix'],
-        },
-      },
+      schema: SEORecommendationSchema,
     });
 
-    return result.object as SEORecommendation[];
+    return (result.object as unknown) as SEORecommendation[];
   }
 
   /**

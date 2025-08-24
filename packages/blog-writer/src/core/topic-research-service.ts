@@ -30,6 +30,8 @@ export interface TopicResearchConfig {
   prisma?: PrismaClient;
   cacheResults?: boolean;
   cacheTTL?: number; // hours
+  // Additional properties for backward compatibility
+  maxConcurrentAnalysis?: number;
 }
 
 export class TopicResearchService {

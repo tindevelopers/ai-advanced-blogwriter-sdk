@@ -287,9 +287,9 @@ Consider factors like:
 
     const optimizations = {
       optimizedPrompt: template.promptTemplate,
-      structuralChanges: [],
-      variableAdjustments: {},
-      seoEnhancements: [],
+      structuralChanges: [] as string[],
+      variableAdjustments: {} as Record<string, any>,
+      seoEnhancements: [] as string[],
     };
 
     // Apply SEO optimizations
@@ -445,9 +445,9 @@ Consider factors like:
     variableOverrides: Record<string, any>;
   }> {
     const customizations = {
-      promptAdjustments: [],
-      structuralChanges: [],
-      variableOverrides: {},
+      promptAdjustments: [] as string[],
+      structuralChanges: [] as string[],
+      variableOverrides: {} as Record<string, any>,
     };
 
     // Audience-based adjustments

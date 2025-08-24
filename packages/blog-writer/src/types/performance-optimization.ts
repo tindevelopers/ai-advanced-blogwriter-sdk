@@ -555,6 +555,9 @@ export enum ABTestStatus {
   PAUSED = 'paused',
   COMPLETED = 'completed',
   CANCELLED = 'cancelled',
+  // Additional values for backward compatibility
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
 }
 
 export interface ABTestResult {

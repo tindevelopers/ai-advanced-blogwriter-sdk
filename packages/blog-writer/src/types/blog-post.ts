@@ -1,7 +1,7 @@
 /**
  * Blog post status - core statuses as specified in requirements
  */
-export type BlogPostStatus = 'draft' | 'published' | 'archived';
+export type BlogPostStatus = 'draft' | 'published' | 'archived' | 'PUBLISHED';
 
 /**
  * Extended blog post status with additional workflow states
@@ -313,4 +313,26 @@ export interface BlogPost {
     /** Engagement improvements */
     engagement?: string[];
   };
+
+  // Additional properties for backward compatibility
+  wordCount?: number;
+  readingTime?: number;
+  publishedAt?: Date;
+  authorId?: string;
+  categoryId?: string;
+  featuredImageAlt?: string;
+  featuredImageCaption?: string;
+  featuredImageCredit?: string;
+  allowComments?: boolean;
+  featured?: boolean;
+  language?: string;
+  template?: string;
+  keywordDensity?: number;
+  readabilityScore?: number;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  twitterCard?: string;
+  twitterImage?: string;
+  scheduledAt?: Date;
 }

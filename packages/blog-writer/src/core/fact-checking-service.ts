@@ -27,6 +27,8 @@ export interface FactCheckConfig {
     serpApi?: string;
     factCheckApi?: string;
   };
+  // Additional properties for backward compatibility
+  sources?: string[];
 }
 
 // Zod schemas for structured AI responses

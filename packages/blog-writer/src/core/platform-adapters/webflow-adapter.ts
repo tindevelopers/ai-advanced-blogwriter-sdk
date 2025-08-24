@@ -7,9 +7,11 @@ import {
   BasePlatformAdapter,
   type PlatformAdapterConfig,
 } from '../base-platform-adapter';
+import {
+  ContentFormat,
+} from '../../types/platform-integration';
 import type {
   PlatformCapabilities,
-  ContentFormat,
   PlatformCredentials,
   AuthenticationResult,
   ConnectionValidationResult,
@@ -415,30 +417,30 @@ export class WebflowAdapter extends BasePlatformAdapter {
 
     const formatted: FormattedContent = {
       title: content.title,
-      content: formattedContent,
-      excerpt: content.excerpt || this.generateExcerpt(formattedContent),
+      content: typeof formattedContent === 'string' ? formattedContent : formattedContent.content,
+      excerpt: content.excerpt || this.generateExcerpt(typeof formattedContent === 'string' ? formattedContent : formattedContent.content),
 
       metadata: {
         slug: this.generateSlug(content.title),
-        description: content.excerpt || this.generateExcerpt(formattedContent),
+        description: content.excerpt || this.generateExcerpt(typeof formattedContent === 'string' ? formattedContent : formattedContent.content),
         keywords: content.keywords || [],
-        tags: content.tags || [],
+        tags: content.keywords || [],
         publishDate: content.publishedAt,
         status: content.status || 'published',
         visibility: 'public',
         author: {
-          name: content.author || 'Admin',
-          email: content.authorEmail,
+          name: content.authorName || 'Admin',
+          email: content.authorId || 'admin@example.com',
         },
       },
 
       seo: {
-        metaTitle: content.seoTitle || content.title,
-        metaDescription: content.seoDescription || content.excerpt,
+        metaTitle: content.ogTitle || content.title,
+        metaDescription: content.ogDescription || content.excerpt,
         focusKeyword: content.focusKeyword,
         ogTitle: content.title,
         ogDescription: content.excerpt,
-        canonical: content.canonicalUrl,
+        canonical: content.featuredImageUrl || '',
       },
 
       featuredImage: processedImages[0],
@@ -452,7 +454,7 @@ export class WebflowAdapter extends BasePlatformAdapter {
 
       format: ContentFormat.RICH_TEXT,
       originalWordCount: content.wordCount || 0,
-      adaptedWordCount: this.countWords(formattedContent),
+      adaptedWordCount: this.countWords(typeof formattedContent === 'string' ? formattedContent : formattedContent.content),
       adaptationScore: 0.95, // High score for Webflow compatibility
     };
 

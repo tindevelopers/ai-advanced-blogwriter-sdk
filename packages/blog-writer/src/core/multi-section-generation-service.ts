@@ -27,6 +27,8 @@ export interface MultiSectionConfig {
   cacheTTL?: number; // hours
   maxSections?: number;
   enableRealTimeChecking?: boolean;
+  // Additional properties for backward compatibility
+  enableParallelGeneration?: boolean;
 }
 
 export class MultiSectionGenerationService {
