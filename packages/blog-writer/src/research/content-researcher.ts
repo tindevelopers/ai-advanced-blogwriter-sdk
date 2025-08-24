@@ -1,5 +1,5 @@
 import { generateObject, generateText } from 'ai';
-import type { LanguageModelV1 } from '@ai-sdk/provider';
+import type { LanguageModelV2 } from '@ai-sdk/provider';
 import type {
   ContentResearchConfig,
   ContentResearchResult,
@@ -8,13 +8,21 @@ import type {
   ResearchSource,
   TopicResearchOptions,
 } from '../types';
+import {
+  ContentResearchSchema,
+  KeywordResearchSchema,
+  ContentGapAnalysisSchema,
+  CompetitorAnalysisSchema,
+  ContentOutlineSchema,
+  ContentSummarySchema
+} from '../schemas/ai-schemas';
 
 /**
  * Content research options
  */
 export interface ResearchOptions {
   /** Model to use for research */
-  model: LanguageModelV1;
+  model: LanguageModelV2;
 
   /** Research configuration */
   config: ContentResearchConfig;
@@ -30,7 +38,7 @@ export interface ResearchOptions {
  * Content researcher for blog topics
  */
 export class ContentResearcher {
-  constructor(private model: LanguageModelV1) {}
+  constructor(private model: LanguageModelV2) {}
 
   /**
    * Conduct comprehensive content research
@@ -101,18 +109,7 @@ Provide comprehensive, accurate information suitable for content creation.`;
     const result = await generateObject({
       model: this.model,
       prompt,
-      schema: {
-        type: 'object',
-        properties: {
-          summary: { type: 'string' },
-          keyConcepts: { type: 'array', items: { type: 'string' } },
-          relatedTopics: { type: 'array', items: { type: 'string' } },
-          ...(config.includeTrends && {
-            trending: { type: 'array', items: { type: 'string' } },
-          }),
-        },
-        required: ['summary', 'keyConcepts', 'relatedTopics'],
-      },
+      schema: ContentResearchSchema,
     });
 
     return result.object;
@@ -150,56 +147,7 @@ Focus on keywords that would be valuable for content creation and SEO.`;
     const result = await generateObject({
       model: this.model,
       prompt,
-      schema: {
-        type: 'object',
-        properties: {
-          primary: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                keyword: { type: 'string' },
-                searchVolume: { type: 'string' },
-                competition: {
-                  type: 'string',
-                  enum: ['low', 'medium', 'high'],
-                },
-                intent: {
-                  type: 'string',
-                  enum: [
-                    'informational',
-                    'navigational',
-                    'transactional',
-                    'commercial',
-                  ],
-                },
-                trend: {
-                  type: 'string',
-                  enum: ['rising', 'stable', 'declining'],
-                },
-                relatedQueries: { type: 'array', items: { type: 'string' } },
-                questions: { type: 'array', items: { type: 'string' } },
-              },
-              required: ['keyword', 'searchVolume', 'competition', 'intent'],
-            },
-          },
-          longTail: {
-            type: 'array',
-            items: { $ref: '#/properties/primary/items' },
-          },
-          related: {
-            type: 'array',
-            items: { $ref: '#/properties/primary/items' },
-          },
-          ...(config.includeTrends && {
-            trending: {
-              type: 'array',
-              items: { $ref: '#/properties/primary/items' },
-            },
-          }),
-        },
-        required: ['primary', 'longTail', 'related'],
-      },
+      schema: KeywordResearchSchema,
     });
 
     // Convert search volume strings to numbers (simplified)
@@ -246,16 +194,7 @@ Focus on opportunities that would provide value to the audience and differentiat
     const result = await generateObject({
       model: this.model,
       prompt,
-      schema: {
-        type: 'object',
-        properties: {
-          gaps: { type: 'array', items: { type: 'string' } },
-          angles: { type: 'array', items: { type: 'string' } },
-          questions: { type: 'array', items: { type: 'string' } },
-          subtopics: { type: 'array', items: { type: 'string' } },
-        },
-        required: ['gaps', 'angles', 'questions', 'subtopics'],
-      },
+      schema: ContentGapAnalysisSchema,
     });
 
     return result.object;
@@ -295,37 +234,7 @@ Focus on insights that would help create competitive, differentiated content.`;
     const result = await generateObject({
       model: this.model,
       prompt,
-      schema: {
-        type: 'object',
-        properties: {
-          topContent: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                title: { type: 'string' },
-                wordCount: { type: 'number' },
-                format: { type: 'string' },
-                keyTopics: { type: 'array', items: { type: 'string' } },
-                strengths: { type: 'array', items: { type: 'string' } },
-                weaknesses: { type: 'array', items: { type: 'string' } },
-              },
-              required: ['title', 'wordCount', 'format', 'keyTopics'],
-            },
-          },
-          analysis: {
-            type: 'object',
-            properties: {
-              avgLength: { type: 'number' },
-              commonTopics: { type: 'array', items: { type: 'string' } },
-              missingTopics: { type: 'array', items: { type: 'string' } },
-              formats: { type: 'array', items: { type: 'string' } },
-            },
-            required: ['avgLength', 'commonTopics', 'missingTopics', 'formats'],
-          },
-        },
-        required: ['topContent', 'analysis'],
-      },
+      schema: CompetitorAnalysisSchema,
     });
 
     // Convert the analysis to match our interface
@@ -385,24 +294,7 @@ Base recommendations on best practices for this topic and target audience.`;
     const result = await generateObject({
       model: this.model,
       prompt,
-      schema: {
-        type: 'object',
-        properties: {
-          structure: { type: 'array', items: { type: 'string' } },
-          wordCount: {
-            type: 'object',
-            properties: {
-              min: { type: 'number' },
-              max: { type: 'number' },
-            },
-            required: ['min', 'max'],
-          },
-          tone: { type: 'string' },
-          keyPoints: { type: 'array', items: { type: 'string' } },
-          cta: { type: 'array', items: { type: 'string' } },
-        },
-        required: ['structure', 'wordCount', 'tone', 'keyPoints', 'cta'],
-      },
+      schema: ContentOutlineSchema,
     });
 
     return result.object;
@@ -437,16 +329,7 @@ Focus on practical insights for content creation.`;
     const result = await generateObject({
       model: this.model,
       prompt,
-      schema: {
-        type: 'object',
-        properties: {
-          summary: { type: 'string' },
-          keywords: { type: 'array', items: { type: 'string' } },
-          questions: { type: 'array', items: { type: 'string' } },
-          suggestions: { type: 'array', items: { type: 'string' } },
-        },
-        required: ['summary', 'keywords', 'questions', 'suggestions'],
-      },
+      schema: ContentSummarySchema,
     });
 
     return result.object;
@@ -487,7 +370,7 @@ Focus on practical insights for content creation.`;
  * Quick research function
  */
 export async function researchTopic(
-  model: LanguageModelV1,
+  model: LanguageModelV2,
   config: ContentResearchConfig,
 ): Promise<ContentResearchResult> {
   const researcher = new ContentResearcher(model);
@@ -498,7 +381,7 @@ export async function researchTopic(
  * Quick keyword research
  */
 export async function researchKeywords(
-  model: LanguageModelV1,
+  model: LanguageModelV2,
   topic: string,
   options?: { audience?: string; language?: string },
 ): Promise<KeywordResearchData[]> {

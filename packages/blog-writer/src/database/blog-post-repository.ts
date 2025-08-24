@@ -36,7 +36,9 @@ export class BlogPostRepository {
 
       // Content classification
       category: data.metadata.category,
-      tags: data.metadata.tags || [],
+      tags: {
+        create: (data.metadata.tags || []).map(tag => ({ name: tag }))
+      },
 
       // SEO data
       focusKeyword: data.metadata.seo?.focusKeyword,
@@ -163,7 +165,15 @@ export class BlogPostRepository {
       if (data.metadata.metaDescription)
         updateData.metaDescription = data.metadata.metaDescription;
       if (data.metadata.category) updateData.category = data.metadata.category;
-      if (data.metadata.tags) updateData.tags = data.metadata.tags;
+      if (data.metadata.tags) {
+        // Delete existing tags and create new ones
+        await prisma.blogPostTag.deleteMany({
+          where: { blogPostId: id }
+        });
+        updateData.tags = {
+          create: data.metadata.tags.map(tag => ({ name: tag }))
+        };
+      }
 
       // Update SEO data
       if (data.metadata.seo) {

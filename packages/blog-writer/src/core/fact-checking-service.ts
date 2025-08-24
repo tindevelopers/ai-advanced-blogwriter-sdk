@@ -23,6 +23,7 @@ export interface FactCheckConfig {
   prisma?: PrismaClient;
   cacheResults?: boolean;
   cacheTTL?: number; // hours
+  enableRealTimeChecking?: boolean;
   apiKeys?: {
     newsApi?: string;
     serpApi?: string;
@@ -101,6 +102,13 @@ export class FactCheckingService {
     }
 
     return factChecks;
+  }
+
+  /**
+   * Alias for performFactCheck for backward compatibility
+   */
+  async verifyFacts(request: FactCheckRequest): Promise<FactCheck[]> {
+    return this.performFactCheck(request);
   }
 
   /**

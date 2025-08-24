@@ -49,7 +49,6 @@ import type { BlogPost } from '../types/blog-post';
 // Simple interface to avoid Prisma dependency issues
 interface PrismaClient {
   blogPost: any;
-  blogPostSection: any;
   toneAnalysis: any;
   factCheck: any;
   optimizationSuggestion: any;

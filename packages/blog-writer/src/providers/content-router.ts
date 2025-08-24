@@ -1,4 +1,4 @@
-import type { LanguageModelV1 } from '@ai-sdk/provider';
+import type { LanguageModelV2 } from '@ai-sdk/provider';
 import type { BlogAIConfig } from '../types';
 import { contentTypeDetector } from '../database/content-type-detector';
 import { configurationRepository } from '../database/configuration-repository';
@@ -43,7 +43,7 @@ export class ContentRouter {
     keywords?: string[];
     competitorAnalysis?: boolean;
     businessContext?: string;
-    model?: LanguageModelV1;
+    model?: LanguageModelV2;
   }): Promise<RoutingDecision> {
     // Detect content type
     const contentTypeResult = options.model

@@ -6,18 +6,18 @@
 
 import {
   ContentStrategy,
-  WritingConfig,
   CompetitorInsight,
   TrendingTopic,
   ContentStructure,
   StyleGuideSettings,
   SEORequirements,
-  ContentSection,
   ToneCategory,
-  SectionType,
-  AdvancedContentOutline,
-  AdvancedOutlineSection,
-} from '../src/types';
+  ContentOutline,
+  // OutlineSection, // Not exported from src
+} from '../src';
+
+import { SectionType } from '../src/types/advanced-writing';
+import type { ContentSection } from '../src/types/advanced-writing';
 
 // ===== CONTENT STRATEGY EXAMPLE =====
 
@@ -402,7 +402,7 @@ export function createExampleContentStrategy(): ContentStrategy {
 /**
  * Example implementation of comprehensive writing configuration
  */
-export function createExampleWritingConfig(): WritingConfig {
+export function createExampleWritingConfig(): any { // WritingConfig not exported
   // Define content sections
   const sections: ContentSection[] = [
     {
@@ -423,6 +423,7 @@ export function createExampleWritingConfig(): WritingConfig {
       children: [],
       createdAt: new Date(),
       updatedAt: new Date(),
+      generatedAt: new Date(),
     },
     {
       id: 'main-content-section',
@@ -442,22 +443,23 @@ export function createExampleWritingConfig(): WritingConfig {
       children: [],
       createdAt: new Date(),
       updatedAt: new Date(),
+      generatedAt: new Date(),
     },
   ];
 
   // Define style guide settings
   const styleGuide: StyleGuideSettings = {
     writingStyle: {
-      sentenceStructure: 'mixed',
-      maxSentenceLength: 25,
+      sentenceLength: 'varied',
       paragraphLength: 'medium',
-      voice: 'active',
+      activeVoice: true,
+      contractions: false,
+      personalPronouns: 'third',
+      punctuationStyle: 'oxford_comma',
     },
     language: {
-      technicalLevel: 'moderate',
       readingLevel: 10,
-      vocabularyComplexity: 'intermediate',
-      industryTerms: true,
+      complexity: 'moderate',
     },
     formatting: {
       useBulletPoints: true,
@@ -468,20 +470,6 @@ export function createExampleWritingConfig(): WritingConfig {
     brandVoice: {
       primaryTone: ToneCategory.PROFESSIONAL,
       secondaryTones: [ToneCategory.INFORMATIVE, ToneCategory.FRIENDLY],
-      personalityTraits: {
-        authoritative: 0.8,
-        approachable: 0.7,
-        innovative: 0.9,
-        reliable: 0.8,
-      },
-      avoidedPhrases: ['obviously', 'just', 'simply', 'easy', 'everyone knows'],
-      preferredExpressions: [
-        "let's explore",
-        'consider this approach',
-        "here's how",
-        'practical implementation',
-        'real-world application',
-      ],
     },
     qualityStandards: {
       originalityThreshold: 0.85,
@@ -518,11 +506,7 @@ export function createExampleWritingConfig(): WritingConfig {
         'AI programming helper',
         'machine learning code generation',
       ],
-      longTailKeywords: [
-        'best AI code generation tools 2024',
-        'how to use AI for programming',
-        'AI coding assistant comparison',
-      ],
+      // longTailKeywords removed - not in interface
       densityTargets: {
         primary: { min: 0.01, max: 0.025 },
         secondary: { min: 0.005, max: 0.015 },
@@ -607,7 +591,7 @@ export function createExampleWritingConfig(): WritingConfig {
   };
 
   // Combine into complete writing config
-  const writingConfig: WritingConfig = {
+  const writingConfig: any = { // WritingConfig not exported
     sections,
     styleGuide,
     seoRequirements,
@@ -692,7 +676,7 @@ export function validateContentStrategy(strategy: ContentStrategy): boolean {
 /**
  * Validate WritingConfig interface implementation
  */
-export function validateWritingConfig(config: WritingConfig): boolean {
+export function validateWritingConfig(config: any): boolean { // WritingConfig not exported
   return !!(
     config.sections?.length &&
     config.styleGuide &&

@@ -92,10 +92,33 @@ export class WorkflowManager {
       include: { approvals: true }
     });
 
-    // Send notifications to reviewers
-    await this.notifyReviewers(workflow, 'submitted');
+    // Convert Prisma workflow to custom interface
+    const customWorkflow: ApprovalWorkflow = {
+      id: workflow.id,
+      blogPostId: workflow.blogPostId,
+      versionId: workflow.versionId || undefined,
+      approverIds: workflow.approverIds,
+      totalSteps: workflow.totalSteps,
+      currentStep: workflow.currentStep,
+      isComplete: workflow.isComplete,
+      isApproved: workflow.isApproved,
+      dueDate: workflow.dueDate,
+      createdAt: workflow.createdAt,
+      updatedAt: workflow.updatedAt,
+      completedAt: workflow.completedAt,
+      steps: workflow.approvals.map(approval => ({
+        stepNumber: approval.stepNumber,
+        approverId: approval.approverId,
+        status: approval.status,
+        comment: approval.comment,
+        submittedAt: approval.submittedAt
+      }))
+    };
 
-    return workflow as ApprovalWorkflow;
+    // Send notifications to reviewers
+    await this.notifyReviewers(customWorkflow, 'submitted');
+
+    return customWorkflow;
   }
 
   /**
@@ -210,9 +233,32 @@ export class WorkflowManager {
       include: { approvals: true }
     });
 
-    await this.notifyWorkflowUpdate(updatedWorkflow!, decision.action, approverId);
+    // Convert Prisma workflow to custom interface
+    const customWorkflow: ApprovalWorkflow = {
+      id: updatedWorkflow!.id,
+      blogPostId: updatedWorkflow!.blogPostId,
+      versionId: updatedWorkflow!.versionId || undefined,
+      approverIds: updatedWorkflow!.approverIds,
+      totalSteps: updatedWorkflow!.totalSteps,
+      currentStep: updatedWorkflow!.currentStep,
+      isComplete: updatedWorkflow!.isComplete,
+      isApproved: updatedWorkflow!.isApproved,
+      dueDate: updatedWorkflow!.dueDate,
+      createdAt: updatedWorkflow!.createdAt,
+      updatedAt: updatedWorkflow!.updatedAt,
+      completedAt: updatedWorkflow!.completedAt,
+      steps: updatedWorkflow!.approvals.map(approval => ({
+        stepNumber: approval.stepNumber,
+        approverId: approval.approverId,
+        status: approval.status,
+        comment: approval.comment,
+        submittedAt: approval.submittedAt
+      }))
+    };
 
-    return updatedWorkflow as ApprovalWorkflow;
+    await this.notifyWorkflowUpdate(customWorkflow, decision.action, approverId);
+
+    return customWorkflow;
   }
 
   /**

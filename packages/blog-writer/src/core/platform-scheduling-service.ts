@@ -8,15 +8,13 @@ import { PrismaClient } from '../generated/prisma-client';
 import { BasePlatformAdapter } from './base-platform-adapter';
 import { MultiPlatformPublisherService } from './multi-platform-publisher';
 
-import type {
+import {
   PublishSchedule,
   ScheduleStatus,
   RecurringPattern,
   AudienceTargeting,
   ScheduleExecution,
-  QueueItemType,
-  QueueItemStatus,
-  QueueProcessingOrder,
+  // QueueItemType, QueueItemStatus, QueueProcessingOrder - not exported from platform-integration
   FormattedContent,
   PublishResult,
   ScheduleResult,
@@ -24,6 +22,29 @@ import type {
   MultiPlatformPublishOptions
 } from '../types/platform-integration';
 import type { BlogPost } from '../types/blog-post';
+
+// Define missing queue types
+export enum QueueItemType {
+  PUBLISH = 'publish',
+  SCHEDULE = 'schedule',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  ANALYTICS = 'analytics'
+}
+
+export enum QueueItemStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  CANCELLED = 'cancelled'
+}
+
+export enum QueueProcessingOrder {
+  FIFO = 'fifo',
+  LIFO = 'lifo',
+  PRIORITY = 'priority'
+}
 
 export interface SchedulingServiceConfig {
   prisma?: PrismaClient;
@@ -825,12 +846,12 @@ export class PlatformSchedulingService {
   
   public stop(): void {
     if (this.scheduleTimer) {
-      clearInterval(this.scheduleTimer);
+      clearInterval(this.scheduleTimer as NodeJS.Timeout);
       this.scheduleTimer = undefined;
     }
     
     if (this.queueTimer) {
-      clearInterval(this.queueTimer);
+      clearInterval(this.queueTimer as NodeJS.Timeout);
       this.queueTimer = undefined;
     }
     

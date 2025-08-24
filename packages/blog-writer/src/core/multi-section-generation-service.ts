@@ -6,6 +6,7 @@
  */
 
 import { LanguageModel, generateText, streamText } from 'ai';
+import type { LanguageModelV2 } from '@ai-sdk/provider';
 import { PrismaClient } from '../generated/prisma-client';
 import {
   ContentOutline,
@@ -22,10 +23,12 @@ import {
 } from '../types/advanced-writing';
 
 export interface MultiSectionConfig {
-  model: LanguageModel;
+  model: LanguageModel | LanguageModelV2;
   prisma?: PrismaClient;
   cacheResults?: boolean;
   cacheTTL?: number; // hours
+  maxSections?: number;
+  enableRealTimeChecking?: boolean;
 }
 
 export class MultiSectionGenerationService {
@@ -51,7 +54,6 @@ export class MultiSectionGenerationService {
       model: this.config.model,
       prompt,
       temperature: 0.7,
-      maxTokens: 2000,
     });
 
     const outline = this.parseOutlineResponse(result.text);
@@ -127,21 +129,41 @@ export class MultiSectionGenerationService {
    */
   async generateSection(
     outlineSection: OutlineSection,
-    context: SectionGenerationContext,
-    options: SectionGenerationOptions
+    context?: SectionGenerationContext,
+    options?: SectionGenerationOptions
   ): Promise<ContentSection> {
-    const prompt = this.buildSectionPrompt(outlineSection, context, options);
+    // Provide defaults if context or options are not provided
+    const defaultContext: SectionGenerationContext = {
+      previousSections: [],
+      mainTopic: outlineSection.title,
+      tone: 'professional',
+      style: 'informative',
+      brandVoice: undefined,
+      targetAudience: 'general',
+      contentObjectives: []
+    };
+
+    const defaultOptions: SectionGenerationOptions = {
+      temperature: 0.7,
+      maxTokensPerSection: 1000,
+      includeKeyPoints: true,
+      optimizeForSEO: false,
+      maintainConsistency: true
+    };
+
+    const finalContext = context || defaultContext;
+    const finalOptions = options || defaultOptions;
+    const prompt = this.buildSectionPrompt(outlineSection, finalContext, finalOptions);
     
     const result = await generateText({
       model: this.config.model,
       prompt,
-      temperature: options.temperature || 0.7,
-      maxTokens: options.maxTokensPerSection || 1000,
+      temperature: finalOptions.temperature || 0.7,
     });
 
     const section: ContentSection = {
       id: `section_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      blogPostId: context.previousSections[0]?.blogPostId || '',
+      blogPostId: finalContext.previousSections[0]?.blogPostId || '',
       title: outlineSection.title,
       content: result.text.trim(),
       sectionType: outlineSection.type,
@@ -152,17 +174,17 @@ export class MultiSectionGenerationService {
       keyPoints: outlineSection.keyPoints || [],
       contextTags: outlineSection.contextTags || [],
       promptUsed: prompt,
-      modelUsed: this.config.model.modelId,
+      modelUsed: typeof this.config.model === 'string' ? this.config.model : 'ai-model',
       generationContext: {
-        previousSectionsCount: context.previousSections.length,
-        mainTopic: context.mainTopic,
-        tone: context.tone,
-        style: context.style
+        previousSectionsCount: finalContext.previousSections.length,
+        mainTopic: finalContext.mainTopic,
+        tone: finalContext.tone,
+        style: finalContext.style
       },
       generatedAt: new Date(),
       readabilityScore: await this.calculateReadabilityScore(result.text),
-      coherenceScore: await this.calculateSectionCoherence(result.text, context),
-      relevanceScore: await this.calculateRelevanceScore(result.text, context),
+      coherenceScore: await this.calculateSectionCoherence(result.text, finalContext),
+      relevanceScore: await this.calculateRelevanceScore(result.text, finalContext),
       children: [],
       createdAt: new Date(),
       updatedAt: new Date()
@@ -223,7 +245,6 @@ export class MultiSectionGenerationService {
       model: this.config.model,
       prompt,
       temperature: 0.6,
-      maxTokens: 1500,
     });
 
     const expandedSections = this.parseOutlineResponse(result.text);
@@ -434,7 +455,6 @@ Return only the numerical score (e.g., 0.7):`;
         model: this.config.model,
         prompt,
         temperature: 0.3,
-        maxTokens: 10
       });
 
       const score = parseFloat(result.text.trim());
@@ -466,7 +486,6 @@ Transition:`;
       model: this.config.model,
       prompt,
       temperature: 0.6,
-      maxTokens: 100
     });
 
     return result.text.trim();

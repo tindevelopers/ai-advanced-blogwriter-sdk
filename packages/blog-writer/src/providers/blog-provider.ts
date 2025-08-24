@@ -1,4 +1,4 @@
-import type { LanguageModelV1 } from '@ai-sdk/provider';
+import type { LanguageModelV2 } from '@ai-sdk/provider';
 import type { BlogAIConfig, BlogTemplate } from '../types';
 import {
   contentTypeDetector,
@@ -99,7 +99,7 @@ export class BlogProvider {
     topic: string,
     description?: string,
     additionalContext?: string,
-    model?: LanguageModelV1,
+    model?: LanguageModelV2,
   ): Promise<ContentProcessingResult> {
     // Detect content type
     let contentTypeResult: ContentTypeDetectionResult;
@@ -150,7 +150,7 @@ export class BlogProvider {
    * Create a blog-optimized model configuration
    */
   createBlogModel(
-    baseModel: LanguageModelV1,
+    baseModel: LanguageModelV2,
     topic: string,
     options: {
       contentType?: string;
@@ -160,7 +160,7 @@ export class BlogProvider {
       audience?: string;
       wordCount?: { min: number; max: number };
     } = {},
-  ): LanguageModelV1 {
+  ): LanguageModelV2 {
     // This would wrap the base model with blog-specific optimizations
     // For now, we'll return the base model with enhanced metadata
     return baseModel;

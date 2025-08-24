@@ -202,7 +202,7 @@ export class EditorialCalendarService {
           plannedDate: entryData.plannedDate || new Date(),
           publishDate: entryData.publishDate,
           dueDate: entryData.dueDate,
-          contentType: entryData.contentType || 'BLOG',
+          contentType: entryData.contentType || 'BLOG' as any,
           status: entryData.status || 'planned',
           priority: entryData.priority || 'medium',
           assignedTo: entryData.assignedTo,
@@ -255,10 +255,13 @@ export class EditorialCalendarService {
     }
 
     try {
+      // Filter out non-Prisma properties
+      const prismaUpdates = this.filterPrismaUpdates(updates);
+      
       const entry = await this.prisma.editorialCalendarEntry.update({
         where: { id: entryId },
         data: {
-          ...updates,
+          ...prismaUpdates,
           updatedAt: new Date()
         },
         include: {
@@ -876,5 +879,26 @@ export class EditorialCalendarService {
       trackedAt: prismaTimeEntry.trackedAt,
       calendarEntry: prismaTimeEntry.calendarEntry // This would be mapped if needed
     };
+  }
+
+  /**
+   * Filter updates to only include Prisma-compatible properties
+   */
+  private filterPrismaUpdates(updates: Partial<EditorialCalendarEntry>): any {
+    const allowedFields = [
+      'title', 'description', 'plannedDate', 'publishDate', 'status', 
+      'priority', 'assignedTo', 'contentType', 'wordCount', 'seoKeywords',
+      'notes', 'isPublished', 'publishedAt', 'publishedBy', 'reviewStatus',
+      'reviewedBy', 'reviewedAt', 'reviewNotes'
+    ];
+
+    const filtered: any = {};
+    for (const [key, value] of Object.entries(updates)) {
+      if (allowedFields.includes(key) && value !== undefined) {
+        filtered[key] = value;
+      }
+    }
+
+    return filtered;
   }
 }

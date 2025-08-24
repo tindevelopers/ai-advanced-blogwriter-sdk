@@ -98,19 +98,10 @@ export interface SEORecommendation {
  * Keyword analysis
  */
 export interface KeywordAnalysis {
-  /** The keyword */
+  /** Keyword */
   keyword: string;
 
-  /** Search volume (monthly) */
-  searchVolume?: number;
-
-  /** Keyword difficulty (0-100) */
-  difficulty?: number;
-
-  /** Competition level */
-  competition?: 'low' | 'medium' | 'high';
-
-  /** Current density in content (0-1) */
+  /** Current density */
   density: number;
 
   /** Recommended density range */
@@ -119,86 +110,155 @@ export interface KeywordAnalysis {
     max: number;
   };
 
-  /** Positions where keyword appears */
-  positions: {
-    /** In title */
-    title: boolean;
-    /** In meta description */
-    metaDescription: boolean;
-    /** In first paragraph */
-    firstParagraph: boolean;
-    /** In headings */
-    headings: string[];
-    /** In URL */
-    url: boolean;
-    /** In alt text */
-    altText: boolean;
-  };
+  /** Keyword positions in content */
+  positions: number[];
 
-  /** Related keywords and synonyms */
-  related?: string[];
+  /** Related keywords */
+  related: string[];
 
   /** Long-tail variations */
-  longTail?: string[];
+  longTail: string[];
 }
 
 /**
- * SEO optimization options
+ * Comprehensive SEO Analysis
+ */
+export interface SEOAnalysis {
+  id: string;
+  blogPostId: string;
+  score: number;
+  components: {
+    title: number;
+    metaDescription: number;
+    headings: number;
+    keywords: number;
+    contentLength: number;
+    internalLinks: number;
+    images: number;
+    url: number;
+  };
+  recommendations: SEORecommendation[];
+  keywords: {
+    primary?: KeywordAnalysis;
+    secondary?: KeywordAnalysis[];
+    related?: string[];
+    densityIssues?: {
+      keyword: string;
+      currentDensity: number;
+      recommendedDensity: number;
+      issue: 'too_high' | 'too_low';
+    }[];
+  };
+  content: {
+    wordCount: number;
+    readingLevel: number;
+    readabilityScore: number;
+    avgSentenceLength: number;
+    paragraphCount: number;
+  };
+  analyzedAt: Date;
+  modelUsed: string;
+}
+
+/**
+ * SEO Optimization Options
  */
 export interface SEOOptimizationOptions {
-  /** Target keywords */
-  keywords?: {
-    /** Primary focus keyword */
-    primary: string;
-    /** Secondary keywords */
-    secondary?: string[];
-    /** Long-tail keywords */
-    longTail?: string[];
-  };
-
-  /** Content optimization */
-  content?: {
-    /** Target word count range */
-    wordCount?: {
-      min: number;
-      max: number;
-    };
-    /** Target reading level */
-    readingLevel?: number;
-    /** Include table of contents */
-    tableOfContents?: boolean;
-    /** Optimize headings */
-    optimizeHeadings?: boolean;
-  };
-
-  /** Meta optimization */
+  targetKeywords?: string[];
+  titleLength?: { min: number; max: number };
+  metaDescriptionLength?: { min: number; max: number };
+  keywordDensity?: { min: number; max: number };
+  includeRecommendations?: boolean;
+  includeKeywordAnalysis?: boolean;
+  includeContentAnalysis?: boolean;
+  // Additional properties for backward compatibility
   meta?: {
-    /** Generate optimized title */
     title?: boolean;
-    /** Generate meta description */
     description?: boolean;
-    /** Optimize URL slug */
-    slug?: boolean;
   };
-
-  /** Image optimization */
+  content?: boolean;
   images?: {
-    /** Generate alt text */
     altText?: boolean;
-    /** Optimize file names */
-    fileNames?: boolean;
-    /** Add captions */
-    captions?: boolean;
   };
+  keywords?: {
+    primary?: string;
+  };
+}
 
-  /** Link optimization */
-  links?: {
-    /** Include internal links */
-    internal?: boolean;
-    /** Suggest external links */
-    external?: boolean;
-    /** Optimize anchor text */
-    anchorText?: boolean;
+/**
+ * SEO Analysis Request
+ */
+export interface SEOAnalysisRequest {
+  blogPostId: string;
+  targetKeywords?: string[];
+  includeRecommendations?: boolean;
+  includeKeywordAnalysis?: boolean;
+  includeContentAnalysis?: boolean;
+  optimizationOptions?: SEOOptimizationOptions;
+}
+
+/**
+ * SEO Analysis Result
+ */
+export interface SEOAnalysisResult {
+  analysis: SEOAnalysis;
+  optimizationSuggestions?: SEORecommendation[];
+  keywordOpportunities?: KeywordAnalysis[];
+  contentImprovements?: {
+    readability?: string[];
+    structure?: string[];
+    engagement?: string[];
+  };
+}
+
+/**
+ * Keyword Research Request
+ */
+export interface KeywordResearchRequest {
+  topic: string;
+  language?: string;
+  location?: string;
+  searchVolume?: boolean;
+  difficulty?: boolean;
+  relatedKeywords?: boolean;
+  longTail?: boolean;
+  competitorAnalysis?: boolean;
+}
+
+/**
+ * Keyword Research Response
+ */
+export interface KeywordResearchResponse {
+  primaryKeyword: {
+    keyword: string;
+    searchVolume?: number;
+    difficulty?: number;
+    cpc?: number;
+    competition?: number;
+  };
+  relatedKeywords: Array<{
+    keyword: string;
+    searchVolume?: number;
+    difficulty?: number;
+    cpc?: number;
+    competition?: number;
+  }>;
+  longTailKeywords: Array<{
+    keyword: string;
+    searchVolume?: number;
+    difficulty?: number;
+    cpc?: number;
+  }>;
+  competitorKeywords?: Array<{
+    keyword: string;
+    competitor: string;
+    url: string;
+    position: number;
+  }>;
+  insights: {
+    opportunities: string[];
+    challenges: string[];
+    recommendations: string[];
   };
 }
 

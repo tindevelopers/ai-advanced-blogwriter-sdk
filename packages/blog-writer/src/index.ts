@@ -5,6 +5,31 @@ export type { BlogPostValidation as BlogValidationResult } from './core/validati
 // Type exports
 export type { BlogPost } from './types/blog-post';
 export type { BlogTemplate } from './types/blog-config';
+export type { OptimizationRequest } from './types/performance-optimization';
+export type { WritingConfig } from './types/advanced-writing';
+export type { StyleGuideSettings } from './types/advanced-writing';
+export type { SEORequirements } from './types/advanced-writing';
+export type { SourceCitation, SourceType, BiasRating, ExpertiseLevel, FactCheckRequest } from './types/advanced-writing';
+export type { SectionGenerationContext, ContentFlowMap, ContentConnection, ConnectionType } from './types/advanced-writing';
+export type { MultiSectionGenerationRequest, SectionGenerationOptions } from './types/advanced-writing';
+
+// Additional type exports for examples
+export type { 
+  CompetitorInsight,
+  TrendingTopic,
+  ContentStructure
+} from './types/strategy-engine';
+
+// Export missing types from advanced-writing
+export type { 
+  ContentSection as AdvancedContentSection,
+  SectionType as AdvancedSectionType
+} from './types/advanced-writing';
+
+export type { 
+  BlogTemplateConfig,
+  BlogTemplateContext 
+} from './types/templates';
 
 // Architecture exports - use explicit exports to avoid conflicts
 export type {
@@ -93,11 +118,80 @@ export { PerformanceTrackingService } from './core/performance-tracking-service'
 export { OptimizationRecommendationEngine } from './core/optimization-recommendation-engine';
 export { PlatformSchedulingService } from './core/platform-scheduling-service';
 
+// Performance and Testing Services
+export { ABTestingService } from './core/ab-testing-service';
+export { EngagementPredictionService } from './core/engagement-prediction-service';
+
+// Platform Adapters
+export { ShopifyAdapter } from './core/platform-adapters/shopify-adapter';
+export { WebflowAdapter } from './core/platform-adapters/webflow-adapter';
+export { WordPressAdapter } from './core/platform-adapters/wordpress-adapter';
+export { MediumAdapter } from './core/platform-adapters/medium-adapter';
+export { LinkedInAdapter } from './core/platform-adapters/linkedin-adapter';
+export { MultiPlatformPublisherService as MultiPlatformPublisher } from './core/multi-platform-publisher';
+
+// Platform Adapter Registry and Factory
+export { PlatformAdapterFactory as PlatformAdapterRegistry } from './core/platform-adapter-registry';
+
 // Type exports from existing types
 export type { AIConfig as BlogAIConfig } from './types/base-config';
 export type { ContentStrategy } from './types/strategy-engine';
-export type { ComprehensiveWritingRequest, BrandVoiceProfile, ToneCategory, ContentOutline } from './types/advanced-writing';
+export type { ComprehensiveWritingRequest, BrandVoiceProfile, ContentOutline } from './types/advanced-writing';
+export { ToneCategory } from './types/advanced-writing';
 export type { Priority } from './types/strategy-engine';
+
+// Platform Credentials
+export type {
+  ShopifyCredentials,
+  WebflowCredentials,
+  WordPressCredentials,
+  MediumCredentials,
+  LinkedInCredentials,
+} from './types/platform-credentials';
+
+// Performance and Optimization Types
+export type {
+  PerformanceTrackingRequest,
+  PerformanceTrackingResponse,
+  ABTestConfig,
+  ABTestResult,
+  ContentVariant,
+  PredictionRequest,
+  PredictionResponse,
+  EngagementPrediction,
+  OptimizationRecommendation,
+} from './types/performance-optimization';
+
+// Workflow and Versioning Types
+export type {
+  ApprovalWorkflow,
+  ApprovalStep,
+  WorkflowConfig,
+  WorkflowTransition,
+  WorkflowCondition,
+  WorkflowContext,
+  SubmitForReviewOptions,
+  ApprovalDecision,
+  PublishingSchedule,
+  SchedulePublishingOptions,
+  WorkflowMetrics
+} from './types/workflow';
+
+export type {
+  BlogPostStatus,
+  VersionComparison,
+  VersionDiff,
+  ContentChange,
+  ArrayChange,
+  VersioningOptions,
+  CreateVersionOptions,
+  MergeVersionOptions,
+  VersionRollbackOptions
+} from './types/versioning';
+
+// Utility Functions
+export { createPlatformCredentials } from './types/platform-credentials';
+export { getAllPlatforms } from './core/platform-adapter-registry';
 
 // Blog Templates and Configuration
 export const BLOG_TEMPLATES = {
@@ -202,6 +296,7 @@ export const BLOG_TEMPLATES = {
   },
 };
 
+// Default configuration with enhanced features
 export const DEFAULT_BLOG_CONFIG = {
   seo: {
     keywordDensity: 0.02,

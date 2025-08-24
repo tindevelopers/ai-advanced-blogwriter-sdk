@@ -1,4 +1,4 @@
-import type { LanguageModelV1 } from '@ai-sdk/provider';
+import type { LanguageModelV2 } from '@ai-sdk/provider';
 import { generateText } from 'ai';
 import { configurationRepository } from '../database/configuration-repository';
 import type { BlogTemplate as PrismaTemplate } from '../generated/prisma-client';
@@ -16,7 +16,7 @@ export interface TemplateSelectionCriteria {
     | 'marketing'
     | 'information'
     | 'persuasion';
-  tone?: 'professional' | 'casual' | 'friendly' | 'authoritative' | 'technical';
+  tone?: 'professional' | 'casual' | 'friendly' | 'authoritative' | 'technical' | 'conversational' | 'humorous' | 'inspirational' | 'educational' | 'persuasive' | 'informative';
   wordCountRange?: { min: number; max: number };
   requiredSections?: string[];
   businessGoals?: string[];
@@ -126,7 +126,7 @@ export class TemplateSelector {
    * Get AI-powered template recommendation
    */
   async getAIRecommendation(
-    model: LanguageModelV1,
+    model: LanguageModelV2,
     criteria: TemplateSelectionCriteria,
   ): Promise<AITemplateRecommendation> {
     const availableTemplates =
@@ -211,7 +211,7 @@ Consider factors like:
   async createCustomTemplate(
     name: string,
     criteria: TemplateSelectionCriteria,
-    model?: LanguageModelV1,
+    model?: LanguageModelV2,
   ): Promise<{
     template: PrismaTemplate;
     customPrompt: string;
@@ -481,7 +481,7 @@ Consider factors like:
   }
 
   private async generateCustomTemplateWithAI(
-    model: LanguageModelV1,
+    model: LanguageModelV2,
     criteria: TemplateSelectionCriteria,
   ): Promise<{ promptTemplate: string; structure: any }> {
     const prompt = `

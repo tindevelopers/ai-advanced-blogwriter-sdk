@@ -156,3 +156,5 @@ export interface WorkflowMetrics {
 }
 
 import type { BlogPostStatus } from './versioning';
+
+export type { BlogPostStatus };

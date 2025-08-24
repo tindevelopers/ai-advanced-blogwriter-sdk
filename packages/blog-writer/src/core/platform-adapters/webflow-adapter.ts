@@ -560,7 +560,7 @@ export class WebflowAdapter extends BasePlatformAdapter {
     } catch (error) {
       return {
         success: false,
-        error: `Publishing failed: ${error.message}`
+        error: `Publishing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }
@@ -630,7 +630,7 @@ export class WebflowAdapter extends BasePlatformAdapter {
       return {
         success: false,
         scheduledTime: publishTime,
-        error: `Scheduling failed: ${error.message}`
+        error: `Scheduling failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }
@@ -683,7 +683,7 @@ export class WebflowAdapter extends BasePlatformAdapter {
     } catch (error) {
       return {
         success: false,
-        error: `Update failed: ${error.message}`
+        error: `Update failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }
@@ -716,7 +716,7 @@ export class WebflowAdapter extends BasePlatformAdapter {
     } catch (error) {
       return {
         success: false,
-        error: `Deletion failed: ${error.message}`
+        error: `Deletion failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }
@@ -797,7 +797,7 @@ export class WebflowAdapter extends BasePlatformAdapter {
         }
       };
     } catch (error) {
-      throw new Error(`Analytics retrieval failed: ${error.message}`);
+      throw new Error(`Analytics retrieval failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
   
@@ -835,7 +835,7 @@ export class WebflowAdapter extends BasePlatformAdapter {
         socialShares: []
       };
     } catch (error) {
-      throw new Error(`Content analytics retrieval failed: ${error.message}`);
+      throw new Error(`Content analytics retrieval failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
   

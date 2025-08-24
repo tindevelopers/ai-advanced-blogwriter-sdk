@@ -1,5 +1,5 @@
 
-import type { BlogTemplateConfig, BlogTemplateContext } from '../types';
+import type { BlogTemplateConfig, BlogTemplateContext } from '../types/templates';
 
 /**
  * Blog prompt creation options

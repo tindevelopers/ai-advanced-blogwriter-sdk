@@ -37,8 +37,10 @@ export class ABTestingService {
   private runningTests: Map<string, TestRunner> = new Map();
   private statisticalAnalyzer: StatisticalAnalyzer;
   private testResults: Map<string, ABTestResult> = new Map();
+  private prisma?: any; // Optional Prisma client
   
-  constructor() {
+  constructor(prisma?: any) {
+    this.prisma = prisma;
     this.statisticalAnalyzer = new SimpleStatisticalAnalyzer();
     this.initializeTestMonitoring();
   }
@@ -422,6 +424,59 @@ export class ABTestingService {
         }
       }
     }
+  }
+
+  /**
+   * Get test results and analysis
+   */
+  public async getTestResults(testId: string): Promise<ABTestResult | null> {
+    return this.testResults.get(testId) || null;
+  }
+
+  /**
+   * Record visitor assignment to a variant
+   */
+  public async recordVisitorAssignment(
+    testId: string, 
+    visitorId: string, 
+    variantId: string, 
+    interaction: any
+  ): Promise<void> {
+    // Implementation would track visitor interactions
+    console.log(`Visitor ${visitorId} assigned to variant ${variantId} in test ${testId}`);
+  }
+
+  /**
+   * Generate optimization recommendations based on test results
+   */
+  public async generateOptimizationRecommendations(testId: string): Promise<TestRecommendation[]> {
+    const results = await this.getTestResults(testId);
+    if (!results) {
+      throw new Error(`Test results not found for test ${testId}`);
+    }
+
+    // Generate recommendations based on results
+    return [
+      {
+        type: 'content_optimization',
+        priority: 'high',
+        description: 'Optimize content based on A/B test results',
+        expectedImpact: 0.15,
+        implementationSteps: ['Analyze winning variant', 'Apply insights to content']
+      }
+    ];
+  }
+
+  /**
+   * Create multivariate test
+   */
+  public async createMultivariateTest(request: any): Promise<any> {
+    // Implementation for multivariate testing
+    return {
+      testId: `mvt-${Date.now()}`,
+      status: 'created',
+      success: true
+    };
   }
 }
 

@@ -630,7 +630,12 @@ export enum PredictionType {
   CONVERSION = 'conversion',
   TRAFFIC = 'traffic',
   SOCIAL_PERFORMANCE = 'social_performance',
-  SEO_PERFORMANCE = 'seo_performance'
+  SEO_PERFORMANCE = 'seo_performance',
+  CONTENT_PERFORMANCE = 'content_performance',
+  VIRAL_POTENTIAL = 'viral_potential',
+  AUDIENCE_ENGAGEMENT = 'audience_engagement',
+  CONVERSION_PROBABILITY = 'conversion_probability',
+  SEO_RANKING_POTENTIAL = 'seo_ranking_potential'
 }
 
 export interface PredictedMetrics {
@@ -648,6 +653,9 @@ export interface PredictionRange {
   expected: number;
   high: number;
   unit?: string;
+  predicted?: number; // For backward compatibility
+  confidenceInterval?: [number, number];
+  probability?: number;
 }
 
 export interface PredictionFeatures {
@@ -1159,3 +1167,28 @@ export class PredictionError extends PerformanceOptimizationError {
     this.name = 'PredictionError';
   }
 }
+
+/**
+ * Optimization Request
+ */
+export interface OptimizationRequest {
+  blogPostId: string;
+  optimizationType: 'content' | 'seo' | 'engagement' | 'conversion' | 'comprehensive';
+  targetMetrics?: string[];
+  constraints?: {
+    maxWordCount?: number;
+    minWordCount?: number;
+    preserveStructure?: boolean;
+    maintainTone?: boolean;
+  };
+  priorities?: {
+    readability?: number;
+    seo?: number;
+    engagement?: number;
+    conversion?: number;
+  };
+  includeSuggestions?: boolean;
+  includeMetrics?: boolean;
+}
+
+

@@ -221,20 +221,64 @@ export interface BlogPostVersion {
 }
 
 /**
- * Complete blog post with version history
+ * Complete blog post with version history and all required properties
+ * This is the main interface used throughout the application
  */
 export interface BlogPost {
+  /** Unique identifier */
+  id: string;
+
+  /** Blog post title */
+  title: string;
+
+  /** Blog post content */
+  content: BlogPostContent;
+
+  /** Meta description for SEO */
+  metaDescription?: string;
+
+  /** URL slug */
+  slug: string;
+
+  /** Author name */
+  authorName?: string;
+
+  /** Featured image URL */
+  featuredImageUrl?: string;
+
+  /** Focus keyword for SEO */
+  focusKeyword?: string;
+
+  /** SEO score (0-100) */
+  seoScore?: number;
+
+  /** Keywords array */
+  keywords?: string[];
+
+  /** Content excerpt */
+  excerpt?: string;
+
   /** Current metadata */
   metadata: BlogPostMetadata;
-
-  /** Current content */
-  content: BlogPostContent;
 
   /** Current status */
   status: BlogPostStatus;
 
   /** Version history */
   versions?: BlogPostVersion[];
+
+  /** Creation timestamp */
+  createdAt: Date;
+
+  /** Last update timestamp */
+  updatedAt: Date;
+
+  /** Images array */
+  images?: {
+    url: string;
+    alt: string;
+    caption?: string;
+  }[];
 
   /** Analytics and performance */
   analytics?: {

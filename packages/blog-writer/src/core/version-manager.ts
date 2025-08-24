@@ -149,7 +149,7 @@ export class VersionManager {
       data: {
         fromVersionId,
         toVersionId,
-        diffSummary,
+        diffSummary: JSON.stringify(diffSummary),
         changedFields: this.getChangedFields(fromVersion, toVersion),
         addedWords: wordStats.added,
         removedWords: wordStats.removed,

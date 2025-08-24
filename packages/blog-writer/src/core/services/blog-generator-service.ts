@@ -244,6 +244,11 @@ Format the content with proper markdown headings (H1, H2, H3).`;
     const wordCount = this.calculateWordCount(content.text);
     
     return {
+      id: this.generateId(),
+      title: this.extractTitle(content.text),
+      slug: this.generateSlug(options.topic),
+      createdAt: now,
+      updatedAt: now,
       metadata: {
         id: this.generateId(),
         title: this.extractTitle(content.text),

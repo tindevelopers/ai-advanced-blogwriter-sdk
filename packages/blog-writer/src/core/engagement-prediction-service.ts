@@ -59,10 +59,94 @@ export class EngagementPredictionService {
           where: { id: contentId },
           include: {
             contentSections: true,
-            seoAnalysisResults: true
+            seoAnalysisResults: true,
+            // performanceMetrics is a relationship, not a direct property
           }
         });
-        blogPost = foundPost || undefined;
+        // Convert Prisma result to BlogPost interface
+        if (foundPost) {
+          blogPost = {
+            id: foundPost.id,
+            title: foundPost.title,
+            content: { text: foundPost.content || '' },
+            excerpt: foundPost.excerpt || undefined,
+            metaDescription: foundPost.metaDescription || undefined,
+            status: foundPost.status as any, // Type conversion needed
+            createdAt: foundPost.createdAt,
+            updatedAt: foundPost.updatedAt,
+            publishedAt: foundPost.publishedAt || undefined,
+            authorId: foundPost.authorId || undefined,
+            categoryId: foundPost.category || undefined,
+            featuredImageUrl: foundPost.featuredImageUrl || undefined,
+            featuredImageAlt: foundPost.featuredImageAlt || undefined,
+            featuredImageCaption: foundPost.featuredImageCaption || undefined,
+            featuredImageCredit: foundPost.featuredImageCredit || undefined,
+            allowComments: foundPost.allowComments || true,
+            featured: foundPost.featured || false,
+            language: foundPost.language || 'en',
+            template: foundPost.template || undefined,
+            focusKeyword: foundPost.focusKeyword || undefined,
+            keywords: foundPost.keywords || [],
+            keywordDensity: foundPost.keywordDensity || 0,
+            seoScore: foundPost.seoScore || 0,
+            readabilityScore: foundPost.readabilityScore || 0,
+            wordCount: foundPost.wordCount || 0,
+            readingTime: foundPost.readingTime || 0,
+            ogTitle: foundPost.ogTitle || undefined,
+            ogDescription: foundPost.ogDescription || undefined,
+            ogImage: foundPost.ogImage || undefined,
+            twitterCard: foundPost.twitterCard || undefined,
+            twitterImage: foundPost.twitterImage || undefined,
+            scheduledAt: foundPost.scheduledAt || undefined,
+            metadata: {
+              id: foundPost.id,
+              title: foundPost.title,
+              excerpt: foundPost.excerpt,
+              metaDescription: foundPost.metaDescription,
+              status: foundPost.status,
+              publishedAt: foundPost.publishedAt,
+              scheduledAt: foundPost.scheduledAt,
+              author: { id: foundPost.authorId || '', name: '', email: '', bio: '' },
+              category: foundPost.categoryId || '',
+              tags: [],
+              seo: {
+                focusKeyword: foundPost.focusKeyword || '',
+                keywords: foundPost.keywords || [],
+                keywordDensity: foundPost.keywordDensity || 0,
+                seoScore: foundPost.seoScore || 0,
+                readabilityScore: foundPost.readabilityScore || 0,
+                wordCount: foundPost.wordCount || 0
+              },
+              social: {
+                ogTitle: foundPost.ogTitle || '',
+                ogDescription: foundPost.ogDescription || '',
+                ogImage: foundPost.ogImage || '',
+                twitterCard: foundPost.twitterCard || '',
+                twitterImage: foundPost.twitterImage || ''
+              },
+              settings: {
+                allowComments: foundPost.allowComments || true,
+                featured: foundPost.featured || false,
+                language: foundPost.language || 'en',
+                template: foundPost.template || '',
+                readingTime: foundPost.readingTime || 0
+              }
+            },
+            content: {
+              text: foundPost.content || '',
+              sections: foundPost.contentSections || [],
+              featuredImage: {
+                url: foundPost.featuredImageUrl || '',
+                alt: foundPost.featuredImageAlt || '',
+                caption: foundPost.featuredImageCaption || '',
+                credit: foundPost.featuredImageCredit || ''
+              },
+              tableOfContents: [],
+              media: [],
+              cta: []
+            }
+          };
+        }
       }
 
       if (!blogPost) {
@@ -158,7 +242,6 @@ export class EngagementPredictionService {
       const blogPost = await this.prisma.blogPost.findUnique({
         where: { id: blogPostId },
         include: {
-          performanceMetrics: true,
           contentSections: true
         }
       });
@@ -260,10 +343,8 @@ export class EngagementPredictionService {
       const blogPost = await this.prisma.blogPost.findUnique({
         where: { id: blogPostId },
         include: {
-          performanceMetrics: {
-            orderBy: { recordedAt: 'desc' },
-            take: 30 // Last 30 records for trend analysis
-          }
+          contentSections: true,
+          seoAnalysisResults: true
         }
       });
 
@@ -271,8 +352,15 @@ export class EngagementPredictionService {
         throw new Error('Blog post not found');
       }
 
+      // Get performance metrics separately
+      const performanceMetrics = await this.prisma.performanceMetric.findMany({
+        where: { blogPostId },
+        orderBy: { recordedAt: 'desc' },
+        take: 30 // Last 30 records for trend analysis
+      });
+
       const features = await this.featureExtractor.extractFeatures(blogPost, forecastPeriod);
-      const historicalTrends = this.analyzeHistoricalTrends(blogPost.performanceMetrics);
+      const historicalTrends = this.analyzeHistoricalTrends(performanceMetrics);
       
       const forecasts: Record<ForecastScenario, ForecastData> = {} as any;
 
@@ -319,7 +407,8 @@ export class EngagementPredictionService {
         include: {
           blogPost: {
             include: {
-              performanceMetrics: true
+              contentSections: true,
+              seoAnalysisResults: true
             }
           }
         }

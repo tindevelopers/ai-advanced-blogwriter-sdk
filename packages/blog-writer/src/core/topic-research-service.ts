@@ -20,6 +20,11 @@ import {
 
 import { LanguageModel } from 'ai';
 import { PrismaClient } from '../generated/prisma-client';
+import {
+  TopicResearchSchema,
+  RelatedTopicsSchema,
+  TopicValidationSchema
+} from '../schemas/ai-schemas';
 
 export interface TopicResearchConfig {
   model: LanguageModel;
@@ -61,80 +66,7 @@ export class TopicResearchService {
       const researchPrompt = this.buildTopicResearchPrompt(request);
       
       const result = await this.model.generateObject({
-        schema: {
-          type: 'object',
-          properties: {
-            topic: {
-              type: 'object',
-              properties: {
-                title: { type: 'string' },
-                description: { type: 'string' },
-                primaryKeywords: { type: 'array', items: { type: 'string' } },
-                secondaryKeywords: { type: 'array', items: { type: 'string' } },
-                longTailKeywords: { type: 'array', items: { type: 'string' } },
-                opportunityScore: { type: 'number', minimum: 0, maximum: 1 },
-                competitionLevel: { type: 'string', enum: ['low', 'medium', 'high'] },
-                contentGapScore: { type: 'number', minimum: 0, maximum: 1 },
-                priority: { type: 'string', enum: ['low', 'medium', 'high', 'urgent'] },
-                estimatedEffort: { type: 'number' },
-                tags: { type: 'array', items: { type: 'string' } }
-              },
-              required: ['title', 'primaryKeywords', 'opportunityScore', 'competitionLevel']
-            },
-            keywords: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  keyword: { type: 'string' },
-                  searchVolume: { type: 'number' },
-                  difficulty: { type: 'number', minimum: 0, maximum: 1 },
-                  intent: { type: 'string', enum: ['informational', 'commercial', 'navigational', 'transactional'] },
-                  trending: { type: 'boolean' }
-                },
-                required: ['keyword']
-              }
-            },
-            trends: {
-              type: 'object',
-              properties: {
-                overall: { type: 'string', enum: ['rising', 'falling', 'stable'] },
-                momentum: { type: 'number', minimum: -1, maximum: 1 },
-                periods: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      date: { type: 'string' },
-                      value: { type: 'number' },
-                      change: { type: 'number' }
-                    },
-                    required: ['date', 'value']
-                  }
-                }
-              },
-              required: ['overall', 'momentum']
-            },
-            opportunities: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  title: { type: 'string' },
-                  description: { type: 'string' },
-                  type: { type: 'string', enum: ['keyword', 'topic', 'content_gap', 'technical'] },
-                  potential: { type: 'number', minimum: 0, maximum: 1 },
-                  difficulty: { type: 'number', minimum: 0, maximum: 1 },
-                  timeline: { type: 'string' },
-                  keywords: { type: 'array', items: { type: 'string' } }
-                },
-                required: ['title', 'description', 'type', 'potential', 'difficulty']
-              }
-            },
-            confidence: { type: 'number', minimum: 0, maximum: 1 }
-          },
-          required: ['topic', 'keywords', 'trends', 'opportunities', 'confidence']
-        },
+        schema: TopicResearchSchema,
         prompt: researchPrompt
       });
 

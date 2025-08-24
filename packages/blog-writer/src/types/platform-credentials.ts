@@ -4,6 +4,7 @@
  */
 
 import type { PlatformCredentials } from './platform-integration';
+import { AuthenticationType } from './platform-integration';
 
 // ===== SHOPIFY CREDENTIALS =====
 
@@ -91,26 +92,24 @@ export function createPlatformCredentials(
   };
 }
 
-function getAuthenticationType(
-  type: string,
-): 'api_key' | 'oauth2' | 'token' | 'basic_auth' | 'jwt' | 'custom' {
+function getAuthenticationType(type: string): AuthenticationType {
   switch (type) {
     case 'private_app':
     case 'api_key':
     case 'api_token':
     case 'integration_token':
     case 'application_password':
-      return 'api_key';
+      return AuthenticationType.API_KEY;
     case 'oauth2':
-      return 'oauth2';
+      return AuthenticationType.OAUTH2;
     case 'token':
-      return 'token';
+      return AuthenticationType.TOKEN;
     case 'basic_auth':
-      return 'basic_auth';
+      return AuthenticationType.BASIC_AUTH;
     case 'jwt':
-      return 'jwt';
+      return AuthenticationType.JWT;
     default:
-      return 'custom';
+      return AuthenticationType.CUSTOM;
   }
 }
 

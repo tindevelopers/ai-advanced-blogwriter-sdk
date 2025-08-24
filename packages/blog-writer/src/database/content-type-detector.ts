@@ -1,6 +1,6 @@
 import { prisma } from './prisma';
 import type { ContentType } from '../generated/prisma-client';
-import type { LanguageModelV1 } from '@ai-sdk/provider';
+import type { LanguageModelV2 } from '@ai-sdk/provider';
 import { generateText } from 'ai';
 
 /**
@@ -152,7 +152,7 @@ export class ContentTypeDetector {
    * AI-powered content type detection using language model
    */
   async detectContentTypeWithAI(
-    model: LanguageModelV1,
+    model: LanguageModelV2,
     topic: string,
     description?: string,
     additionalContext?: string,

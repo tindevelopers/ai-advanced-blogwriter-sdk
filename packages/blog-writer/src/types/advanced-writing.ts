@@ -13,10 +13,10 @@ export interface ContentOutline {
   title: string;
   sections: OutlineSection[];
   totalWordCount: number;
-  estimatedReadingTime: number;
-  keyTopics: string[];
+  estimatedReadingTime?: number;
+  keyTopics?: string[];
   targetAudience?: string;
-  contentGoals: string[];
+  contentGoals?: string[];
 }
 
 // Alias for backward compatibility
@@ -31,6 +31,9 @@ export interface OutlineSection {
   parentId?: string;
   order: number;
   sectionType: SectionType;
+  type?: SectionType; // Backward compatibility
+  contextTags?: string[];
+  estimatedWordCount?: number;
 }
 
 // Alias for backward compatibility
@@ -47,7 +50,8 @@ export enum SectionType {
   FAQ = 'faq',
   SUMMARY = 'summary',
   RESOURCES = 'resources',
-  PARAGRAPH = 'paragraph' // Added missing type
+  PARAGRAPH = 'paragraph',
+  INFORMATIVE = 'informative' // Added missing type
 }
 
 export interface ContentSection {
@@ -72,6 +76,15 @@ export interface ContentSection {
   children?: ContentSection[];
   createdAt: Date;
   updatedAt: Date;
+  // Additional properties for backward compatibility
+  section?: {
+    title: string;
+    wordCount: number;
+  };
+  metrics?: {
+    coherenceScore: number;
+    consistencyScore: number;
+  };
 }
 
 export interface GenerationContext {
@@ -93,9 +106,16 @@ export interface BrandVoiceProfile {
   vocabularyGuidelines: VocabularyGuidelines;
   stylePreferences: StylePreferences;
   exampleTexts: string[];
-  consistencyRules: ConsistencyRule[];
+  consistencyRules: ConsistencyRuleArray; // Updated to use the new type
   createdAt: Date;
   updatedAt: Date;
+  
+  // Additional properties for backward compatibility
+  primaryTone?: ToneCategory;
+  secondaryTones?: ToneCategory[];
+  vocabularyLevel?: string;
+  formalityLevel?: FormalityLevel;
+  personalityTraits?: PersonalityTraits;
 }
 
 export interface ToneCharacteristics {
@@ -104,6 +124,8 @@ export interface ToneCharacteristics {
   formality: FormalityLevel;
   emotion: EmotionalTone;
   personality: PersonalityTraits;
+  // Additional properties for backward compatibility
+  primaryTone?: ToneCategory;
 }
 
 export enum ToneCategory {
@@ -117,7 +139,13 @@ export enum ToneCategory {
   INSPIRATIONAL = 'inspirational',
   EDUCATIONAL = 'educational',
   PERSUASIVE = 'persuasive',
-  INFORMATIVE = 'informative' // Added missing type
+  INFORMATIVE = 'informative',
+  ACADEMIC = 'academic',
+  ENTERTAINING = 'entertaining',
+  EMPATHETIC = 'empathetic',
+  URGENT = 'urgent',
+  CONFIDENT = 'confident',
+  HUMBLE = 'humble'
 }
 
 export enum FormalityLevel {
@@ -125,7 +153,11 @@ export enum FormalityLevel {
   FORMAL = 'formal',
   NEUTRAL = 'neutral',
   INFORMAL = 'informal',
-  VERY_INFORMAL = 'very_informal'
+  VERY_INFORMAL = 'very_informal',
+  // Additional values for backward compatibility
+  HIGH = 'high',
+  MEDIUM = 'medium',
+  LOW = 'low'
 }
 
 export enum EmotionalTone {
@@ -136,7 +168,15 @@ export enum EmotionalTone {
   NEUTRAL = 'neutral',
   CONCERNED = 'concerned',
   URGENT = 'urgent',
-  CALMING = 'calming'
+  CALMING = 'calming',
+  // Additional values for backward compatibility
+  POSITIVE = 'positive',
+  NEGATIVE = 'negative',
+  EXCITED = 'excited',
+  CAUTIOUS = 'cautious',
+  PASSIONATE = 'passionate',
+  ANALYTICAL = 'analytical',
+  INSPIRING = 'inspiring'
 }
 
 export interface PersonalityTraits {
@@ -150,8 +190,11 @@ export interface PersonalityTraits {
 export interface VocabularyGuidelines {
   preferredTerms: string[];
   avoidedTerms: string[];
+  avoidTerms?: string[]; // Backward compatibility alias
   industryJargon: JargonGuideline[];
   synonyms: Record<string, string[]>;
+  // Additional properties for backward compatibility
+  complexityLevel?: string;
 }
 
 export interface JargonGuideline {
@@ -162,7 +205,7 @@ export interface JargonGuideline {
 
 export interface StylePreferences {
   sentenceLength: 'short' | 'medium' | 'long' | 'varied';
-  paragraphLength: 'short' | 'medium' | 'long';
+  paragraphLength: 'short' | 'medium' | 'long' | 'SHORT' | 'MEDIUM' | 'LONG'; // Added uppercase variants for backward compatibility
   activeVoice: boolean;
   contractions: boolean;
   personalPronouns: 'first' | 'second' | 'third' | 'mixed';
@@ -170,13 +213,19 @@ export interface StylePreferences {
 }
 
 export interface ConsistencyRule {
-  id: string;
-  name: string;
-  description: string;
-  pattern: string;
+  id?: string;
+  name?: string;
+  description?: string;
+  pattern?: string;
   replacement?: string;
-  severity: 'error' | 'warning' | 'suggestion';
+  severity?: 'error' | 'warning' | 'suggestion';
 }
+
+// Allow string as ConsistencyRule for backward compatibility
+export type ConsistencyRuleInput = ConsistencyRule | string;
+
+// Allow string array for backward compatibility
+export type ConsistencyRuleArray = ConsistencyRule[] | string[];
 
 // ===== TONE ANALYSIS =====
 
@@ -197,6 +246,8 @@ export interface ToneAnalysis {
   deviations?: ToneDeviation[];
   analyzedAt: Date;
   modelUsed: string;
+  // Additional properties for backward compatibility
+  toneAnalysisId?: string;
 }
 
 export interface ToneDeviation {
@@ -204,8 +255,10 @@ export interface ToneDeviation {
   length: number;
   expectedTone: ToneCategory;
   actualTone: ToneCategory;
-  severity: 'minor' | 'moderate' | 'major';
+  severity: 'minor' | 'moderate' | 'major' | 'high'; // Added 'high' for backward compatibility
   suggestion: string;
+  // Additional properties for backward compatibility
+  sectionId?: string;
 }
 
 // ===== FACT CHECKING =====
@@ -219,11 +272,29 @@ export interface FactCheck {
   length: number;
   verificationStatus: VerificationStatus;
   confidence: number; // 0-1
+  confidenceScore?: number; // Backward compatibility alias
   sources: FactSource[];
+  sourceUrls?: string[]; // Backward compatibility alias
+  sourcesVerified?: number; // Backward compatibility alias
+  sourcesReliable?: number; // Backward compatibility alias
+  sourceCredibility?: number; // Backward compatibility alias
+  evidenceQuality?: number; // Backward compatibility alias
+  verificationMethod?: string; // Backward compatibility alias
+  verificationNotes?: string; // Backward compatibility alias
+  verifiedAt?: Date; // Backward compatibility alias
+  verifiedBy?: string; // Backward compatibility alias
+  requiresAttention?: boolean; // Backward compatibility alias
+  flagReason?: string; // Backward compatibility alias
+  startPosition?: number; // Backward compatibility alias
+  endPosition?: number; // Backward compatibility alias
   corrections?: string[];
   notes?: string;
   checkedAt: Date;
   modelUsed: string;
+  citations?: SourceCitation[]; // Backward compatibility alias
+  // Additional properties for backward compatibility
+  credibilityScore?: number;
+  isVerified?: boolean;
 }
 
 export enum VerificationStatus {
@@ -231,6 +302,8 @@ export enum VerificationStatus {
   PARTIALLY_VERIFIED = 'partially_verified',
   UNVERIFIED = 'unverified',
   DISPUTED = 'disputed',
+  FALSE = 'false', // Backward compatibility
+  UNVERIFIABLE = 'unverifiable', // Backward compatibility
   OUTDATED = 'outdated'
 }
 
@@ -247,10 +320,12 @@ export interface FactSource {
 
 export interface OptimizationSuggestion {
   id: string;
+  blogPostId?: string;
   type: OptimizationType;
   priority: SuggestionPriority;
   effort: EffortLevel;
   description: string;
+  title?: string;
   currentText?: string;
   suggestedText?: string;
   reasoning: string;
@@ -259,6 +334,20 @@ export interface OptimizationSuggestion {
   position?: number;
   length?: number;
   metadata?: Record<string, any>;
+  
+  // Additional properties for database compatibility
+  impact?: number;
+  currentValue?: string;
+  suggestedValue?: string;
+  beforeText?: string;
+  afterText?: string;
+  seoImpact?: number;
+  keywordTarget?: string;
+  readabilityImpact?: number;
+  engagementMetric?: string;
+  expectedLift?: number;
+  isImplemented?: boolean;
+  isValidated?: boolean;
 }
 
 export enum OptimizationType {
@@ -268,7 +357,11 @@ export enum OptimizationType {
   STRUCTURE = 'structure',
   FACTUAL = 'factual',
   ENGAGEMENT = 'engagement',
-  ACCESSIBILITY = 'accessibility'
+  ACCESSIBILITY = 'accessibility',
+  CONTENT_QUALITY = 'content_quality',
+  USER_EXPERIENCE = 'user_experience',
+  TECHNICAL_SEO = 'technical_seo',
+  SOCIAL_MEDIA = 'social_media'
 }
 
 export enum SuggestionPriority {
@@ -297,7 +390,32 @@ export interface OptimizationResult {
   optimizedText: string;
   changes: TextChange[];
   qualityImprovement: number; // 0-1
-  processingTime: number;
+  suggestions: OptimizationSuggestion[];
+  metrics: ContentMetrics;
+}
+
+export interface ContentMetrics {
+  blogPostId: string;
+  sectionsGenerated: number;
+  totalGenerationTime: number;
+  averageSectionTime: number;
+  overallQualityScore: number;
+  coherenceScore: number;
+  consistencyScore: number;
+  originalityScore: number;
+  toneConsistencyScore: number;
+  brandAlignmentScore: number;
+  totalClaims: number;
+  verifiedClaims: number;
+  disputedClaims: number;
+  sourcesUsed: number;
+  reliableSources: number;
+  averageSourceCredibility: number;
+  seoScore: number;
+  readabilityScore: number;
+  engagementScore: number;
+  totalSuggestions: number;
+  implementedSuggestions: number;
 }
 
 export interface TextChange {
@@ -306,6 +424,108 @@ export interface TextChange {
   originalText?: string;
   newText?: string;
   reason: string;
+}
+
+// ===== STYLE ANALYSIS =====
+
+export interface StyleCheck {
+  id: string;
+  blogPostId: string;
+  sectionId?: string;
+  checkType: StyleCheckType;
+  severity: StyleSeverity;
+  message: string;
+  position: number;
+  length: number;
+  suggestion?: string;
+  ruleViolated?: string;
+  checkedAt: Date;
+  modelUsed: string;
+  // Additional properties for backward compatibility
+  toneAnalysisId?: string;
+  styleGuideId?: string;
+  complianceScore?: number;
+  violations?: StyleViolation[];
+  sentenceLength?: number;
+  paragraphLength?: number;
+  readingLevel?: number;
+  passiveVoiceScore?: number;
+  vocabularyLevel?: string;
+  jargonUsage?: number;
+  repetitiveness?: number;
+  brandVoiceMatch?: number;
+  voicePersonality?: any;
+  suggestions?: StyleSuggestion[];
+  criticalIssues?: string[];
+}
+
+export enum StyleCheckType {
+  GRAMMAR = 'grammar',
+  SPELLING = 'spelling',
+  PUNCTUATION = 'punctuation',
+  STYLE = 'style',
+  CLARITY = 'clarity',
+  CONCISENESS = 'conciseness',
+  CONSISTENCY = 'consistency',
+  TONE = 'tone',
+  VOICE = 'voice',
+  SENTENCE_LENGTH = 'sentence_length',
+  READABILITY = 'readability'
+}
+
+export enum StyleSeverity {
+  MINOR = 'minor',
+  MODERATE = 'moderate',
+  MAJOR = 'major',
+  HIGH = 'high' // Backward compatibility
+}
+
+export interface StyleViolation {
+  id: string;
+  type: StyleCheckType;
+  severity: StyleSeverity;
+  message: string;
+  position: number;
+  length: number;
+  suggestion?: string;
+  ruleViolated?: string;
+  // Additional properties for backward compatibility
+  checkType?: StyleCheckType;
+}
+
+export interface StyleSuggestion {
+  id: string;
+  type: StyleCheckType;
+  message: string;
+  currentText: string;
+  suggestedText: string;
+  reasoning: string;
+  impact: 'low' | 'medium' | 'high';
+  effort: 'minimal' | 'moderate' | 'significant';
+  // Additional properties for backward compatibility
+  checkType?: StyleCheckType;
+}
+
+export interface ToneAnalysisRequest {
+  blogPostId: string;
+  sectionId?: string;
+  includeStyleChecks?: boolean;
+  brandVoiceProfile?: BrandVoiceProfile;
+  analysisDepth?: 'basic' | 'detailed' | 'comprehensive';
+  // Additional properties for backward compatibility
+  content?: string;
+  sectionsToAnalyze?: string[];
+  brandVoice?: BrandVoiceProfile;
+}
+
+export interface StyleCheckRequest {
+  blogPostId: string;
+  sectionId?: string;
+  checkTypes?: StyleCheckType[];
+  severityThreshold?: StyleSeverity;
+  includeSuggestions?: boolean;
+  brandVoice?: BrandVoiceProfile; // Added missing property
+  styleGuideId?: string; // Added missing property
 }
 
 // ===== WRITING CONFIGURATION =====
@@ -374,6 +594,9 @@ export interface StreamingCallback {
   onError?: (error: Error, context: string) => void;
 }
 
+// Allow function as StreamingCallback for backward compatibility
+export type StreamingCallbackInput = StreamingCallback | ((progress: any) => void);
+
 export interface GenerationProgress {
   phase: GenerationPhase;
   overallProgress: number; // 0-1
@@ -407,7 +630,7 @@ export interface ComprehensiveWritingRequest {
   seoRequirements?: SEORequirements;
   factCheckingEnabled?: boolean;
   optimizationEnabled?: boolean;
-  streamingCallback?: StreamingCallback;
+  streamingCallback?: StreamingCallbackInput;
   customInstructions?: string;
 }
 
@@ -420,6 +643,12 @@ export interface ComprehensiveWritingResult {
   optimizationSuggestions: OptimizationSuggestion[];
   generationMetrics: GenerationMetrics;
   qualityScore: QualityScore;
+  // Additional properties for backward compatibility
+  metrics?: {
+    totalWordCount: number;
+    totalGenerationTime: number;
+    overallQualityScore: number;
+  };
 }
 
 export interface GenerationMetrics {
@@ -473,4 +702,130 @@ export interface AdvancedWritingService {
   generateComprehensive(request: ComprehensiveWritingRequest): Promise<ComprehensiveWritingResult>;
   streamGeneration(request: ComprehensiveWritingRequest, callback: StreamingCallback): Promise<void>;
   enhanceExistingContent(blogPostId: string, enhancements: string[]): Promise<ComprehensiveWritingResult>;
+}
+
+// ===== MISSING TYPE DEFINITIONS =====
+
+// Source and Citation Types
+export interface SourceCitation {
+  id: string;
+  blogPostId?: string;
+  factCheckId?: string;
+  title: string;
+  url: string;
+  author?: string;
+  publishedDate?: Date;
+  accessedDate: Date;
+  sourceType: SourceType;
+  domain: string;
+  language: string;
+  credibilityScore?: number;
+  authorityScore?: number;
+  biasRating?: BiasRating;
+  expertiseLevel?: ExpertiseLevel;
+  qualityIndicators?: {
+    isPeerReviewed: boolean;
+    isGovernment: boolean;
+    isAcademic: boolean;
+    isRecent: boolean;
+    hasAuthor: boolean;
+    hasReferences: boolean;
+  };
+  concerns?: string[];
+}
+
+export enum SourceType {
+  ACADEMIC = 'academic',
+  NEWS = 'news',
+  GOVERNMENT = 'government',
+  INDUSTRY = 'industry',
+  BLOG = 'blog',
+  SOCIAL_MEDIA = 'social_media',
+  UNKNOWN = 'unknown'
+}
+
+export enum BiasRating {
+  LEFT = 'left',
+  LEAN_LEFT = 'lean_left',
+  CENTER = 'center',
+  LEAN_RIGHT = 'lean_right',
+  RIGHT = 'right',
+  MIXED = 'mixed',
+  UNKNOWN = 'unknown'
+}
+
+export enum ExpertiseLevel {
+  EXPERT = 'expert',
+  PRACTITIONER = 'practitioner',
+  ACADEMIC = 'academic',
+  JOURNALIST = 'journalist',
+  GENERAL_PUBLIC = 'general_public',
+  UNKNOWN = 'unknown'
+}
+
+export interface FactCheckRequest {
+  blogPostId: string;
+  claims?: string[];
+  autoDetectClaims?: boolean;
+  verificationThreshold?: number;
+  includeSourceAnalysis?: boolean;
+  requireReliableSources?: boolean;
+  // Additional properties for backward compatibility
+  content?: string;
+}
+
+// Multi-Section Generation Types
+export interface SectionGenerationContext {
+  previousSections: ContentSection[];
+  followingSections?: OutlineSection[];
+  mainTopic: string;
+  tone: string;
+  style: string;
+  brandVoice?: BrandVoiceProfile;
+  targetAudience: string;
+  contentObjectives: string[];
+  targetKeywords?: string[];
+}
+
+export interface ContentFlowMap {
+  [sectionId: string]: ContentConnection[];
+}
+
+export interface ContentConnection {
+  fromSectionId: string;
+  toSectionId: string;
+  connectionType: ConnectionType;
+  strength: number; // 0-1
+  description: string;
+}
+
+export enum ConnectionType {
+  SEQUENTIAL = 'sequential',
+  PARALLEL = 'parallel',
+  SUPPORTING = 'supporting',
+  CONTRASTING = 'contrasting',
+  SUMMARY = 'summary',
+  TRANSITION = 'transition'
+}
+
+export interface MultiSectionGenerationRequest {
+  outline: ContentOutline;
+  generationOptions: SectionGenerationOptions;
+  brandVoice?: BrandVoiceProfile;
+  targetAudience?: string;
+  contentObjectives?: string[];
+}
+
+export interface SectionGenerationOptions {
+  temperature?: number;
+  maxTokensPerSection?: number;
+  includeKeyPoints?: boolean;
+  optimizeForSEO?: boolean;
+  maintainConsistency?: boolean;
+  enableRealTimeChecking?: boolean;
+}
+
+// Enhanced ContentOutline with content flow
+export interface EnhancedContentOutline extends ContentOutline {
+  contentFlow?: ContentFlowMap;
 }

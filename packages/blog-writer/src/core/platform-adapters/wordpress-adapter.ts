@@ -5,9 +5,9 @@
  */
 
 import { BasePlatformAdapter, type PlatformAdapterConfig } from '../base-platform-adapter';
+import { ContentFormat } from '../../types/platform-integration';
 import type {
   PlatformCapabilities,
-  ContentFormat,
   PlatformCredentials,
   AuthenticationResult,
   ConnectionValidationResult,
@@ -244,21 +244,21 @@ export class WordPressAdapter extends BasePlatformAdapter {
     // Convert blog post to WordPress format
     const formattedContent: FormattedContent = {
       title: content.title,
-      content: this.formatContentBody(content.content, options),
-      excerpt: content.excerpt || this.generateExcerpt(content.content),
+      content: this.formatContentBody(content.content.text, options),
+      excerpt: content.excerpt || this.generateExcerpt(content.content.text),
       
       metadata: {
         slug: content.slug,
         description: content.metaDescription,
         keywords: content.keywords || [],
         tags: [], // Will be populated from content.keywords if needed
-        categories: content.category ? [content.category] : [],
-        publishDate: content.publishedAt ? new Date(content.publishedAt) : undefined,
+        categories: content.metadata?.category ? [content.metadata.category] : [],
+        publishDate: content.metadata?.publishedAt ? new Date(content.metadata.publishedAt) : undefined,
         status: this.mapPostStatus(content.status),
         visibility: 'public',
         author: {
-          name: content.authorName || 'Unknown Author',
-          email: content.authorEmail
+          name: content.metadata?.author?.name || 'Unknown Author',
+          email: content.metadata?.author?.email
         }
       },
       
@@ -266,13 +266,13 @@ export class WordPressAdapter extends BasePlatformAdapter {
         metaTitle: content.title,
         metaDescription: content.metaDescription,
         focusKeyword: content.focusKeyword,
-        ogTitle: content.ogTitle || content.title,
-        ogDescription: content.ogDescription || content.metaDescription,
-        ogImage: content.ogImage,
+        ogTitle: content.metadata?.social?.ogTitle || content.title,
+        ogDescription: content.metadata?.social?.ogDescription || content.metaDescription,
+        ogImage: content.metadata?.social?.ogImage,
         twitterCard: 'summary_large_image',
         twitterTitle: content.title,
         twitterDescription: content.metaDescription,
-        twitterImage: content.twitterImage || content.ogImage,
+        twitterImage: content.metadata?.social?.twitterImage || content.metadata?.social?.ogImage,
         canonical: options?.customMappings?.canonical as string
       },
       
@@ -281,11 +281,11 @@ export class WordPressAdapter extends BasePlatformAdapter {
         url: content.featuredImageUrl,
         mimeType: this.guessMimeTypeFromUrl(content.featuredImageUrl),
         size: 0, // Unknown without fetching
-        altText: content.featuredImageAlt
+        altText: content.content?.featuredImage?.alt
       } : undefined,
       
       format: ContentFormat.HTML,
-      originalWordCount: content.wordCount || 0,
+      originalWordCount: content.metadata?.seo?.wordCount || 0,
       adaptedWordCount: 0, // Will be calculated
       adaptationScore: 1.0 // Start with perfect score
     };
@@ -650,6 +650,92 @@ export class WordPressAdapter extends BasePlatformAdapter {
     // For WordPress.com, extract site ID from URL or credentials
     // This is a simplified implementation
     return this.baseUrl.replace(/https?:\/\//, '').replace(/\/$/, '');
+  }
+
+  // Implement missing abstract methods
+  async authenticate(credentials: PlatformCredentials): Promise<AuthenticationResult> {
+    const wpCredentials = credentials as WordPressCredentials;
+    
+    try {
+      if (wpCredentials.type === 'api_key') {
+        return await this.authenticateWithApiKey(wpCredentials);
+      } else if (wpCredentials.type === 'oauth2') {
+        return await this.authenticateWithOAuth2(wpCredentials);
+      } else if (wpCredentials.type === 'application_password') {
+        return await this.authenticateWithAppPassword(wpCredentials);
+      } else {
+        throw new Error('Unsupported authentication type');
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: `Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  async validateConnection(): Promise<ConnectionValidationResult> {
+    try {
+      const response = await this.makeRequest('GET', '/wp/v2/users/me');
+      return {
+        success: true,
+        platform: 'wordpress',
+        version: response.version || 'unknown',
+        capabilities: this.capabilities
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Connection validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  async formatContent(content: BlogPost, options?: FormatOptions): Promise<FormattedContent> {
+    return {
+      title: content.title,
+      content: this.formatContentBody(content.content, options),
+      excerpt: content.excerpt || this.generateExcerpt(content.content),
+      metadata: {
+        slug: content.metadata?.seo?.slug || this.generateSlug(content.title),
+        author: content.metadata?.author?.name || 'Unknown',
+        publishDate: content.metadata?.publishedAt ? new Date(content.metadata.publishedAt) : undefined
+      },
+      seo: {
+        metaDescription: content.metadata?.seo?.metaDescription || content.excerpt || '',
+        focusKeyword: content.metadata?.seo?.focusKeyword || '',
+        title: content.title
+      },
+      featuredImage: content.content?.featuredImage || undefined
+    };
+  }
+
+  async publish(content: FormattedContent, options?: PublishOptions): Promise<PublishResult> {
+    this.ensureAuthenticated();
+    
+    try {
+      const postData = this.buildWordPressPostData(content, options);
+      const response = await this.makeRequest('POST', '/wp/v2/posts', postData);
+      
+      return {
+        success: true,
+        contentId: response.id.toString(),
+        url: response.link,
+        publishedAt: new Date(response.date),
+        status: this.mapPostStatus(response.status)
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Publishing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  private ensureAuthenticated(): void {
+    if (!this.isAuthenticated) {
+      throw new Error('Not authenticated. Call authenticate() first.');
+    }
   }
 }
 

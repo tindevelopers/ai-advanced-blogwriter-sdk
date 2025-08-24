@@ -684,7 +684,7 @@ export class SEOAnalysisService {
           contentStructure: result.categoryScores.content,
           metaOptimization: result.metaTags ? 85 : 0,
           readability: result.readabilityScore.averageScore,
-          recommendations: result.recommendations || [],
+          recommendations: JSON.stringify(result.recommendations || []),
           analyzedAt: result.analyzedAt
         }
       });
